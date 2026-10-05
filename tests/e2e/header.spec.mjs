@@ -1,7 +1,8 @@
-// Header end states. Tests read sizes only once the page has settled, never
-// mid-animation, so they do not fail at random.
+// Header end states. Tests wait for the page's STATE (scripts started, the
+// logo at its end size and no longer changing), never a fixed time, so a slow
+// machine cannot make them fail at random. See settle() in support/site.mjs.
 import {
-    test, expect, PAGES, expectPx, headerSizes, isPhone, isReducedMotion, logoHeight, menuButton, scrollToY, settle,
+    test, expect, PAGES, expectLogoPx, headerSizes, isPhone, isReducedMotion, logoHeight, menuButton, scrollToY, settle,
 } from '../support/site.mjs';
 
 test.describe('header end states', () => {
@@ -11,16 +12,16 @@ test.describe('header end states', () => {
         const top = isReducedMotion(testInfo) ? dock : land;
         await page.goto('/');
         await settle(page);
-        expectPx(await logoHeight(page), top, 'Home at the top');
+        await expectLogoPx(page, top, 'Home at the top');
 
         const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
         expect(max, 'Home must be tall enough to scroll').toBeGreaterThan(200);
         const y = await scrollToY(page, max + 1000);
         expect(y).toBeGreaterThanOrEqual(max - 1);
-        expectPx(await logoHeight(page), dock, `Home scrolled to the bottom (scrollY ${y})`);
+        await expectLogoPx(page, dock, `Home scrolled to the bottom (scrollY ${y})`);
 
         await scrollToY(page, 0);
-        expectPx(await logoHeight(page), top, 'Home back at the top');
+        await expectLogoPx(page, top, 'Home back at the top');
     });
 
     test('every other page starts docked', async ({ page }, testInfo) => {
@@ -28,7 +29,7 @@ test.describe('header end states', () => {
         for (const p of PAGES.filter((x) => x !== '/')) {
             await page.goto(p);
             await settle(page);
-            expectPx(await logoHeight(page), dock, p);
+            await expectLogoPx(page, dock, p);
         }
     });
 
@@ -36,7 +37,7 @@ test.describe('header end states', () => {
         test.skip(!isReducedMotion(testInfo), 'reduce-motion pass only');
         const { dock } = headerSizes(testInfo);
         await page.goto('/');
-        await settle(page);
+        await settle(page); // the scripts have started, so the header's scroll code is live from here on
         const seen = new Set([await logoHeight(page)]);
         for (const y of [50, 150, 400, 100000, 0]) {
             await scrollToY(page, y);
@@ -52,8 +53,7 @@ test.describe('header end states', () => {
             test.skip(!isReducedMotion(testInfo), 'reduce-motion pass only');
             const { dock } = headerSizes(testInfo);
             await page.goto('/');
-            await settle(page);
-            expectPx(await logoHeight(page), dock, 'Home first frame, scripts off');
+            await expectLogoPx(page, dock, 'Home first frame, scripts off');
         });
     });
 
@@ -68,7 +68,13 @@ test.describe('header end states', () => {
             }));
             expect.soft(closed.doc, `${p} menu closed: page width vs screen`).toBeLessThanOrEqual(closed.view);
             expect.soft(closed.body, `${p} menu closed: body width vs screen`).toBeLessThanOrEqual(closed.view);
-            await menuButton(page, testInfo).click();
+            // The button's name changes when the menu opens, so find it again by the panel it controls.
+            const panelId = await menuButton(page, testInfo).getAttribute('aria-controls');
+            const button = page.locator(`button[aria-controls="${panelId}"]`);
+            await button.click();
+            // Measure the OPEN menu only: wait until it really is open.
+            await expect(button, `${p}: menu opened`).toHaveAttribute('aria-expanded', 'true');
+            await expect(page.locator(`[id="${panelId}"]`), `${p}: menu panel shown`).toBeVisible();
             await settle(page);
             const open = await page.evaluate(() => document.documentElement.scrollWidth);
             expect.soft(open, `${p} menu open: page width vs screen`).toBeLessThanOrEqual(closed.view);
