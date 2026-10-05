@@ -1,0 +1,8 @@
+# The only files allowed in public/ (BUWEB-104a keep-list). Every file in
+# public/ is served at a web address, linked or not, so adding one is a
+# reviewed change: add it here in the same commit.
+favicon.ico
+images/svg/bengusaicon.svg
+images/svg/bengusaicon_hor.svg
+images/svg/bengusaicon_text.svg
+images/svg/bengusaicon_ver.svg

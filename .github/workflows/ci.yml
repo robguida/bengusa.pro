@@ -1,0 +1,120 @@
+# CI for bengusa.pro: lint, the test suite against the production build, and
+# dependency audits. GitHub-hosted Linux runner only (free minutes).
+#
+# It NEVER deploys. The server's SSH port is open to one home IP only, so
+# deploys run from the laptop (scripts/deploy/deploy.mjs). On a push, CI
+# uploads the tested build as a release bundle; the deploy script can fetch
+# it ("fetch-ci <run-id>"), so the Linux build that passed here is the one
+# that ships.
+#
+# The local gate (scripts/release/gate.mjs) runs the same checks in the same
+# order. Change both together. The only differences, all on purpose:
+#   - the gate first copies the commit into a clean temp folder (CI checks out);
+#   - the laptop installs browsers without --with-deps (that needs root);
+#   - Windows only: the gate renames the misnamed export files before the tests;
+#   - the gate passes --forbid-only and --no-fund itself (CI gets them from env);
+#   - the gate packages on every pass; CI packages and uploads on push runs only.
+# The audits and the signature check run right after npm ci, before any
+# package code runs. Every action is pinned to a full commit SHA; the version
+# tag is in the comment beside it.
+#
+# GitHub Free cannot make this a required check (branch protection is a paid
+# feature on private repos), so a red run is a hard stop by team rule.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main, 'BUWEB-*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main' }}
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  # Linux builds have no Windows export bug, so "no 404s" is strict anyway.
+  E2E_STRICT_404: 1
+  npm_config_fund: false
+  npm_config_update_notifier: false
+
+jobs:
+  gate:
+    name: Lint, test, audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node (version from .nvmrc)
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: No TLS-check bypass in the code or templates
+        run: node scripts/release/check-no-tls-bypass.mjs
+
+      - name: Install (npm ci, lockfile only, no install scripts)
+        run: npm ci --ignore-scripts --no-audit
+
+      # The audits run no package code, so they go before anything that does.
+      - name: Audit production deps (fails on high or critical)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit all deps (fails on critical)
+        run: npm audit --audit-level=critical
+
+      - name: Verify registry signatures
+        run: npm audit signatures
+
+      - name: Install test browsers
+        run: npx --no-install playwright install --with-deps chromium webkit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Settings test (before the build; it deletes out/)
+        run: npm run test:env
+
+      - name: Build (guarded wrapper; never call next build directly)
+        run: npm run build
+
+      - name: Browser and build-output tests
+        run: npm run test:e2e
+
+      - name: Deploy script self-test (real symlinks, no server)
+        run: node scripts/deploy/deploy.mjs selftest
+
+      - name: Package the build (version.txt + MANIFEST.sha256)
+        if: github.event_name == 'push'
+        run: node scripts/release/package.mjs --out "$RUNNER_TEMP/bundle" --source ci
+
+      - name: Upload the build
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site-${{ github.sha }}
+          path: ${{ runner.temp }}/bundle/
+          # Keep dotfiles (a future /.well-known/ folder), or fetch-ci refuses the bundle.
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
+
+      - name: Upload the test report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
