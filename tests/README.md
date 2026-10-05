@@ -18,6 +18,14 @@ First time on a machine, install the test browsers once (they go outside the pro
 
 Telemetry is off in every test and build script (`NEXT_TELEMETRY_DISABLED=1`).
 
+## No fixed waits
+
+A browser test never waits a set time and then measures. It waits for the state it needs: `settle()` in `support/site.mjs` waits until React has started the page and nothing is still moving, and `expectLogoPx()` waits until the logo reaches its end size. The load event alone is not enough, because on a busy machine React starts the page after it.
+
+To prove a change keeps it that way, run with the page's start-up slowed down. It must stay green:
+
+`E2E_SLOW_START_MS=150 npx playwright test tests/e2e --repeat-each=5`
+
 ## What is checked
 
 - **Build** (`checks/build-output.spec.mjs`): every route is static (○ or ●) and every page exists; no `freeBeta`, `templatesCheckedAt`, `sold` key or retired app ID in `out/`; no outside web addresses, Google fonts, "LLC", email addresses or old-site content in `out/`; `public/` holds only the files in `fixtures/public-allowlist.txt`.
