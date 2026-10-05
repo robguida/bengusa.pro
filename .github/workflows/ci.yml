@@ -7,9 +7,16 @@
 # it ("fetch-ci <run-id>"), so the Linux build that passed here is the one
 # that ships.
 #
-# Same steps, same order, as the local gate (scripts/release/gate.mjs).
-# Change both together. Every action is pinned to a full commit SHA; the
-# version tag is in the comment beside it.
+# The local gate (scripts/release/gate.mjs) runs the same checks in the same
+# order. Change both together. The only differences, all on purpose:
+#   - the gate first copies the commit into a clean temp folder (CI checks out);
+#   - the laptop installs browsers without --with-deps (that needs root);
+#   - Windows only: the gate renames the misnamed export files before the tests;
+#   - the gate passes --forbid-only and --no-fund itself (CI gets them from env);
+#   - the gate packages on every pass; CI packages and uploads on push runs only.
+# The audits and the signature check run right after npm ci, before any
+# package code runs. Every action is pinned to a full commit SHA; the version
+# tag is in the comment beside it.
 #
 # GitHub Free cannot make this a required check (branch protection is a paid
 # feature on private repos), so a red run is a hard stop by team rule.
@@ -57,6 +64,16 @@ jobs:
       - name: Install (npm ci, lockfile only, no install scripts)
         run: npm ci --ignore-scripts --no-audit
 
+      # The audits run no package code, so they go before anything that does.
+      - name: Audit production deps (fails on high or critical)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit all deps (fails on critical)
+        run: npm audit --audit-level=critical
+
+      - name: Verify registry signatures
+        run: npm audit signatures
+
       - name: Install test browsers
         run: npx --no-install playwright install --with-deps chromium webkit
 
@@ -72,15 +89,6 @@ jobs:
       - name: Browser and build-output tests
         run: npm run test:e2e
 
-      - name: Audit production deps (fails on high or critical)
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Audit all deps (fails on critical)
-        run: npm audit --audit-level=critical
-
-      - name: Verify registry signatures
-        run: npm audit signatures
-
       - name: Deploy script self-test (real symlinks, no server)
         run: node scripts/deploy/deploy.mjs selftest
 
@@ -94,6 +102,8 @@ jobs:
         with:
           name: site-${{ github.sha }}
           path: ${{ runner.temp }}/bundle/
+          # Keep dotfiles (a future /.well-known/ folder), or fetch-ci refuses the bundle.
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
           overwrite: true

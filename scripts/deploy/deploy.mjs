@@ -4,6 +4,8 @@
 //   node scripts/deploy/deploy.mjs list
 //   node scripts/deploy/deploy.mjs fetch-ci <run-id>
 //   node scripts/deploy/deploy.mjs deploy   --target preview|live --manifest <sha256> [--dry-run] [--no-smoke] [--offline]
+//     --no-smoke is for preview only (live's smoke check is what rolls it back);
+//     --offline works only with --dry-run (a real deploy always asks GitHub first).
 //   node scripts/deploy/deploy.mjs status   --target preview|live
 //   node scripts/deploy/deploy.mjs rollback --target preview|live [--dry-run]
 //   node scripts/deploy/deploy.mjs selftest
@@ -21,11 +23,13 @@
 // What deploy refuses:
 //   - uncommitted changes to tracked files in this folder;
 //   - a bundle whose files do not match its manifest, or not the approved manifest;
-//   - a commit that is not on GitHub; for live, a commit that is not on main;
+//   - a commit that is not on GitHub (only origin's branches count, after a
+//     fetch that prunes deleted ones); for live, a commit that is not on main;
 //   - live, unless preview is serving exactly that manifest right now;
 //   - settings that live inside the repo, a key file inside the repo, a host key
 //     that does not match the pinned one (no trust-on-first-use, no prompts).
 // The server half (remote.sh) checks the manifest again before it switches.
+// Live runs origin/main's copy of remote.sh, never this checkout's.
 // A live deploy whose smoke check fails is rolled back on the spot.
 // No npm, no build and no secrets on the server: it only receives files.
 import { spawn, spawnSync } from 'node:child_process';
@@ -35,12 +39,12 @@ import os from 'node:os';
 import path from 'node:path';
 import {
     BUILD_ID_RE, HASH_RE, IS_WIN, MANIFEST, PUBLIC, ROOT, bundlesDir, capture, deployHome, git, isInside,
-    isMain, listBundles, readBundleInfo, sha256File, verifyBundle, writeBundle,
+    isMain, listBundles, readBundleInfo, sha256, sha256File, verifyBundle, writeBundle,
 } from '../release/lib.mjs';
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
 
-const REMOTE_SH = fs.readFileSync(path.join(ROOT, 'scripts', 'deploy', 'remote.sh'), 'utf8').replace(/\r/g, '');
+const REMOTE_SH_PATH = 'scripts/deploy/remote.sh';
 const GIT_USR_BIN = 'C:\\Program Files\\Git\\usr\\bin';
 const TAR = IS_WIN && fs.existsSync('C:\\Windows\\System32\\tar.exe') ? 'C:\\Windows\\System32\\tar.exe' : 'tar';
 const DEFAULT_SSH = IS_WIN && fs.existsSync(path.join(GIT_USR_BIN, 'ssh.exe')) ? path.join(GIT_USR_BIN, 'ssh.exe') : 'ssh';
@@ -49,6 +53,19 @@ const TOKEN_RE = /^[A-Za-z0-9._/:@=+-]+$/; // every word sent to the server matc
 const ROOT_RE = /^\/srv\/sites\/[a-z0-9][a-z0-9.-]*$/;
 
 class Refused extends Error {}
+
+// The server script that gets sent. Live = main only, and that covers the code
+// that runs on the live box: a live command sends origin/main's copy (as of the
+// last fetch). Preview and the self-test send this checkout's committed copy.
+const checkoutScript = () => fs.readFileSync(path.join(ROOT, ...REMOTE_SH_PATH.split('/')), 'utf8').replace(/\r/g, '');
+function serverScript(target) {
+    if (target !== 'live') return { text: checkoutScript(), from: `this checkout's ${REMOTE_SH_PATH}` };
+    const r = capture('git', ['show', `origin/main:${REMOTE_SH_PATH}`], { cwd: ROOT });
+    if (r.code !== 0 || !r.stdout.trim()) {
+        throw new Refused(`live sends the server script from origin/main, and origin/main has no ${REMOTE_SH_PATH} yet (${r.stderr.trim() || 'empty'})`);
+    }
+    return { text: r.stdout.replace(/\r/g, ''), from: `origin/main:${REMOTE_SH_PATH}` };
+}
 
 // ---------------------------------------------------------------------------
 // Arguments and settings
@@ -117,7 +134,7 @@ export function loadTarget(target, configPath) {
 // Transports: SSH for real targets, a local sh for the self-test. Both run
 // the same command lines, so the self-test exercises what SSH would run.
 // ---------------------------------------------------------------------------
-function sshTransport(cfg, tmpDir) {
+function sshTransport(cfg, tmpDir, scriptText) {
     const knownHosts = path.join(tmpDir, `known_hosts-${cfg.target}`);
     const emptyConfig = path.join(tmpDir, 'ssh_config-empty');
     fs.writeFileSync(knownHosts, `${cfg.host} ${cfg.hostKey}\n`);
@@ -132,16 +149,19 @@ function sshTransport(cfg, tmpDir) {
     return {
         label: `${cfg.user}@${cfg.host}:${cfg.siteRoot}`,
         root: cfg.siteRoot,
+        scriptText,
         script: (args) => [cfg.ssh, [...base, ['sh', '-s', '--', ...args].join(' ')]],
         receive: (line) => [cfg.ssh, [...base, line]],
     };
 }
 
-function localTransport(sh, root, fakeLinks) {
+// --selftest lets remote.sh accept a temp folder that ends in /srv/sites/<name>.
+function localTransport(sh, root, fakeLinks, scriptText) {
     return {
         label: `local ${root}`,
         root,
-        script: (args) => [sh, ['-s', '--', ...(fakeLinks ? ['--fake-links'] : []), ...args]],
+        scriptText,
+        script: (args) => [sh, ['-s', '--', '--selftest', ...(fakeLinks ? ['--fake-links'] : []), ...args]],
         receive: (line) => [sh, ['-c', line]],
     };
 }
@@ -153,7 +173,7 @@ function checkTokens(words) {
 function callScript(t, args) {
     checkTokens(args);
     const [cmd, argv] = t.script(args);
-    const r = spawnSync(cmd, argv, { input: REMOTE_SH, encoding: 'utf8', windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
+    const r = spawnSync(cmd, argv, { input: t.scriptText, encoding: 'utf8', windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
     return { code: r.status ?? 127, stdout: (r.stdout || '').trim(), stderr: ((r.stderr || '') + (r.error ? r.error.message : '')).trim() };
 }
 
@@ -292,12 +312,14 @@ function provenance(commit, target, offline, dryRun) {
     const problems = [];
     const notes = [];
     if (!offline) {
-        const f = capture('git', ['fetch', '--quiet', 'origin'], { cwd: ROOT });
+        // --prune drops the refs of branches deleted on GitHub, so they can't vouch for a commit.
+        const f = capture('git', ['fetch', '--quiet', '--prune', 'origin'], { cwd: ROOT });
         if (f.code !== 0) (dryRun ? notes : problems).push(`could not fetch from GitHub: ${f.stderr.trim()}`);
     } else {
-        notes.push('--offline: GitHub was not asked; the branch checks use the last fetch');
+        notes.push('--offline (dry run): GitHub was not asked; the branch checks use the last fetch');
     }
-    const on = capture('git', ['branch', '-r', '--contains', commit], { cwd: ROOT });
+    // Only origin (GitHub) counts. Refs from any other remote (the old bitbucket one) do not.
+    const on = capture('git', ['for-each-ref', '--format=%(refname)', '--contains', commit, 'refs/remotes/origin'], { cwd: ROOT });
     if (on.code !== 0 || !on.stdout.trim()) problems.push(`commit ${commit} is not on GitHub (push it, through the normal gate, first)`);
     if (target === 'live' && capture('git', ['merge-base', '--is-ancestor', commit, 'origin/main'], { cwd: ROOT }).code !== 0) {
         problems.push(`live deploys need a commit that is on main; ${commit} is not`);
@@ -309,6 +331,8 @@ async function cmdDeploy(opts) {
     const { target, manifest } = opts;
     if (!['preview', 'live'].includes(target)) throw new Refused('--target must be preview or live');
     if (!HASH_RE.test(manifest || '')) throw new Refused('--manifest must be the 64-character sha256 of the approved MANIFEST.sha256');
+    if (target === 'live' && opts['no-smoke']) throw new Refused('REFUSED: --no-smoke is for preview only. Live\'s smoke check is what rolls a bad deploy back.');
+    if (opts.offline && !opts['dry-run']) throw new Refused('REFUSED: --offline works only with --dry-run. A real deploy always asks GitHub first.');
     const refusals = [];
     const notes = [];
 
@@ -336,12 +360,15 @@ async function cmdDeploy(opts) {
         if (x.cfg && !opts['dry-run'] && x.cfg.key && !fs.existsSync(x.cfg.key)) refusals.push(`key file not found: ${x.cfg.key} (is the drive that holds it mounted?)`);
     }
     if (pv?.cfg && t.cfg && (pv.cfg.siteRoot === t.cfg.siteRoot || pv.cfg.url === t.cfg.url)) refusals.push('preview and live settings point at the same site');
+    let server = null;
+    try { server = serverScript(target); } catch (err) { refusals.push(err.message); }
 
     console.log(`Deploy ${opts['dry-run'] ? 'DRY RUN' : ''} -> ${target}`);
     if (bundle) {
         console.log(`  bundle   ${bundle.buildId} (${bundle.info.source || '?'}), ${check.files} files, commit ${check.version.commit}`);
         console.log(`  manifest ${manifest}`);
     }
+    if (server) console.log(`  script   ${server.from} (sha256 ${sha256(Buffer.from(server.text)).slice(0, 16)}…)`);
     if (t.cfg) {
         console.log(`  server   ${t.cfg.user}@${t.cfg.host}  ${t.cfg.siteRoot}  ${t.cfg.url}`);
         console.log(`  host key ${hostKeyFingerprint(t.cfg.hostKey)} (pinned; must match the server's ssh-keygen -lf)`);
@@ -369,10 +396,11 @@ async function cmdDeploy(opts) {
 
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bengusa-deploy-'));
     try {
+        // A live deploy sends main's script to both servers (preview only answers "manifest").
         await deployBundle({
             bundle, target,
-            t: sshTransport(t.cfg, tmp),
-            previewT: pv ? sshTransport(pv.cfg, tmp) : null,
+            t: sshTransport(t.cfg, tmp, server.text),
+            previewT: pv ? sshTransport(pv.cfg, tmp, server.text) : null,
             smokeUrl: opts['no-smoke'] ? null : t.cfg.url,
         });
         console.log(`\nDEPLOYED ${bundle.buildId} to ${target} (manifest ${manifest}).`);
@@ -386,10 +414,11 @@ async function cmdServer(command, opts) {
     if (!['preview', 'live'].includes(opts.target)) throw new Refused('--target must be preview or live');
     const t = loadTarget(opts.target, opts.config);
     if (t.problems.length) throw new Refused(`settings (${t.file}):\n  - ${t.problems.join('\n  - ')}`);
-    if (opts['dry-run']) { console.log(`Would run on ${t.cfg.user}@${t.cfg.host}: sh -s -- ${command} ${t.cfg.siteRoot}`); return 0; }
+    const server = serverScript(opts.target);
+    if (opts['dry-run']) { console.log(`Would run on ${t.cfg.user}@${t.cfg.host}: sh -s -- ${command} ${t.cfg.siteRoot}  (script: ${server.from})`); return 0; }
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bengusa-deploy-'));
     try {
-        const r = callScript(sshTransport(t.cfg, tmp), [command, t.cfg.siteRoot]);
+        const r = callScript(sshTransport(t.cfg, tmp, server.text), [command, t.cfg.siteRoot]);
         if (r.stdout) console.log(r.stdout);
         if (r.code !== 0) { console.error(r.stderr); return 1; }
         return 0;
@@ -427,9 +456,16 @@ async function cmdSelftest() {
             roots[name] = path.join(base, 'srv', 'sites', site);
             fs.mkdirSync(path.join(roots[name], 'releases'), { recursive: true });
         }
-        const P = localTransport(sh, shPath(roots.preview), fake);
-        const L = localTransport(sh, shPath(roots.live), fake);
+        const SH = checkoutScript();
+        const P = localTransport(sh, shPath(roots.preview), fake, SH);
+        const L = localTransport(sh, shPath(roots.live), fake, SH);
         const status = (t) => Object.fromEntries(callScript(t, ['status', t.root]).stdout.split('\n').filter((l) => l.includes('=')).map((l) => l.split('=')));
+        // remote.sh run through a sh command line, with no client-side word check,
+        // so the server's own checks are what get tested.
+        const rawScript = (line) => {
+            const r = spawnSync(sh, ['-c', line], { input: SH, encoding: 'utf8', windowsHide: true });
+            return { code: r.status ?? 127, out: `${(r.stdout || '').trim()} ${(r.stderr || '').trim()}`.trim() };
+        };
 
         const site = path.join(base, 'site');
         fs.mkdirSync(path.join(site, 'about'), { recursive: true });
@@ -495,6 +531,29 @@ async function cmdSelftest() {
             const a = callScript(P, ['activate', P.root, 'not-an-id', A.manifestHash]);
             if (a.code !== 0) throw new Refused(a.stderr);
         }, /bad build id/);
+        await ok('the server refuses a build id with a second line in it', () => {
+            const flags = `--selftest${fake ? ' --fake-links' : ''}`;
+            const r = rawScript(`id=$(printf '%s\\n%s' ${A.buildId} x); exec /bin/sh -s -- ${flags} check ${P.root} "$id" ${A.manifestHash}`);
+            expect(r.code !== 0 && /bad build id/.test(r.out), `exit ${r.code}: ${r.out}`);
+        });
+        await ok('outside the self-test the server needs /srv/sites/<name>', () => {
+            const away = rawScript(`exec /bin/sh -s -- status ${P.root}`);
+            expect(away.code !== 0 && /must be \/srv\/sites\/<name>/.test(away.out), `temp root: exit ${away.code}: ${away.out}`);
+            const exact = rawScript('exec /bin/sh -s -- status /srv/sites/selftest.invalid');
+            expect(exact.code !== 0 && /no \/srv\/sites\/selftest\.invalid\/releases/.test(exact.out), `exact root: exit ${exact.code}: ${exact.out}`);
+        });
+        await refuses('the server refuses a manifest path with an empty part', async () => {
+            const dir = path.join(base, 'empty-part');
+            fs.mkdirSync(path.join(dir, PUBLIC), { recursive: true });
+            fs.writeFileSync(path.join(dir, PUBLIC, 'index.html'), 'x\n');
+            const m = `${sha256(Buffer.from('x\n'))}  ${PUBLIC}//index.html\n`;
+            fs.writeFileSync(path.join(dir, MANIFEST), m);
+            const id = '20260101T000010Z-abcdef0';
+            const u = await upload(P, dir, id);
+            expect(u.code === 0, `upload failed: ${u.stderr}`);
+            const a = callScript(P, ['activate', P.root, id, sha256(Buffer.from(m))]);
+            if (a.code !== 0) throw new Refused(a.stderr);
+        }, /empty part/);
 
         await ok('rollback on preview goes back to A', () => {
             const r = callScript(P, ['rollback', P.root]);
@@ -516,6 +575,19 @@ async function cmdSelftest() {
         await ok('the deploy log has one line per switch', () => {
             const n = fs.readFileSync(path.join(roots.preview, 'deploys.log'), 'utf8').trim().split('\n').length;
             expect(n === 9, `${n} lines`);
+        });
+
+        // The live safety net. Preview serves the newest bundle; live gets it with a
+        // smoke check that cannot pass (nothing serves selftest.invalid on this box's
+        // port 443), so live must roll straight back to B and log it.
+        const top = more[3];
+        await refuses('a failed live smoke check rolls live back to the previous release', () => deployBundle({
+            bundle: top, t: L, previewT: P, target: 'live', smokeUrl: 'https://selftest.invalid', log: quiet,
+        }), new RegExp(`SMOKE FAILED[\\s\\S]*Rolled back: rolled back to ${B.buildId}`));
+        await ok('live serves B again and its log records the rollback', () => {
+            expect(status(L).current === B.buildId, JSON.stringify(status(L)));
+            const last = fs.readFileSync(path.join(roots.live, 'deploys.log'), 'utf8').trim().split('\n').pop().split('\t');
+            expect(last[1] === 'rollback' && last[2] === B.buildId && last[3] === B.manifestHash && last[4] === top.buildId, last.join(' | '));
         });
     } finally {
         spawnSync(sh, ['-c', `chmod -R u+w ${shPath(base)}`], { windowsHide: true });
@@ -540,7 +612,7 @@ async function main() {
         case 'rollback': return cmdServer('rollback', opts);
         case 'selftest': return cmdSelftest();
         default:
-            console.error('Usage: node scripts/deploy/deploy.mjs list | fetch-ci <run-id> | deploy --target preview|live --manifest <sha256> [--dry-run] | status --target <t> | rollback --target <t> | selftest');
+            console.error('Usage: node scripts/deploy/deploy.mjs list | fetch-ci <run-id> | deploy --target preview|live --manifest <sha256> [--dry-run] [--no-smoke (preview only)] [--offline (dry run only)] | status --target <t> | rollback --target <t> | selftest');
             return 2;
     }
 }

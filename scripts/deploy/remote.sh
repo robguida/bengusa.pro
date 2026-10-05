@@ -19,8 +19,11 @@
 #   smoke    <root> <url> <code>  fetches <url>/version.txt through this box's own
 #                                 web server; 200 = must be the current build,
 #                                 401 = the preview lock is on
-# Self-test only: a first argument of --fake-links keeps the "current" pointer
-# in a file, because Windows can't make real symlinks without Developer Mode.
+# The site root must be exactly /srv/sites/<name>, as deploy.mjs also checks.
+# Self-test only (deploy.mjs never sends these over SSH):
+#   --selftest     accepts a temp folder that ends in /srv/sites/<name>;
+#   --fake-links   also keeps the "current" pointer in a file, because Windows
+#                  can't make real symlinks without Developer Mode.
 
 set -eu
 umask 022
@@ -28,8 +31,15 @@ PATH=/usr/local/bin:/usr/bin:/bin
 LC_ALL=C
 export PATH LC_ALL
 
+selftest=0
 fake=0
-if [ "${1:-}" = "--fake-links" ]; then fake=1; shift; fi
+while :; do
+    case "${1:-}" in
+        --selftest) selftest=1; shift ;;
+        --fake-links) selftest=1; fake=1; shift ;;
+        *) break ;;
+    esac
+done
 
 die() { printf 'remote: %s\n' "$*" >&2; exit 1; }
 
@@ -39,13 +49,30 @@ a3=${3:-}
 a4=${4:-}
 
 case "$root" in /*) ;; *) die "site root must be an absolute path" ;; esac
-case "$root" in *[!A-Za-z0-9._/-]*|*/../*|*/..|*/./*|*/.) die "bad site root: $root" ;; esac
+case "$root" in *[!A-Za-z0-9._/-]*|*/../*|*/..|*/./*|*/.|*//*) die "bad site root: $root" ;; esac
+site=${root##*/}
+case "$site" in ''|[!a-z0-9]*|*[!a-z0-9.-]*) die "bad site root: $root" ;; esac
+if [ "$selftest" = 1 ]; then
+    case "$root" in */srv/sites/"$site") ;; *) die "self-test site root must end in /srv/sites/<name>" ;; esac
+else
+    [ "$root" = "/srv/sites/$site" ] || die "site root must be /srv/sites/<name>, not $root"
+fi
 rel="$root/releases"
 [ -d "$rel" ] || die "no $rel (the server is not set up for deploys yet)"
 log_file="$root/deploys.log"
 
-valid_id() { printf '%s\n' "$1" | grep -Eq '^[0-9]{8}T[0-9]{6}Z-[0-9a-f]{7,40}$'; }
-valid_hash() { printf '%s\n' "$1" | grep -Eq '^[0-9a-f]{64}$'; }
+# Whole-value checks with case patterns: a value with a second line fails
+# (a grep would pass it if any one line matched).
+valid_hash() {
+    case "$1" in ''|*[!0-9a-f]*) return 1 ;; esac
+    [ "${#1}" -eq 64 ]
+}
+valid_id() {
+    case "$1" in [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z-*) ;; *) return 1 ;; esac
+    v=${1#????????T??????Z-}
+    case "$v" in ''|*[!0-9a-f]*) return 1 ;; esac
+    [ "${#v}" -ge 7 ] && [ "${#v}" -le 40 ]
+}
 
 current_id() {
     if [ "$fake" = 1 ]; then t=$(cat "$root/current.fake" 2>/dev/null || true)
@@ -90,6 +117,7 @@ verify() {
     bad=$(grep -Evc '^[0-9a-f]{64}  public/[^[:cntrl:]\\]+$' "$d/MANIFEST.sha256" || true)
     [ "$bad" = 0 ] || die "manifest has $bad malformed line(s)"
     if grep -Eq '/\.\.?(/|$)' "$d/MANIFEST.sha256"; then die "manifest names a . or .. path"; fi
+    if grep -q '//' "$d/MANIFEST.sha256"; then die "manifest names a path with an empty part (//)"; fi
     dup=$(cut -c 67- "$d/MANIFEST.sha256" | sort | uniq -d | head -n 3)
     [ -z "$dup" ] || die "manifest lists a file twice: $dup"
     odd=$(find "$d/public" ! -type f ! -type d | head -n 3)

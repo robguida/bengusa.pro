@@ -1,6 +1,14 @@
-// Local release gate: the same steps as CI (.github/workflows/ci.yml), on
-// this laptop. Change both together. It is the gate of record until the
-// first green CI run exists on GitHub.
+// Local release gate: the same checks as CI (.github/workflows/ci.yml), in
+// the same order, on this laptop. Change both together. It is the gate of
+// record until the first green CI run exists on GitHub. The only
+// differences, all on purpose (the CI file lists the same ones):
+//   - it first copies the commit into a clean temp folder (CI checks out);
+//   - browsers install without --with-deps (that needs root; the laptop has them);
+//   - Windows only: it renames the misnamed export files before the tests;
+//   - it passes --forbid-only and --no-fund itself (CI gets them from env);
+//   - it packages on every pass; CI packages and uploads on push runs only.
+// The audits and the signature check run right after npm ci, before any
+// package code runs.
 //
 //   node scripts/release/gate.mjs [--commit <rev>] [--keep] [--no-package]
 //   (or double-click scripts/release/gate.cmd)
@@ -70,6 +78,10 @@ const steps = [
     }],
     ['No TLS-check bypass in the code or templates', () => run(process.execPath, ['scripts/release/check-no-tls-bypass.mjs'], { cwd: work })],
     ['Install (npm ci, lockfile only, no install scripts)', () => runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: work })],
+    // The audits run no package code, so they go before anything that does.
+    ['Audit production deps (fails on high or critical)', () => runNpm(['audit', '--omit=dev', '--audit-level=high'], { cwd: work })],
+    ['Audit all deps (fails on critical)', () => runNpm(['audit', '--audit-level=critical'], { cwd: work })],
+    ['Verify registry signatures', () => runNpm(['audit', 'signatures'], { cwd: work })],
     // CI adds --with-deps (Linux system packages, needs root); the laptop has them.
     ['Install test browsers', () => run(process.execPath, ['node_modules/@playwright/test/cli.js', 'install', 'chromium', 'webkit'], { cwd: work })],
     ['Lint', () => runNpm(['run', 'lint'], { cwd: work })],
@@ -77,9 +89,7 @@ const steps = [
     ['Build (guarded wrapper)', () => runNpm(['run', 'build'], { cwd: work })],
     ...(IS_WIN ? [['Fix the Windows export file names', () => run(process.execPath, ['scripts/release/fix-windows-export.mjs'], { cwd: work })]] : []),
     ['Browser and build-output tests (strict: no 404s)', () => runNpm(['run', 'test:e2e', '--', '--forbid-only'], { cwd: work, env: { E2E_STRICT_404: '1' } })],
-    ['Audit production deps (fails on high or critical)', () => runNpm(['audit', '--omit=dev', '--audit-level=high'], { cwd: work })],
-    ['Audit all deps (fails on critical)', () => runNpm(['audit', '--audit-level=critical'], { cwd: work })],
-    ['Verify registry signatures', () => runNpm(['audit', 'signatures'], { cwd: work })],
+    ['Deploy script self-test (no server)', () => run(process.execPath, ['scripts/deploy/deploy.mjs', 'selftest'], { cwd: work })],
     ...(flag('no-package') ? [] : [['Package the build (version.txt + MANIFEST.sha256)', () => run(process.execPath,
         ['scripts/release/package.mjs', '--out', bundlesDir(), '--source', IS_WIN ? 'gate-win32-renamed' : `gate-${process.platform}`], { cwd: work })]]),
 ];
