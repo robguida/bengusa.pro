@@ -1,0 +1,30 @@
+{
+  "catche": {
+    "tagline": "Find that photo. You know the one.",
+    "summary": "The photos and videos from the folders you pick, in one place.",
+    "intro": "Catche (working name) puts the photos and videos from the folders you pick in one place. Browse by city, country or map.",
+    "connects": {
+      "label": "What Catche connects to:",
+      "text": "its map loads from OpenStreetMap. Like any website, OpenStreetMap sees your IP address. It also sees which part of the map you view, which can hint at where your photos were taken. An optional AI model downloads from Hugging Face, only if you click Download. Catche doesn't send your photos, file names or tags anywhere. If your computer lacks a standard Microsoft component (WebView2), the installer may download it from Microsoft."
+    }
+  },
+  "timetracker": {
+    "tagline": "Time flies. Bill for it.",
+    "summary": "Track your time and turn it into invoices, right on your PC.",
+    "intro": "Track your hours by client and project. Turn them into invoices. All on your Windows PC.",
+    "connects": {
+      "label": "What TimeTracker connects to:",
+      "text": "nothing. The app makes no internet connections. If your PC lacks a standard Microsoft component (WebView2), the installer downloads it from Microsoft."
+    }
+  },
+  "vault": {
+    "tagline": "Your dev secrets, sorted.",
+    "summary": "Passwords, API keys and SSH keys, in folders that match how you work.",
+    "cardNote": "Vault starts on Windows. Sync between devices is planned for a later version.",
+    "intro": "Vault (working name) is a password manager built for developers. Passwords, API keys, SSH keys and database logins, in folders that match how you work.",
+    "cloud": {
+      "heading": "Where your vault lives",
+      "text": "Vault (working name) starts on Windows. Sync between devices is planned for a later version. When it comes, it will keep an encrypted copy of your vault in our cloud. That's why Vault doesn't wear the Off-grid badge."
+    }
+  }
+}
