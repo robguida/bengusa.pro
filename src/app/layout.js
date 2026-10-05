@@ -1,20 +1,26 @@
-import {Lexend, Oswald} from "next/font/google";
+import localFont from "next/font/local";
 import SiteHeader from "./components/header/SiteHeader";
+import SiteFooter from "./components/SiteFooter";
 import {getPublicApps, toMenuItems} from "@/lib/apps";
 import "./globals.css";
 
-// next/font downloads these at build time and serves them from this site,
-// so visitors never call Google. Both are variable fonts: leaving out
-// `weight` ships one file per font that covers every weight.
+// The two brand fonts live in ./fonts (Latin, variable weight; licence texts
+// beside them), so neither the build nor visitors ever call Google.
 // The variables go on <html>, so globals.css can map them in @theme.
-const lexend = Lexend({
+const lexend = localFont({
+    src: "./fonts/lexend-latin.woff2",
+    weight: "100 900",
+    style: "normal",
+    display: "swap",
     variable: "--next-font-lexend",
-    subsets: ["latin"],
 });
 
-const oswald = Oswald({
+const oswald = localFont({
+    src: "./fonts/oswald-latin.woff2",
+    weight: "200 700",
+    style: "normal",
+    display: "swap",
     variable: "--next-font-oswald",
-    subsets: ["latin"],
 });
 
 export const metadata = {
@@ -35,6 +41,7 @@ export default function RootLayout({children}) {
                 <a href="#content" className="skip-link">Skip to content</a>
                 <SiteHeader apps={menuItems} />
                 <main id="content" tabIndex={-1} className="site-main">{children}</main>
+                <SiteFooter apps={menuItems} />
             </body>
         </html>
     );
