@@ -1,0 +1,309 @@
+/*
+  The site header: a white bar across the top with a hexagon tab hanging from
+  its left end. The tab is the bottom half of a hexagon that shares its centre
+  with the logo's own hexagon, so its sides run at 60 degrees.
+
+  Everything below derives from one length, --h (the logo mark's height), and
+  the --hdr-* tokens in globals.css. CSS alone lays out the first frame, so the
+  page never jumps on load. On Home, SiteHeader.js changes --h while the page
+  scrolls; it never sets anything else.
+*/
+
+.header {
+  --h: var(--hdr-h-end);
+  /* bar height, and the tab hexagon's radius (centre to corner) */
+  --bh: max(var(--hdr-min-bar), var(--h) / 2 + var(--hdr-bar-pad));
+  --r: calc(var(--h) * var(--hdr-k-t) / 0.8660254);
+
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  padding-top: env(safe-area-inset-top, 0px);
+  pointer-events: none;
+  container-type: inline-size;
+}
+
+/* Home: the big logo, shrinking as the page scrolls. */
+.big {
+  --h: var(--hdr-h-land);
+}
+
+.inner {
+  position: relative;
+}
+
+/* ---------- The shape: bar + tab, with one shadow ---------- */
+
+.shape {
+  position: absolute;
+  inset: 0 0 auto 0;
+  filter: drop-shadow(0 6px 12px rgb(0 42 66 / 0.16));
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  height: calc(var(--bh) + env(safe-area-inset-top, 0px));
+  background: var(--white);
+  pointer-events: auto;
+}
+
+/* The bar's navy edge. It starts where the tab's own edge begins. */
+.bar::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--r) * 2.103923);
+  right: 0;
+  bottom: calc(var(--hdr-edge) / -2);
+  height: var(--hdr-edge);
+  background: var(--blue);
+}
+
+/* The tab is drawn at a fixed scale (radius = 100 units) and sized by CSS. */
+.tab {
+  position: absolute;
+  left: 0;
+  top: calc(var(--bh) - var(--r) * 0.2);
+  width: calc(var(--r) * 2.3);
+  height: calc(var(--r) * 1.12);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tabFill {
+  fill: var(--white);
+  pointer-events: auto;
+}
+
+.tabEdge {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: var(--hdr-edge);
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Logo: mark in the tab, wordmark in the bar ---------- */
+
+.brand {
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+.brand:focus-visible {
+  outline: none;
+}
+
+.brand:focus-visible .word {
+  outline: 3px solid var(--blue);
+  outline-offset: 6px;
+}
+
+.mark,
+.word {
+  position: absolute;
+  display: block;
+}
+
+.mark svg,
+.word svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Centred in the tab: the logo's centre sits on the bar's bottom edge. */
+.mark {
+  left: calc(var(--r) - var(--h) * 0.5448986);
+  top: calc(var(--bh) - var(--h) * 0.4960914);
+  width: calc(var(--h) * 1.0897975);
+  height: var(--h);
+}
+
+/* Just right of the tab, sized to fit before the menu. */
+.word {
+  --wh: max(14px, min(var(--bh) * 0.46, (100cqw - var(--hdr-gutter) - var(--hdr-nav-w) - 2 * var(--hdr-gap) - 2 * var(--r)) / 5.4563463));
+  left: calc(2 * var(--r) + var(--hdr-gap));
+  top: calc(var(--bh) / 2 - var(--wh) * 0.44);
+  width: calc(var(--wh) * 5.4563463);
+  height: var(--wh);
+}
+
+/* ---------- Menu on a computer ---------- */
+
+.desk {
+  position: absolute;
+  top: 0;
+  right: var(--hdr-gutter);
+  height: var(--bh);
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.deskList {
+  display: flex;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deskLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.deskLink:hover,
+.deskLink[aria-current="page"] {
+  border-bottom-color: var(--blue);
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+}
+
+.deskLink[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.appsItem {
+  position: relative;
+}
+
+.submenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -14px;
+  min-width: 230px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--white);
+  border: 1.5px solid var(--blue);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgb(0 42 66 / 0.16);
+}
+
+/* ---------- Menu on a phone ---------- */
+
+.phone {
+  display: none;
+}
+
+.menuButton {
+  position: absolute;
+  right: 0;
+  top: calc((var(--bh) - 44px) / 2);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--blue);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--blue);
+  cursor: pointer;
+}
+
+.menuIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.menuPanel {
+  position: absolute;
+  right: 0;
+  top: calc(var(--bh) + 10px);
+  width: max-content;
+  min-width: 220px;
+  max-width: calc(100vw - 2 * var(--hdr-gutter));
+  padding: 6px;
+  background: var(--white);
+  border: 1.5px solid var(--blue);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgb(0 42 66 / 0.16);
+}
+
+.menuGroup {
+  margin: 0;
+  padding: 10px 14px 4px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.menuList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menuList + .menuList {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+/* Shared by the computer submenu and the phone menu. */
+.menuLink {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--blue);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.menuLink:hover {
+  background: var(--lightblue);
+}
+
+.menuLink[aria-current="page"] {
+  background: var(--lightblue);
+}
+
+@media (max-width: 759.98px) {
+  .desk {
+    display: none;
+  }
+
+  .phone {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: var(--hdr-gutter);
+    height: var(--bh);
+    pointer-events: auto;
+  }
+}
+
+/* Reads the landing logo height from CSS so the script never repeats it. */
+.probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: var(--hdr-h-land);
+  visibility: hidden;
+  pointer-events: none;
+}

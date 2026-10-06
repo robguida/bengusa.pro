@@ -1,0 +1,11 @@
+{
+  "offGrid": {
+    "badge": "Off-grid",
+    "short": "your data lives on your device, not in our cloud.",
+    "legendOnAppPage": "the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. We call Off-grid apps Cloud-killers."
+  },
+  "moreInTheWorks": {
+    "heading": "More in the works",
+    "text": "More apps are in the queue."
+  }
+}
