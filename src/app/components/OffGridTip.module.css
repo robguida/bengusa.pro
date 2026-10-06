@@ -1,0 +1,175 @@
+/*
+  The Off-grid popup (spec 17.c), used by OffGridTip.js.
+
+  The trigger is a real button: the green badge, or the word "Off-grid" in a
+  heading. Its box is a popover, so it opens in the browser's top layer: it
+  takes no space (nothing on the page moves) and sits above the fixed header.
+
+  Before the page's script runs, the browser's own popover switch opens the
+  box, centred on the screen. Once the script runs (data-state is set), it
+  places the box under or above its trigger through --tip-x and --tip-y,
+  which it sets through CSSOM. Nothing here needs an inline style attribute,
+  so the planned hash-based CSP holds.
+
+  Colours (spec 6.f, 17.c.vi): green only for Off-grid (the badge, the hero
+  word, the dotted underline). The box is navy with white words, never green
+  text on navy.
+*/
+
+.trigger {
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* An invisible tap area at least 44px tall (WCAG 2.5.8). The look and the
+   layout don't change. */
+.trigger::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 44px;
+  min-height: 100%;
+  transform: translateY(-50%);
+}
+
+/* The green badge: the same pill as before it became a button. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+}
+
+.badge:hover {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 3.5px var(--green);
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* The word "Off-grid" in a heading. It never splits at the hyphen. Navy
+   like the rest of the heading, with a dotted green underline; green in the
+   hero (.green). */
+.word {
+  display: inline-block;
+  white-space: nowrap;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--green);
+  text-decoration-thickness: max(2px, 0.055em);
+  text-underline-offset: 0.14em;
+}
+
+.green {
+  color: var(--green);
+}
+
+/* The box. It may sit inside a heading, so every text setting is reset. */
+.tip {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* only matters in a browser without a top layer */
+  box-sizing: border-box;
+  width: max-content;
+  height: max-content;
+  max-width: min(22rem, calc(100vw - 32px));
+  margin: auto;
+  padding: 12px 14px;
+  overflow: visible;
+  border: 0;
+  border-radius: 10px;
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 12px 28px rgb(0 20 35 / 0.32);
+  font-family: var(--next-font-lexend), "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-align: left;
+  text-decoration: none;
+  text-transform: none;
+  text-wrap: wrap;
+  white-space: normal;
+}
+
+.tip:popover-open {
+  display: block;
+}
+
+/* A browser without popovers: the script shows it with data-state. */
+.tip[data-fallback][data-state="open"] {
+  display: block;
+}
+
+/* The script has taken over: it sets the box's place. */
+.tip[data-state] {
+  inset: auto;
+  left: var(--tip-x, 16px);
+  top: var(--tip-y, 16px);
+  margin: 0;
+}
+
+.tip:focus {
+  outline: none;
+}
+
+.tip b {
+  font-weight: 700;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+/* "What <App> connects to". */
+.more {
+  display: block;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 6px 0;
+  color: var(--white);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.more:hover {
+  text-decoration: none;
+}
+
+.more:focus-visible {
+  outline-color: var(--white);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A quick fade, never a slide. With reduce motion on: no animation at all. */
+@media (prefers-reduced-motion: no-preference) {
+  .tip:popover-open {
+    animation: fade 0.12s ease-out;
+  }
+
+  .tip[data-fallback][data-state="open"] {
+    animation: fade 0.12s ease-out;
+  }
+}

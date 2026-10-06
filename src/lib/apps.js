@@ -21,20 +21,34 @@ function toPublic(app) {
     if (typeof app.slug !== 'string' || !SLUG.test(app.slug)) {
         throw new Error(`content/apps.json: "${app.id}" needs a slug of lower-case words and dashes, like "photo-search".`);
     }
+    if (words.whereItLives && !Array.isArray(words.whereItLives.lines)) {
+        throw new Error(`content/app-words.json: "${app.id}".whereItLives needs "lines", a list of sentences.`);
+    }
+    const offGrid = app.offGrid === true;
+    const href = `/apps/${app.slug}/`;
+    const connects = words.connects ?? null;
+    // The app page shows its "What <App> connects to" box only when the app is
+    // Off-grid and has a connects line. Only then do its badge popups link to
+    // it, labelled like the box without the colon (spec 17.c.iv).
+    const connectsId = offGrid && connects ? `${app.id}-connects` : null;
     return {
         id: app.id,
         status: app.status,
         name: app.name,
         shortName: app.shortName,
-        offGrid: app.offGrid === true,
+        offGrid,
         slug: app.slug,
-        href: `/apps/${app.slug}/`,
+        href,
         tagline: words.tagline,
         summary: words.summary,
         cardNote: words.cardNote ?? null,
         intro: words.intro,
-        connects: words.connects ?? null,
-        cloud: words.cloud ?? null,
+        connects,
+        connectsId,
+        connectsLink: connectsId
+            ? { href: `${href}#${connectsId}`, label: connects.label.replace(/:\s*$/, '') }
+            : null,
+        whereItLives: words.whereItLives ?? null,
     };
 }
 

@@ -12,8 +12,8 @@
     - **Closed 2026-10-05:** open item 19 (what a showcase card may hold). The legal reviewer and the product lead ruled (16.i). No app is showcase at launch, so nothing at launch changes.
         - *Supersedes: "open item 19 (what a showcase card may hold) waits on the legal reviewer and the product lead."*
     - *The legal reviewer ruled on open item 18 on 2026-10-05 (13.h.v). The threat modeler and the privacy reviewer ruled earlier the same day (decision 15), which closed open items 16 and 17.*
-- **Last updated:** 2026-10-05
-- **Decisions come from:** Rob. Requirements interview run by the business analyst on 2026-10-04. The product lead made the early-access, success-target and site-pricing calls on 2026-10-04, from the business advisor's advice. Rob ruled on the project lead's plan on 2026-10-05 ([C2]). The legal reviewer ruled on the claims, the identity lines and the postal address on 2026-10-05 ([Legal], BUWEB-103). The architect set the site design and the list service on 2026-10-05 ([Architect], BUWEB-100). The product lead checked the Vault sync facts against Vault's own records on 2026-10-05. On 2026-10-05 the threat modeler ruled on the one double opt-in exception, the privacy reviewer set what we keep and for how long, and the legal reviewer checked the rejoin and perk-email wording ([Threat model], [Privacy], [Legal], BUWEB-100a). Later on 2026-10-05 the legal reviewer ruled on the late-PO-box Privacy line and the privacy reviewer's draft Privacy lines, and the privacy reviewer checked the Privacy page draft against her data map and ruled on the Contact inbox ([Legal], [Privacy], BUWEB-102b). The legal reviewer's check of the page words widened the identity-check rule and added the Catche label, and the product lead checked the app facts ([Legal], [Product], BUWEB-102a). Last on 2026-10-05: the legal reviewer approved the email and Privacy lines, the privacy reviewer rechecked them and passed the Fastmail inbox, the finance lead priced the inbox options, the architect ruled on the welcome email and fixed tag IDs, and the threat modeler ruled on the perk-line fallback and the welcome email ([Legal], [Privacy], [Finance], [Architect], [Threat model], BUWEB-102). Then Rob asked about putting more apps on a carousel. The team's default answer (the product lead, the brand strategist, the frontend engineer, the architect, the legal reviewer and the business advisor) stands unless he overrides it ([Team], decision 16). Last, the legal reviewer ruled on showcase cards and the listing bar, the product lead set what showcase is for, and the architect's add-an-app decision record (ADR-0004) let open and showcase switch. The project lead kept the product lead's rule that a free or live product gets no card ([Legal], [Product], [Architect], 16.d.iii, 16.e, 16.i). Then the project lead confirmed the add-an-app cost and ruled who may retire an app, and the add-an-app steps were matched to ADR-0004 (16.d.x, 16.d.iii, 16.f, 16.i.iii). Last, the project lead ruled that the product lead may retire a cancelled or shelved case-A app at any time (16.d.iii).
+- **Last updated:** 2026-10-06
+- **Decisions come from:** Rob. Requirements interview run by the business analyst on 2026-10-04. The product lead made the early-access, success-target and site-pricing calls on 2026-10-04, from the business advisor's advice. Rob ruled on the project lead's plan on 2026-10-05 ([C2]). The legal reviewer ruled on the claims, the identity lines and the postal address on 2026-10-05 ([Legal], BUWEB-103). The architect set the site design and the list service on 2026-10-05 ([Architect], BUWEB-100). The product lead checked the Vault sync facts against Vault's own records on 2026-10-05. On 2026-10-05 the threat modeler ruled on the one double opt-in exception, the privacy reviewer set what we keep and for how long, and the legal reviewer checked the rejoin and perk-email wording ([Threat model], [Privacy], [Legal], BUWEB-100a). Later on 2026-10-05 the legal reviewer ruled on the late-PO-box Privacy line and the privacy reviewer's draft Privacy lines, and the privacy reviewer checked the Privacy page draft against her data map and ruled on the Contact inbox ([Legal], [Privacy], BUWEB-102b). The legal reviewer's check of the page words widened the identity-check rule and added the Catche label, and the product lead checked the app facts ([Legal], [Product], BUWEB-102a). Last on 2026-10-05: the legal reviewer approved the email and Privacy lines, the privacy reviewer rechecked them and passed the Fastmail inbox, the finance lead priced the inbox options, the architect ruled on the welcome email and fixed tag IDs, and the threat modeler ruled on the perk-line fallback and the welcome email ([Legal], [Privacy], [Finance], [Architect], [Threat model], BUWEB-102). Then Rob asked about putting more apps on a carousel. The team's default answer (the product lead, the brand strategist, the frontend engineer, the architect, the legal reviewer and the business advisor) stands unless he overrides it ([Team], decision 16). Last, the legal reviewer ruled on showcase cards and the listing bar, the product lead set what showcase is for, and the architect's add-an-app decision record (ADR-0004) let open and showcase switch. The project lead kept the product lead's rule that a free or live product gets no card ([Legal], [Product], [Architect], 16.d.iii, 16.e, 16.i). Then the project lead confirmed the add-an-app cost and ruled who may retire an app, and the add-an-app steps were matched to ADR-0004 (16.d.x, 16.d.iii, 16.f, 16.i.iii). Last, the project lead ruled that the product lead may retire a cancelled or shelved case-A app at any time (16.d.iii). On 2026-10-06 Rob made seven changes ([C3]): the docked header size, the hero, Vault's Off-grid badge, a question about trademarks, the app-grid heading, an Off-grid popup, and the two Off-grid sentences. The legal reviewer, the brand strategist, the frontend engineer and the product lead ruled on them the same day, and the product lead recorded that Vault's later version is opt-in ([Legal], [Brand], [Frontend], [Product], A5, 13.b.v, 13.k, decision 17). The same pass folded in the legal reviewer's round-1 page-word rulings and his approval of the second Privacy page and email drafts (13.f, 13.g.iii, 13.j, 15.i). Later on 2026-10-06 the legal reviewer gave his final read of the third page-word draft: the tile's words (16.c), the E3 colon note (13.f.vii), a check on Vault's feature lines (13.b.v) and a trimmed keep-it-whole rule (13.d.iii, 18.e.v). The popup colours were settled the same day as a product call (17.c.vi).
 - **Project notes for engineers:** the root `README.md` (how to run, test and build) and `tests/README.md`.
 
 ## How to read this
@@ -21,15 +21,16 @@
 - **[R1]–[R4]** = Rob's answer in round 1–4 of the business analyst's interview.
 - **[C1]** = a change Rob made after the interview (2026-10-04). It wins over an older answer.
 - **[C2]** = Rob's rulings on the project lead's plan (2026-10-05). They win over an older answer.
+- **[C3]** = Rob's changes of 2026-10-06: the docked header size (6.c), the hero, the app-grid heading and the Off-grid popup (decision 17), and Vault's Off-grid badge (4.c, A5). They win over an older answer.
 - **[Spec]** = Rob said it before the interview. **[Rule]** = from Rob's standing rules.
-- **[Product]** = a call the product lead made. The 2026-10-04 calls are built from the business advisor's advice. The 2026-10-05 Vault sync facts come from Vault's own records. Her showcase rule (16.i) is also from 2026-10-05.
-- **[Legal]** = the legal reviewer's claims rulings (BUWEB-103), his wording checks on the rejoin and perk emails (BUWEB-100a), his Privacy page rulings (BUWEB-102b), and his showcase rulings (16.d.iii, 16.e, 16.i), all 2026-10-05. They win over older wording. Lines they replace carry a *Supersedes* note.
+- **[Product]** = a call the product lead made. The 2026-10-04 calls are built from the business advisor's advice. The 2026-10-05 Vault sync facts come from Vault's own records. Her showcase rule (16.i) is also from 2026-10-05. Her 2026-10-06 record that Vault's later version is opt-in is in A5.b.
+- **[Legal]** = the legal reviewer's claims rulings (BUWEB-103), his wording checks on the rejoin and perk emails (BUWEB-100a), his Privacy page rulings (BUWEB-102b), and his showcase rulings (16.d.iii, 16.e, 16.i), all 2026-10-05. Also his 2026-10-06 rulings on Rob's changes and Vault's badge (A5, 13.b.v, 13.d, 13.e, 13.k, decision 17), and his 2026-10-06 final read of the third page-word draft (13.b.v, 13.d.iii, 13.f.vii, 16.c, 18.e.v). They win over older wording. Lines they replace carry a *Supersedes* note.
 - **[Architect]** = the architect's site design (BUWEB-100, 2026-10-05), his rulings on the welcome email and fixed tag IDs (BUWEB-102, 2026-10-05), and his add-an-app decision record, ADR-0004 (16.d.i, 16.d.iii, 16.d.x, 16.f, 16.i.ii, 2026-10-05). It wins over older defaults. Lines it replaces carry a *Supersedes* note.
 - **[Finance]** = the finance lead's inbox options and prices (BUWEB-102, 2026-10-05).
 - **[Privacy]** = the privacy reviewer's data map and privacy rulings (BUWEB-100a, 2026-10-05): what we keep, for how long, and the consent record. Also her check of the Privacy page draft against that map, with three rulings (BUWEB-102b, 2026-10-05). They win over her 2026-10-04 guidance.
 - **[Threat model]** = the threat modeler's ruling on the one exception to double opt-in (BUWEB-100a, 2026-10-05), and his rulings on the perk-line fallback and the welcome email (BUWEB-102, 2026-10-05).
 - **[Team]** = the team's default answer to Rob's 2026-10-05 question about more apps on a carousel (decision 16). It comes from the product lead, the brand strategist, the frontend engineer, the architect, the legal reviewer and the business advisor. **It stands unless Rob overrides it.**
-- **[Brand]** = the brand strategist's call on the app grid (decision 16, 2026-10-05). **[Frontend]** = the frontend engineer's call on the same (decision 16, 2026-10-05).
+- **[Brand]** = the brand strategist's call on the app grid (decision 16, 2026-10-05), and his 2026-10-06 calls on the hero, the colours and the popup (6.f, decision 17). **[Frontend]** = the frontend engineer's call on the same grid (decision 16, 2026-10-05), and his 2026-10-06 design for the docked size, the heading guard and the popup (6.c, decision 17).
 - **A1–A9** = assumptions (section 3). Shown to Rob, or not yet shown — the label says which.
 - **[Analyst]** = a must-have the business analyst added (section 4), with the reason.
 
@@ -46,8 +47,9 @@
     - **c.** In return: launch news, early access and an early-bird discount.
     - **d.** Early access = a **free beta seat**, offered by email in the order people joined. People on the news list only get no perks.
 3. People can also join a general **email list** for news and updates, and send a message through a **Contact** page.
-4. Catche and TimeTracker get an **"Off-grid"** badge. Vault does not. Each Off-grid app's page says **what it connects to** (decision 13.b).
-5. **"Cloud-killers"** is the playful tagline.
+4. Catche, TimeTracker and Vault get an **"Off-grid"** badge. Each Off-grid app's page says **what it connects to** (decision 13.b). Vault's line is based on its design until its first outside build is checked (13.b.v). [C3]
+    - *Supersedes: "Catche and TimeTracker get an 'Off-grid' badge. Vault does not." Rob reversed it on 2026-10-06 (4.c).*
+5. **"Cloud-killers"** is the playful tagline. Home leads with **"Makers of Off-grid apps."** (decision 17). [C3]
 6. Pages: **Home, one page per app, About us, Contact, Privacy.** Plus two small pages people land on after the confirm or unsubscribe link (5.e).
 7. Logo and colors stay. The **header is new**: a big logo on landing that shrinks into a hexagon-shaped tab as you scroll.
 8. The team writes the words in a playful voice. Rob approves them.
@@ -81,7 +83,7 @@
         - **i.** It is a **free beta seat**: free use of the app's beta build until the store opens.
         - **ii.** Seats go out **by email, in join-date order**, in **small waves with a cap**. The order is each person's first confirmed join date for that app.
         - **iii.** **Everyone on an app's list**, seat or not, gets into the store **before the public**, with a **personal early-bird code**.
-        - **iv.** **People on the news list only get no perks.** The perks are for people who picked an app. The form says so under the news tick box: "News only: launch news, no perks." (13.f.ii)
+        - **iv.** **People on the news list only get no perks.** The perks are for people who picked an app. The form says so under the news tick box: "Only news, no apps? You get launch news, no perks." (13.f.ii)
         - **v.** Each app starts its waves at a **milestone, never a date.** Before any app's first invite, it needs a signed Windows installer and a short beta agreement (the legal reviewer). Neither is v1 site work.
             - Catche: its name is picked, the AGPL licensing problem is solved, the sellable v1 is done, and its AI-model download host is live.
             - TimeTracker: the day-90 price test passes, and automatic backup (TT-62) and in-app key backup and recovery (TT-65) have shipped.
@@ -96,7 +98,10 @@
         - **Launch keeps these three** [Team] (2026-10-05). No other app is added for launch. A new app joins only after it clears the listing bar (16.e), through the add-an-app steps (16.f). Then it is added here.
     - **b.** **The Off-grid promise:** the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your **purchase record**. [Legal] Exact wording: 13.a.
         - *Supersedes [Spec]: "the app stores nothing in the cloud except the subscription." "Subscription" was wrong while pricing is open (13.c).*
-    - **c.** **One app list.** Off-grid apps get a badge. Vault gets no badge. [R3]
+    - **c.** **One app list.** Off-grid apps get a badge. All three launch apps are Off-grid, Vault included. [C3]
+        - **Vault wears the badge (Rob, 2026-10-06; replaces [R3]). Opt-in rule for the later version recorded by the product lead, 2026-10-06** (A5.b).
+        - Vault's badge is a design claim. It rests on Vault's written design until its first outside build is checked (13.b.v). [Legal]
+        - *Supersedes [R3]: "Vault gets no badge." Rob reversed it.*
     - **d.** The badge says **"Off-grid."** **"Cloud-killers"** is the playful tagline. [R4] Where "Cloud-killers" may appear: 13.d.
     - **e.** **Claire** is still a bengUSA.pro app, but **not on the site yet.** [R3]
         - **Claire is first in line** for the listing bar, then Life Log (16.g). [Team]
@@ -113,6 +118,8 @@
     - **a.** **Keep the logo and colors.** [R1]
     - **b.** Rob is not keen on today's small top bar. He wants the header to **stand out.** [R1]
     - **c.** **Landing page: large logo.** As you scroll, it shrinks to the top-left, ending at **2–3× today's header logo size.** [R1]
+        - **Set 2026-10-06** [C3]: the docked size is **2× today's header logo: 92 px tall on a computer, 58 px on a phone** (today's logo is 46 px tall). Rob picked it with the mockup's size switch. On a computer the "bengUSA.pro" lettering shrinks with the logo. On a phone only the hexagon changes. [Frontend]
+            - *Supersedes the build's default of 2.5× (115 px computer, 69 px phone). That default was never written into this spec. The code and the test notes change in BUWEB-106.*
     - **d.** **Header shape:** a hexagon-shaped tab on the left, with the bar running right from it. [R1]
     - **e.** **Redesign every page.** [R2]
 
@@ -123,6 +130,12 @@
     - The black area is the header shape. A bar runs across the top. On the left, a tab hangs down with angled sides, like the bottom half of a hexagon.
     - The "text" scribbles stand for page content.
     - Rob's words: "The black shows the shape, but it does not move." The sketch shows the shape only, not the scroll motion.
+
+    - **f.** **Colour rules, for every page** [Brand] (new 2026-10-06):
+        - **i.** **Navy (#002A42) is for text.**
+        - **ii.** **Green (#006454) means Off-grid and nothing else:** the badge, the word "Off-grid" in the hero (17.a.i), and the dotted underline on the popup's trigger (17.c.vi).
+        - **iii.** **Red (#CF2F32) is for the signup button only.** No red text: red means "act", and red text reads like an error message.
+        - **iv.** **Red never sits on light blue.** It fails the contrast minimum there. [Frontend]
 
 7. **Words and voice**
     - **a.** **Have fun with it.** [Spec]
@@ -190,14 +203,17 @@
     - The legal reviewer's BUWEB-103 rulings, 2026-10-05. They replace the wording holds in 4.f, 11.c and 12.e.
     - **How to use the wording below:** it is a starting draft. The copywriter may make it playful, but **every fact must stay.** Rob approves the final words (7.b).
     - The full ruling, with its legal sources (the legal reviewer, 2026-10-05), is kept in the project's private decision notes. The legal reviewer is the team's advisor, not counsel of record.
-    - **a.** **The Off-grid badge lines.** Approved for Catche and TimeTracker. Catche keeps the badge, because its page names its two outside connections (13.b).
+    - **a.** **The Off-grid badge lines.** Approved for Catche, TimeTracker and Vault. Catche keeps the badge, because its page names its two outside connections (13.b). Vault's badge rests on its written design until its first outside build is checked (13.b.v). [Legal] (2026-10-06)
+        - *Supersedes: "Approved for Catche and TimeTracker."*
         - **i.** **Short form** (cards, tooltips, anywhere the badge shows with little room): "Off-grid: your data lives on your device, not in our cloud."
         - **ii.** **Full legend** (the badge legend, and next to the badge on each Off-grid app's page): "Off-grid: the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. Each app's page lists what it connects to. We call Off-grid apps Cloud-killers."
             - On an app's own page, drop the sentence "Each app's page lists what it connects to." The app's connects line sits right below instead.
             - **Changed 2026-10-05** [Legal] (BUWEB-102a): The brand strategist's wording, approved by the legal reviewer. "Them" could be read as pointing at a company named in the connects line. Naming "Off-grid apps" removes that. The legend is outside the consent version, so no new version is needed.
                 - *Supersedes: "We call them Cloud-killers."*
             - **The connects box sits directly below the legend,** with nothing between them. Its label stays plain ("What Catche connects to"), with no "Cloud-killers" inside it. [Legal]
-        - **iii.** **Never, for either app:** "offline", "100% offline", "never connects", "nothing leaves your device", "never touches the internet", "zero data". Catche's map makes all of these false today.
+        - **iii.** **Never, for any Off-grid app (Catche, TimeTracker, Vault):** "offline", "100% offline", "never connects", "nothing leaves your device", "never touches the internet", "zero data". Catche's map makes all of these false today. [Legal] (changed 2026-10-06)
+            - **For Vault:** the user's own cloud-folder option and Windows clipboard sync make "nothing leaves your device" false. "Opens with no internet connection" may come back only after Vault's build check proves it (13.b.v).
+            - *Supersedes: "Never, for either app: …"*
     - **b.** **"What it connects to" lines.** One on each Off-grid app's page, right below the legend.
         - **i.** **TimeTracker:** "What TimeTracker connects to: nothing. The app makes no internet connections. If your PC lacks a standard Microsoft component (WebView2), the installer downloads it from Microsoft."
         - **ii.** **Catche:** "What Catche connects to: its map loads from OpenStreetMap. Like any website, OpenStreetMap sees your IP address. It also sees which part of the map you view, which can hint at where your photos were taken. An optional AI model downloads from Hugging Face, only if you click Download. Catche doesn't send your photos, file names or tags anywhere. If your computer lacks a standard Microsoft component (WebView2), the installer may download it from Microsoft."
@@ -210,16 +226,44 @@
             - **Also the AI model download** [Product] (added 2026-10-05): whether it is in Catche v1 at all, where it downloads from, and what starts it.
                 - Why: Catche's records disagree. Today's build downloads the model from Hugging Face when you click Download. The newest Catche v1 plan drops the AI download. The accepted design (Catche's ADR 0001) starts the download when you turn AI on, checks for new versions in the background, and downloads from our own server.
                 - Until Catche v1 settles it, the site keeps the legal reviewer's line, because it is true of the only build that exists (13.b.ii). If a build ships without the Download button, the AI sentence is deleted first (13.b.ii).
-        - **iv.** The lines rest on two code reviews. Each app's traffic capture at its first outside build must match them before any build reaches a stranger. *(That check is app work, not site work.)*
+        - **iv.** The Catche and TimeTracker lines rest on two code reviews. Each app's traffic capture at its first outside build must match them before any build reaches a stranger. *(That check is app work, not site work.)*
+        - **v.** **Vault: a design-based connects box** [Legal], [Product] (new 2026-10-06). No Vault build exists that a stranger can get, so the box rests on Vault's written design.
+            - **The box** (on Vault's page, directly below the legend): "What Vault connects to: Vault is still being built. As designed, it goes online for just two things: checking your purchase and getting updates. It doesn't send your vault or anything in it. If your PC lacks a standard Microsoft component (WebView2), the installer may download it from Microsoft."
+                - It matches the calls named in Vault's design: the purchase check, the updater, and the installer's WebView2 download.
+                - It leaves out the user's own synced folder on purpose. Vault only writes a file on the PC, and the user's own sync app moves it. Import reads files on the PC only, so it needs no mention.
+                - "Checking your purchase" may overstate the free beta. Overstating what we connect to is the safe direction.
+                - It is a design rule, like 13.b.iii. Any new connection (a licence check, crash reports, telemetry, news) changes the box first.
+            - **The build check, before Vault's first beta invite.** The security reviewer and the backend engineer each run their own check of what that build sends out. Then the legal reviewer re-checks the site's Vault lines. It comes before the first invite, not before the site launches, because no build exists yet.
+                - If a check finds a call the box doesn't name, the box changes or the badge comes off, before the invite goes out.
+                - "Vault is still being built. As designed," comes off once the checks match.
+                - **Vault's feature lines join this check** [Legal] (new 2026-10-06). These are the lines on Vault's page that say what it does (section 4.b of the BUWEB-102a page words, not decision 4.b here). They rest on Vault's written design, because no build exists. If the first outside build lacks a feature that one of those lines names, that line comes off before the first beta invite.
+            - **Design conditions that keep the Off-grid lines true for Vault** (the product lead carries them to the Vault side):
+                - Off-grid Vault keeps no vault data on our side, in any version: no sync, no cloud backup, and no crash report carrying vault data. If any item would send vault data to us, the site's lines change before that item ships.
+                - The update host and the purchase service keep nothing about the user beyond the purchase record: no IP logs tied to users, and no device ID in the update request (version and platform only). Otherwise "all we keep is your purchase record" is false for Vault. The same holds for Catche's model host.
+            - **The clipboard condition, before the first outside build:** Vault marks each copied secret so Windows keeps it out of clipboard history and cloud clipboard sync, and Vault's clipboard auto-clear works. The site gets no line for this now: it comes from the user's own Windows setting, not a Vault connection, and nobody can get a build yet.
+                - **If the beta ships without both,** Vault's page adds this line under the connects box: "Heads-up: if Windows clipboard history and its sync are turned on, Windows can send what you copy, secrets included, to Microsoft's cloud. You can turn that off in Windows Settings."
+            - The rulings (the legal reviewer and the product lead, 2026-10-06) are kept in the project's private decision notes.
     - **c.** **"Purchase record" replaces "subscription"** in the Off-grid promise (4.b).
         - **i.** Why: it is true under a subscription (Catche's ADR 0001 still stands), under a one-time licence, and today, with no sale.
         - **ii.** Not "licence": pricing is open. Not "account": the Off-grid apps may never need one.
         - **iii.** **Store-phase check, not v1:** today the shared billing service keeps more than a purchase record (sign-in details, the MFA secret, and the IP and browser of each terms acceptance). Before the store opens, either trim it, or change the line to "your account and purchase record." (Parked item 3.d.)
+            - **It bites harder for Vault** [Legal] (2026-10-06). Vault's purchase check uses a signed token, which likely means an account. So for Vault, "your account and purchase record" is the likelier end state. Not a v1 blocker.
+        - **iv.** **Rob said "subscription" on 2026-10-06. It stays "purchase record."** [Legal] No app has a subscription today, and Off-grid Vault may be a one-time buy. "Purchase record" is true either way. The two Off-grid sentences in 13.a still hold with Vault Off-grid.
     - **d.** **"Cloud-killers" and the hero line.**
-        - **i.** "Cloud-killers" appears in the badge legend and on the Catche and TimeTracker pages **only**. Never in the hero, page titles, share text, email subjects, the Vault page, or next to a named company. No ™.
+        - **i.** "Cloud-killers" appears in the badge legend and on the Catche, TimeTracker and Vault pages **only** (on Vault, in the legend only). Never in the hero, page titles, share text, email subjects, or next to a named company. No ™.
             - Why it is safe: it reads as playful exaggeration because its definition sits right beside it.
-        - **ii.** **"Apps that mind their own business"** is legally cleared as the hero line. It stays safe while it stays broadly true: no app ships ads, analytics or data selling.
-        - **iii.** **Keep it whole.** Never shorten it to "Mind your own business" or "MYOB". An accounting-software company (MYOB) holds that phrase for business software, close to TimeTracker's lane. No ™, no registration.
+            - **Vault added 2026-10-06** [Legal]. The ban's only reason was that Vault wasn't Off-grid. Two conditions:
+                - The sentence about Vault's later version (13.e.ii) never sits in the legend box.
+                - If that later version is ever sold from Vault's page, the legal reviewer rules again.
+            - *Supersedes: "on the Catche and TimeTracker pages only. Never in the hero, page titles, share text, email subjects, the Vault page, or next to a named company."*
+        - **ii.** **"Apps that mind their own business"** is legally cleared. **Since 2026-10-06 it is the hero's subline, not its main line** (17.a) [C3], [Legal]. Rob's alternative subline, "Off-grid apps mind their own business.", passes too. The old rules carry over to either one:
+            - Keep it whole (13.d.iii).
+            - No ™ and no registration (13.k.i).
+            - It stays safe while it stays broadly true: no app shown ships ads, analytics or data selling. If any app adds analytics or telemetry, the line is re-checked before that build ships (13.b.iii).
+            - *Supersedes: ""Apps that mind their own business" is legally cleared as the hero line. It stays safe while it stays broadly true: no app ships ads, analytics or data selling."*
+        - **iii.** **Keep it whole.** Never shorten it (for example, to "Mind your own business"), and never turn it into initials or an abbreviation. No ™, no registration. Rob's alternative ("…mind their own business.") keeps it whole. [Legal] (changed 2026-10-06)
+            - Why: a short form could clash with names others already use. The detail is in the project's private decision notes.
+            - *Supersedes an earlier wording that named another company. That detail now lives only in the project's private decision notes.*
     - **e.** **"Catche (working name)" and "Vault (working name)".**
         - **i.** Both apps carry the label in the same places. Show the full label at every fixed spot: the app's card, the signup app picker, the header menu and the footer, page titles and share text, and the list of picks in emails. In body text, use it at the first mention on each page, then the plain name ("Catche", "Vault").
             - Why: the real name needs a clearance search before any beta build ships.
@@ -232,10 +276,23 @@
                 - *Supersedes: "The architect and the database engineer confirm this (15.h.iii)." 15.h.iii is a different question (how Rob removes a pick). It is still open with the architect and the database engineer.*
             - The label comes off only after the new name passes its clearance search (open item 3). The rename line (13.f.iii) needs no change.
             - *Supersedes: "Show 'Vault (working name)' on its card, in the signup app picker, and at the first mention on each page. Plain 'Vault' after that." The rule now covers both apps and names every fixed spot.*
-        - **ii.** **Sync line** (Vault page): "Vault (working name) starts on Windows. Sync between devices is planned for a later version. When it comes, it will keep an encrypted copy of your vault in our cloud. That's why Vault doesn't wear the Off-grid badge."
-            - **Checked 2026-10-05** [Product]: the line matches Vault's records, future tense included. Our hosted sync comes in v1.1 (A5). The line does not mention v1's own-folder backup. Whether the page also mentions it is the legal reviewer's call.
+        - **ii.** **Sync line** (Vault page, after the connects box, never inside the legend) [Legal], [C3] (2026-10-06): "Vault (working name) starts on Windows. A later version may add sync between devices. That version would keep an encrypted copy of your vault in our cloud, so it won't wear the Off-grid badge."
+            - **Checked 2026-10-06** [Product], [Legal]: matches Rob's decision. Our hosted sync belongs to a later version with no date. The line names no version number, date, price or name.
+            - *Supersedes: "Vault (working name) starts on Windows. Sync between devices is planned for a later version. When it comes, it will keep an encrypted copy of your vault in our cloud. That's why Vault doesn't wear the Off-grid badge." and its 2026-10-05 check note, which said our hosted sync comes in v1.1.*
+            - **Trust line** (Vault's page, the "where your vault lives" part) [Legal] (2026-10-06): "Your vault is saved on your PC, and we keep no copy of it."
+                - True by design: Off-grid Vault keeps no vault data on our side (13.b.v).
+                - Still banned in it: "encrypted" (no build and no audit yet) and "stays on your PC" (people may keep the file in their own cloud folder).
+                - *Supersedes the round-1 draft: "In the first version, your vault is saved on your PC, and we keep no copy of it." "In the first version" drops, because the badged Vault never gets our sync.*
+            - **Vault's card shows the short form only** (13.a.i) [Legal]. The old card note "Sync between devices is planned for a later version." drops, with no replacement. The sync line lives on Vault's page.
         - **iii.** **Not yet:** "end-to-end", "zero-knowledge", "we can't read it", "unhackable", "military-grade", "audited". Vault's design requires zero-knowledge, but sync isn't built.
         - **iv.** **Allowed later:** "Encrypted on your PC before it leaves, so we can't read it," once sync is built and the security reviewer verifies it.
+        - **v.** **Vault's later version gets no public name** [Legal] (new 2026-10-06). Its working name is never printed on the site or in emails. "A later version" says enough. Anywhere public, the later version also gets:
+            - no date, "v1.1", "soon", "coming", season or price;
+            - no "zero-knowledge", "end-to-end" or "we can't read it" (13.e.iii);
+            - no promise of how people move to it, or that Off-grid Vault stays on sale;
+            - no perk tied to it.
+            - If a name is ever printed, it needs the legal reviewer's clearance first. It then carries "(working name)" at every fixed spot and at its first mention, the same as 13.e.i.
+        - **vi.** **Never on the site:** "for now", "Off-grid for now", or anything that hints Vault's badge is temporary. [Legal] (new 2026-10-06)
     - **f.** **Perk terms** (under the signup form). No number.
         - **Locked before 2026-10-28** (new 2026-10-05), together with the news-only line (13.f.ii) and the consent sentence (13.f.vi). Any later change is a new consent version (15.d.vii).
         - **i.** "Pick an app to get its perks. Early access: free beta seats go out by email in small groups, in the order people joined, so not everyone gets one. Early-bird discount: everyone on the app's list can buy before the public, at a discount we'll tell you before you pay. Perks come by email, so unsubscribing stops them. Sign up again within 3 years and your place comes back. No dates yet."
@@ -245,14 +302,20 @@
                 - "Your place" covers every earlier app and its date, not just the apps picked this time (15.a.iii).
             - The Privacy page says the same thing (15.i.i).
             - *Supersedes: "Perks come by email, so unsubscribing ends them."*
-        - **ii.** **Under the news tick box:** "News only: launch news, no perks."
+        - **ii.** **Under the news tick box:** "Only news, no apps? You get launch news, no perks." [Legal] (changed 2026-10-05, round 1)
+            - The same words go on the signup page and in the welcome email, all from the one consent file.
+            - Why: it reads right on the form, where the person hasn't picked anything yet, and in the email.
+            - It lands before the 10-28 lock, so the first consent version simply uses it (15.d.vi).
+            - *Supersedes: "News only: launch news, no perks."*
         - **iii.** **Required** [Legal], [Team] (changed 2026-10-05): "If an app is renamed, your perks move with it. If it's cancelled, we'll tell you."
             - Why: more apps are queued for the site (decision 16), and more early-stage apps make it likelier that one is cancelled.
             - **It must be in the perk terms before the 2026-10-28 lock** (15.d.vii). Adding it after that would be a new consent version.
             - *Supersedes: "Optional, recommended."*
         - **iv.** **OK to say:** "early access", "early-bird discount", "get in early", "before the public", "Save my spot".
         - **v.** **Never:** a number or "%", dates, months, seasons, "soon", "guaranteed", "lifetime", "free forever", "pre-order", "reserve your copy".
-        - **vi.** **Signup consent sentence:** "We'll email you about launches, early access, your early-bird discount and the odd one-question survey. That's it. Unsubscribe anytime."
+        - **vi.** **Signup consent sentence:** "We'll email you about launches, early access, your early-bird discount and an occasional one-question survey. That's it. Unsubscribe anytime."
+            - **Changed 2026-10-05** [Legal] (round 1): "the odd" became "an occasional" everywhere the sentence appears (the form, the signup page and the welcome email), and in the Privacy page's own line about what we email (section 1.4). It lands before the 10-28 lock, so the first consent version simply uses it (15.d.vi).
+                - *Supersedes: "…your early-bird discount and the odd one-question survey."*
             - This fixes the brand strategist's sample, whose "That's it" left out the survey (must-have 19).
             - **Checked 2026-10-05** [Legal]: no change needed for the add-an-app rule (15.e). The sentence covers the whole list, and the news-only line (13.f.ii) stays too.
         - **vii.** **Every perk email carries this line** [Legal] (new 2026-10-05): "You're on the list for: <apps>. If that's wrong, tell us on the Contact page (bengusa.pro/contact) and we'll fix it."
@@ -265,7 +328,11 @@
             - **The Buttondown check** confirms Buttondown can fill in each person's apps.
             - **Fallback, if it can't** [Threat model], [Legal] (ruled 2026-10-05): the line names only the app the email is about. The threat modeler accepted it, and the legal reviewer approved the wording as written. Rules:
                 - **One app per perk email, sent only to that app's list** (the people with that app's tag ID, 14.g.vi). Never to "either of two apps", and never to the whole list.
-                - The line names that same app, with its label: for example, "You're on the list for: Vault (working name)."
+                - The line names that same app, with its label. **The words, now the default** [Legal] (approved 2026-10-05, second email draft), one per app: "You're on the list for Catche (working name). If that's wrong, tell us on the Contact page (bengusa.pro/contact) and we'll fix it." The same for TimeTracker and for Vault (working name).
+                    - They mirror the main line, so a fallback email doesn't say "because" twice next to the footer's "You get this because…" line.
+                    - No colon on purpose: it names one typed app in a sentence. The main line's colon opens the filled-in list. [Legal] (2026-10-06)
+                    - True only while the one-app-per-email rules here hold.
+                    - *Supersedes the example "You're on the list for: Vault (working name)." and the copywriter's draft "You're getting this because you're on the list for…".*
                 - Because the audience decides the app, the line is typed into each send. It needs no per-person fill-in.
                 - **An email about two apps goes out as two emails,** one to each app's list.
                 - **An email to the whole list is news.** It carries no line.
@@ -279,8 +346,17 @@
         - **iii.** **Footer of every list email:** "bengUSA.pro · [PO box address] · bengusa.pro/contact · Unsubscribe"
             - In the confirm email, the last link reads "Not you? Remove this address." What the click does, and how long we keep that record: 15.g.iv and 15.a.
             - **Above the address line, every list email carries "Didn't sign up for this? Unsubscribe below."** [Architect], [Legal] (new 2026-10-05). It goes in whether or not v1 sends a welcome email (13.j). It is one Buttondown setting, so it can't be forgotten on a news email.
-                - If that footer setting also shows in the confirm email, the words must be true there too. The copywriter and the legal reviewer word it. "One click" may be added only if the Buttondown check shows the link unsubscribes in one click.
+                - If that footer setting also shows in the confirm email, the words must be true there too. The copywriter and the legal reviewer word it (worded 2026-10-05, below). "One click" may be added only if the Buttondown check shows the link unsubscribes in one click.
             - **Optional line, kept in:** "You get this because this address is on the bengUSA.pro list." (15.i.vii) [Legal]
+            - **The footer block, approved** [Legal] (2026-10-05, second email draft): three lines, in this order:
+                1. "You get this because this address is on the bengUSA.pro list."
+                2. "Didn't sign up for this? Unsubscribe below."
+                3. "bengUSA.pro · [PO box address] · bengusa.pro/contact · Unsubscribe"
+                - Condition: the last link on the address line says "Unsubscribe" in every list email.
+            - **If the confirm email gets the same footer lines** (the Buttondown check finds out) [Legal]:
+                - Line 2 becomes: "Didn't sign up for this? Use the "Not you" or "Unsubscribe" link below." It names the link, so it is true in both emails, whatever the check finds about Buttondown's footer mention.
+                - Line 1 comes out of that shared footer, because an address isn't on the list until it is confirmed.
+                - The confirm email drops its own body line about the "Not you" link, so nothing is said twice.
         - **iv.** The PO box application lists "bengUSA.pro" as a name that gets mail there, so mail sent to the brand is delivered.
     - **h.** **The signup go-live gate: the PO box, and a Contact page that delivers.**
         - **i.** **The PO box gates the signup going live**, not just the first news email.
@@ -320,6 +396,7 @@
             - It needs no plan above the one the confirm email already needs. We don't start paying earlier just for a welcome.
             - If any of these fails, v1 sends no welcome. Nothing else waits on it.
         - **iii.** **"Didn't sign up for this? Unsubscribe below." goes in every list email's footer either way** (13.g.iii). If the welcome uses that footer, it drops its own copy so the line doesn't appear twice.
+            - **If the welcome can't use the list-email footer** [Legal] (approved 2026-10-05, second email draft): it keeps "Didn't sign up for this? Unsubscribe below." in its own body, under the sign-off, and carries its own footer: the optional line ("You get this because this address is on the bengUSA.pro list.") and then the address line. The optional line is true there, because the address was just confirmed. The list footer's order is also fine, if Buttondown's template allows it. Where it goes is the architect's call.
         - **iv. Rules if it is on:**
             - It lists the picks the person asked for, not the join dates, because Buttondown sends it before our server writes the join dates.
             - It prints only app names written into the template, matched from the fixed tag IDs (14.g.vi).
@@ -327,6 +404,15 @@
             - The limit of 3 confirm emails per address in 30 days (15.g.ii) also limits welcomes. That limit is never loosened without the threat modeler.
         - **v. Why it is allowed** (the architect's ruling, the threat modeler agrees): the welcome is not a list automation under 15.e.v. Only the person's own confirm click sends it. The form can't cause that click, and adding an app never sends it.
         - The full rulings (the architect and the threat modeler, 2026-10-05) are kept in the project's private decision notes.
+    - **k.** **Names and marks** [Legal] (new 2026-10-06, from Rob's trademark question). Product rules only. The legal reviewer's full answer is kept in the project's private decision notes.
+        - **i.** **No ™ and no registration** for "Off-grid", "Cloud-killers" or the hero line (13.d.ii). We use them freely, as plain words.
+            - Why: copyright doesn't cover single words or short phrases, and trademark offices refuse words that only describe what a product does.
+        - **ii.** **"Off-grid" describes our apps. It is never our name.** [C3]
+            - Use it the same way everywhere: as a description of our apps, next to our brand.
+            - "apps" is always lowercase: "Off-grid apps", never "Off-grid Apps" or "Off-Grid Apps".
+            - "Off-grid apps" is never a name, a product-line name, a logo, a page title, a domain or an app-store seller name.
+        - **iii.** **Registered at the store phase, not v1, each after a clearance search:** the house brand, "bengUSA", and each app's final name (parked item 6).
+        - **iv.** **Vault's later version is never named in public** (13.e.v).
 14. **Site design and list service (BUWEB-100)** [Architect]
     - The architect's BUWEB-100 design, 2026-10-05. It settles open items 8, 9, 13 and 14. **It is final.** The threat modeler's ruling and the privacy reviewer's rulings landed the same day, and the architect folded them in (decision 15).
         - *Supersedes: "It is final except for one threat-model ruling (open item 16)."*
@@ -509,7 +595,7 @@
         - *Supersedes must-have 3's "Pending" note and open item 16.*
     - **f.** **Held picks: a news-only person who gets an app added.** [Privacy] Built in the store phase.
         - **i. The rule:** an unverified app pick (15.e.iii) on a record with no other confirmed app pick is **held**.
-            - Why: the form told this person "News only: launch news, no perks" (13.f.ii). Perk emails are exactly what they were told they would not get.
+            - Why: the form told this person "Only news, no apps? You get launch news, no perks." (13.f.ii). Perk emails are exactly what they were told they would not get.
         - **ii. While held:** no perk email, and the pick does not count toward the targets. They keep getting news. The join date stays as written, so a real person loses no place in line.
         - **iii. Release:** when that app's first perk email goes out, held people get a short news email instead. The privacy reviewer's draft: "You asked for [App] perks on [date]. Want them? Just reply YES. Not you? Ignore this and nothing changes." The legal reviewer words the final line in the store phase.
         - **iv. A YES from the address on the record** releases the pick. Rob records it on the record and files the reply with the privacy requests (kept 3 years). **No reply means no perk email, ever.**
@@ -559,12 +645,16 @@
             - every period in the table (15.a);
             - who receives the data: Buttondown, Amazon Web Services, and the service that hosts Rob's Contact inbox, with where it keeps mail (14.f.iv). If that plan may keep mail outside the US, or the provider is based abroad, the "where it goes" line changes to match [Privacy];
                 - **With Fastmail** [Legal], [Privacy] (2026-10-05): it handles Contact messages, replies to our list emails and privacy requests. It stores mail in the United States, and Fastmail is based in Australia. So the page says our providers *keep* data in the US, never that they are US companies;
-            - **replies to our list emails** come to Rob's inbox and are kept the same way as a Contact message (15.a) [Privacy] (new 2026-10-05). The legal reviewer approves the final words;
+            - **replies to our list emails** come to Rob's inbox and are kept the same way as a Contact message (15.a) [Privacy] (new 2026-10-05). The legal reviewer approved the final words (15.i.viii.b);
             - the "deleted" list: after a deletion, the email address alone is kept 3 months, so a restore can't add the person back (15.b.iv);
             - where it goes: the US, under the EU's standard contract clauses, plus any UK terms the provider adds;
-                - **Changed 2026-10-05** [Legal], [Privacy]: the EU clauses alone don't cover UK data, and Fastmail's agreement has no UK terms. So the page never says the EU clauses protect UK data. It offers a copy of the clauses, "or of any UK terms added to them", on request through the Contact page. The legal reviewer words the final line.
+                - **Changed 2026-10-05** [Legal], [Privacy]: the EU clauses alone don't cover UK data, and Fastmail's agreement has no UK terms. So the page never says the EU clauses protect UK data. It offers a copy of the clauses, "or of any UK terms added to them", on request through the Contact page. The legal reviewer words the final line. **Worded 2026-10-05:** 15.i.viii.a.
                 - "With the UK addendum" can come back only if all three providers' saved agreements show it (14.f.iv, evidence item 7).
-                - **Open:** whether UK law reaches this site at all. The legal reviewer confirms.
+                - **Closed 2026-10-05** [Legal] (round 1): **UK law probably doesn't reach this site,** so the Privacy page needs no change and no UK representative. The same holds for EU law.
+                    - Why: UK data protection law covers a site based outside the UK only if it offers goods or services to people in the UK, or tracks their behaviour there. A site that is simply open to anyone isn't "offering". We track no one: the site runs no tracking scripts (A9), and the list's open and click tracking is off for the whole account (14.b.ii).
+                    - Never say "UK GDPR applies". The page names UK law only as "where … applies" (15.i.viii.f). Keep the 28-day answer target (15.j.i), which fits both laws. UK email-marketing rules would be met anyway: the box starts empty, and people confirm by email.
+                    - **True only while** we don't aim at the UK (for example, prices in pounds or UK-aimed marketing) and tracking stays off. If either changes, the legal reviewer rules again.
+                    - *Supersedes: "Open: whether UK law reaches this site at all. The legal reviewer confirms."*
                 - *Supersedes: "plus the UK addendum."*
             - how to ask about your data: the Contact page or the PO box, answered within 30 days. Rob's own target is 28 days (15.j.i). While the box is late, the page names the Contact page only (13.h.v).
             - *Supersedes: "who receives the data: Buttondown and Amazon Web Services" and "under the EU's standard contract clauses". The inbox host receives every Contact message, so it is a recipient too.*
@@ -574,12 +664,23 @@
                 - True only while the counts-only rule holds (15.j.ii) and the Contact inbox is never connected to an AI tool (14.f.iv).
                 - *Supersedes the copywriter's draft: "Any assistant who helps him run the site, including AI tools, sees only totals, never your details." It mixed a person and a thing, and "only totals" left out the logs with no personal data.*
             - **b. What the page covers** (Privacy page, section 1.2): "Our apps are separate from this site. Each app's page says where that app keeps your data."
-                - True for all three apps. Vault's page says where the vault lives; it has no "connects to" box.
-                - **Vault's page gets no "connects to" box** until Vault has a build and the security reviewer has checked it. Then "connects to" can come back here.
+                - Vault's page carries a design-based connects box (13.b.v). The approved Privacy line itself doesn't change: it is still true. [Legal] (2026-10-06)
+                - *Supersedes: "True for all three apps. Vault's page says where the vault lives; it has no 'connects to' box." and "Vault's page gets no 'connects to' box until Vault has a build and the security reviewer has checked it. Then 'connects to' can come back here."*
                 - *Supersedes: "Each app's page says what that app connects to." It was not true for Vault.*
             - **c. List-email footer, optional line, kept in:** "You get this because this address is on the bengUSA.pro list." (13.g.iii)
                 - This one is for emails, not the Privacy page. It is not legally required, but it cuts spam reports.
                 - *Supersedes the copywriter's draft, which said "You joined". That isn't true for an address a mail scanner confirmed, and it clashed with "Didn't sign up for this?".*
+        - **viii. Lines from the second Privacy page draft, approved by the legal reviewer** [Legal] (2026-10-05). The copywriter may make them playful, but every fact must stay.
+            - **a. Where your data is kept** (Privacy page, section 1.8): "Where EU data protection law applies, our providers' agreements with us include the Standard Contractual Clauses to protect it. These are contract terms the European Commission approved for data sent outside the EU. To get a copy of them, or of any UK terms added to them, ask on the Contact page."
+                - "or UK" is dropped from the first clause. Under UK law the EU clauses protect UK data only with the UK addendum, and the inbox host's agreement has none. "Or of any UK terms added to them" stays, because it is true even if there are none (15.i.v).
+            - **b. Replies** (section 1.5): "If you reply to one of our list emails, your reply comes to Rob's inbox, and we keep it the same way as a Contact message."
+                - Two table cells name replies too. The inbox host's row says it handles "Contact messages, replies to our emails and privacy requests". The "how long" row is "Contact messages and replies to our emails".
+                - **Condition:** before the signup goes live, Buttondown's reply-to is set to our own address (14.e), and the Buttondown check shows a test reply lands in the Contact inbox (14.d.iii). If Buttondown keeps a copy of replies, the legal reviewer words one more line.
+            - **c.** That "how long" row says **"Amazon (Contact messages only)"**, so nobody reads replies as passing through Amazon.
+            - **d. The inbox host's restore copies:** "Fastmail's restore copies are gone about 2 weeks later." It goes in two "how long" rows: Contact messages and replies, and privacy requests. Kept: "about 2 weeks" errs on the long side, and the page already names our own backup tails the same way.
+            - **e. Who sees your details** (section 1.7): "On our side, only Rob sees the list, Contact messages, replies to our emails and the server log." It names every kind of personal data. True only while the Contact inbox has no AI connector (14.f.iv). The assistant line (15.i.vii.a) sits next to it.
+            - **f. Why we're allowed to use it** (section 1.10, first line, recommended): "Where EU or UK data protection law (the GDPR) applies, it asks us to name a legal reason for each use."
+                - It stops the page saying the GDPR applies to everyone in the EU or UK (15.i.v). It is not consent text, so it needs no new consent version. It can go in any time before launch.
     - **j.** **Operating rules: privacy requests and list data.** [Legal], [Privacy] (new 2026-10-05, BUWEB-102b)
         - **i. Answer privacy requests within 28 days.** The Privacy page promises 30 days (15.i.v). The identity check (15.h) happens inside those 28 days.
             - Why 28: the EU's "one month" is only 28 days in February. A 28-day target keeps every answer inside every law.
@@ -600,7 +701,20 @@
         - **ii.** The same list feeds the cards, the app pages, the header "Apps" menu, the phone menu, the footer and the signup picker. Adding an app means one new entry, plus its words and page content.
         - **iii.** At 8 or more apps, Home shows a few and links to an "All apps" page. Still no carousel. [Brand]
         - Why a grid: 16.h.
-    - **c.** **A "More in the works" tile ends the grid.** One line, plus a link to the signup's news box. It names no app, and carries no date and no "soon" (must-have 18). The copywriter words it. The legal reviewer checks it. [Brand], [Team]
+    - **c.** **A "More in the works" tile ends the grid.** One line, plus a link to the signup's news box. It names no app, and carries no date and no "soon" (must-have 18). The legal reviewer approved its words on 2026-10-06 (below). [Brand], [Team]
+        - *Supersedes: "The copywriter words it. The legal reviewer checks it."*
+        - **It never says "Off-grid"** [Legal] (2026-10-06). It names no app, so it can't promise what those apps will be (17.b.iii).
+        - **The words, exact** [Legal] (2026-10-06):
+            - **Title (unchanged):** "More in the works"
+            - **Line:** "Other apps are on our workbench. Want to hear about launches?"
+            - **Link:** "Get launch news"
+        - **Conditions** [Legal] (2026-10-06):
+            - **i.** The link takes the reader to the news box and puts focus on it. **It never ticks the box.** Every box starts empty.
+            - **ii.** The news-only line sits right under that box. That meets 16.i.iv.d ("with the news-only line") where the link lands, so the tile doesn't repeat it.
+            - **iii.** It is true only while Rob has at least one more app with a written plan that has no card yet. Today that's the 16.g.iii candidates. If none is left, the tile comes off until there is one.
+            - **iv.** Never on the tile: an app name or a hint at one ("a photo editor"), a count ("two more"), "like these", "more like these", "be the first", "first to hear", "early", any perk word, a badge, "Off-grid" or "Cloud-killers".
+            - **v.** Not consent text, so the 10-28 lock doesn't apply. Any word change comes back to the legal reviewer.
+        - Also kept off the tile: "in the queue". The site uses "a place in line" for perks, so "queue" beside a news link could read as joining a line for those apps (16.i.v.b). [Legal]
     - **d.** **The add-an-app path** [Architect]. It is built now, before the signup code (BUWEB-107b) starts.
         - **i. Each app has one status:**
             - **open:** a card, a page, and a tick box in the signup picker. The server accepts picks for it.
@@ -665,7 +779,8 @@
             - *Supersedes: "It can honour the perks. It will be sold, and it will have a free beta. A free or already-live product fails, because 'discount' and 'early access' would mean nothing."*
         - **iv. It minds its own business.** No ads, no analytics, no data selling. Badge or no badge, this is the line. Why: the hero line is safe only while no app does these (13.d.ii). One nosy app makes it untrue for all of them.
         - **v. Sold to a person.** Someone buying an app for themselves or their own work. Not a company buying a system.
-        - **vi. The legal reviewer clears its claims.** He writes its card line, its must-not-promise lines (platforms, features) and its badge status: Off-grid with a "What it connects to" line (13.b), or no badge with a reason, like Vault.
+        - **vi. The legal reviewer clears its claims.** He writes its card line, its must-not-promise lines (platforms, features) and its badge status: Off-grid with a "What it connects to" line (13.b), or no badge with a reason.
+            - *Supersedes: "…or no badge with a reason, like Vault." Vault wears the badge since 2026-10-06 (4.c).*
             - A new app carries "(working name)" until its name passes a clearance search, the same as Catche and Vault (13.e). [Legal]
         - **vii. A regulated field gets a specialist review first.** Health, money, legal advice or children. Until that review, the app's card makes no feature, compliance or savings claim.
         - **viii. Only we get its list.** Delivering its perks needs no one but Rob, and the services the Privacy page names, to get the email addresses on its list. A partner, publisher, co-owner or store that would use them for its own purposes fails. A new service that only works for us (for example, a store's beta-invite system) may be added only after the legal reviewer clears it and the Privacy page names it, before any address goes to it. Why: the signup consent and the Privacy page don't cover sharing the list.
@@ -715,7 +830,8 @@
             - Why: a card that sits for months with no milestone starts to look like an empty promise (must-have 18). Retirement is final (16.d.iii). The product lead accepts that cost, because the friction stops cards flickering on and off the site.
         - **iv. Allowed on a showcase card and its page** [Legal], only after the bar and the legal reviewer's claims check pass:
             - **a. A card line and its page.** The same claims rules as an open app. The legal reviewer writes the card line and its must-not-promise lines. All of must-have 18.a applies.
-            - **b. An Off-grid badge, only if earned.** Same rules as an open app: the short form on the card (13.a.i), and the full legend and the "What it connects to" line on its page (13.a.ii, 13.b). The connects line must be checked against a real build (13.b.iv). **An app with only a plan shows no badge yet.**
+            - **b. An Off-grid badge, only if earned.** Same rules as an open app: the short form on the card (13.a.i), and the full legend and the "What it connects to" line on its page (13.a.ii, 13.b). The connects line must be checked against a real build (13.b.iv). **An app with only a plan shows no badge yet, unless it has a firm, written design rule and a build check before any stranger gets a build (13.b.v).** [Legal] (changed 2026-10-06)
+                - *Supersedes: "An app with only a plan shows no badge yet." Vault is the only such case today.*
             - **c. The status words "In the works".** They describe today, and they're true. **Never** "Coming", "On the way", "Launching" or "soon". The copywriter may suggest other words in the present tense. The legal reviewer clears them.
                 - Why not "Coming": it promises the app will arrive. Nobody seeing a showcase card is on its list, so the "if it's cancelled, we'll tell you" line (13.f.iii) never reaches them.
             - **d. A link to the news box,** labelled for what it is ("Get launch news"), with the news-only line (13.f.ii). Never "Notify me about [app]": it is the general list, not that app's list.
@@ -725,6 +841,39 @@
         - **vi. One site-wide rule, once any showcase card is live** [Legal]: no line on the site promises perks for "our apps" or "every app". Perk lines tie the perks to the pick ("pick an app"). The copywriter rewords those lines, and the legal reviewer checks them (must-have 18.e.viii).
         - **vii. Store phase, not v1:** a showcase app that is on public sale may later get a buy link. The price rules arrive with the store. [Legal]
         - **At launch no app is showcase** (16.d.i), so none of this changes the launch.
+17. **Home hero, the app-grid heading and the Off-grid popup** [C3], [Legal], [Brand], [Frontend] (new 2026-10-06)
+    - Rob's changes of 2026-10-06. The legal reviewer, the brand strategist and the frontend engineer ruled on them the same day. Their notes are kept in the project's private decision notes.
+    - All wording is a starting draft: the copywriter may polish it, but every fact must stay. Rob approves the final words (7.b).
+    - **a.** **The hero.**
+        - **i.** **Main line:** "Makers of Off-grid apps." The word "Off-grid" is green, and the rest is navy (6.f). [Brand]
+        - **ii.** **Subline, smaller and navy:** "Apps that mind their own business." This is the default: it is the cleared line, word for word (13.d.ii). Rob's alternative, "Off-grid apps mind their own business.", passes too. [Legal], [Brand]
+        - **iii.** **"apps" is lowercase in both lines,** and everywhere else (13.k.ii).
+        - **iv.** **"Off-grid" never breaks across two lines.** [Frontend]
+        - **v.** **The Off-grid definition comes directly after the hero, with nothing in between:** either the app grid, where every badged card shows the short form (13.a.i), or the Home legend (13.a.ii). The popup on the hero word is an extra (17.c). [Legal]
+        - **vi.** **True for every app shown.** If any app adds analytics or telemetry, the hero lines are re-checked before that build ships (13.b.iii, 13.d.ii). [Legal]
+        - **vii.** **If a card without the badge is ever planned** (Claire, for example), the legal reviewer rules on the hero again, with the same guard as the heading (17.b.i). [Legal]
+        - *Supersedes the hero use of 13.d.ii ("Apps that mind their own business" as the hero line). That line moves to the subline.*
+    - **b.** **The app-grid heading: "Meet our Off-grid apps"** (capital O, lowercase "apps", no full stop). [C3], [Legal], [Brand]
+        - **i.** **The guard:** the heading is true only while every card in the grid wears the badge, open and showcase cards alike. When any card lacks the badge, the heading falls back to **"Meet our apps"**, in the same release that adds that card. The build sets it from the app list, so nobody has to remember. [Frontend]
+        - **ii.** **Never "Our Off-grid apps include…".** "Include" hints at Off-grid apps we don't show.
+        - **iii.** **The "More in the works" tile never says "Off-grid"** (16.c).
+    - **c.** **The Off-grid popup: an extra, never instead of the visible line.** [C3], [Legal], [Frontend]
+        - **i.** **What stays visible, with no tap:**
+            - the short form beside every badge (each badged card and app page shows it);
+            - the full legend on Home, and on each Off-grid app's page, with its connects box right below;
+            - the Off-grid section directly after the hero (17.a.v).
+            - Nothing required moves into the popup.
+            - Why: the definition is what stops "Off-grid" reading as "offline". A disclosure like that must sit next to the claim, not depend on a hover. Phones can't hover, and most visitors are on phones.
+        - **ii.** **Where it appears:** on every badge, and on the word "Off-grid" in the hero and in the heading.
+        - **iii.** **What it says:** the approved words, word for word: "Off-grid: your data lives on your device, not in our cloud. If you buy it, all we keep is your purchase record."
+        - **iv.** **Its link, also an extra:**
+            - On a card or app-page badge, the link label matches that app's box label exactly ("What Catche connects to", "What TimeTracker connects to", "What Vault connects to") and goes to that box. No "(working name)" in the label (13.e.i).
+            - The hero and heading popups name no single app. They have no link, or "What each app connects to", pointing to the grid.
+            - The link never replaces the box on the page.
+        - **v.** **How it works:** it opens on tap, keyboard focus and hover, and stays open long enough to read. Esc or a tap outside closes it. It meets the accessibility rules WCAG 1.4.13 (content on hover or focus) and 2.1.1 (keyboard). Its text is in the page before the script loads. [Legal], [Frontend]
+        - **vi.** **The popup's colours: a navy (#002A42) box with white text.** "Off-grid:" is in bold white. The trigger that opens the popup (17.c.ii) carries a dotted green (#006454) underline. [Brand] (settled 2026-10-06 as a product call, relayed by the project lead)
+            - **Never green text on navy:** it fails the contrast minimum.
+            - *Supersedes the open item: "Open: the popup's colours → the project lead, before the popup is built (BUWEB-106). The brand strategist's call is a navy box with white text. The frontend engineer's design is a white box with navy text."*
 
 ---
 
@@ -733,15 +882,18 @@
 ### 3.1 Shown to Rob, not corrected
 
 1. **A1.** "2–3 x's" means 2–3 times the **size** of today's header logo (today: 256 px wide in a 64 px bar).
+    - **Set 2026-10-06** [C3]: Rob picked 2×, so the docked logo is 92 px tall on a computer and 58 px on a phone (6.c).
 2. **A2.** The old agency leftovers go: the Our work page, the client logos (NFL, Sony, HP, Xerox, NYU, P&G), the services sections and the Digital Silk text.
 3. **A3.** All of version 1 lives on bengusa.pro. Whether to use apps.bengusa.pro is decided in the store phase.
 4. **A4.** Catche shows under its current name until its rename lands, labelled **"Catche (working name)"** like Vault (13.e). [Legal]
     - *Supersedes: "Catche shows under its current name until its rename lands," with no label. The legal reviewer ruled 2026-10-05.*
-5. **A5.** Catche and TimeTracker are Off-grid (they keep data on the device only). Vault is not, because its sync keeps encrypted copies in the cloud.
-    - **Clarified 2026-10-05** [Product]: that reason applies **from v1.1**, when our hosted sync arrives.
-        - **a.** **At early access we run no sync for Vault.** People can keep the vault file in their own cloud folder (Dropbox, iCloud, OneDrive) or make an encrypted export. That is their cloud, not ours.
-        - **b.** **Our hosted sync comes in v1.1.** It keeps an encrypted copy of the vault in our cloud.
-        - **c.** **Vault still gets no badge.** Badging it now and taking the badge back at v1.1 would be the worse public claim. Rob's [R3] stands.
+5. **A5.** Catche, TimeTracker and Vault are Off-grid: each keeps your data on your device, not in our cloud. Vault's badge rests on its written design until its first outside build is checked (13.b.v). [C3], [Legal], [Product] (2026-10-06)
+    - **a.** Vault runs no sync of ours. The vault file is saved on the user's Windows PC. People may keep it in their own cloud folder or make an encrypted export. That is their cloud, not ours, and the Vault page doesn't mention it.
+    - **b.** Our hosted sync moves to a later version of Vault, with no date. Its working name is internal only and never printed (13.e.v). It would keep an encrypted copy in our cloud. It is opt-in: never on by default, and never switched on by an update. It never wears the badge.
+        - **If the later version comes as an upgrade inside the same app, the legal reviewer re-checks the badge before that build ships.** [Legal], [Product]
+    - **c.** Vault wears the badge (Rob, 2026-10-06; replaces [R3]). Opt-in rule for the later version recorded by the product lead, 2026-10-06. If the later version ever replaces Off-grid Vault, the badge comes off before that build ships, and the Vault list is told.
+        - The same holds if Off-grid Vault itself ever needs our cloud. [Legal]
+    - *Supersedes: "Catche and TimeTracker are Off-grid (they keep data on the device only). Vault is not, because its sync keeps encrypted copies in the cloud." and its 2026-10-05 clarification: (a) at early access we run no sync for Vault; (b) "Our hosted sync comes in v1.1"; (c) "Vault still gets no badge. Badging it now and taking the badge back at v1.1 would be the worse public claim. Rob's [R3] stands."*
 6. **A6.** Waitlist emails are personal data, so a privacy page is a must-have.
 
 ### 3.2 Not yet shown to Rob (added by the business analyst)
@@ -776,8 +928,10 @@
     - In the confirm email, that link reads "Not you? Remove this address" (13.g.iii). [Legal]
 5. **Bot protection on the signup form.**
     - Why: fake signups pollute the list and the early-bird count.
-6. **Off-grid is explained wherever the badge appears**, using the legal reviewer's short form or full legend (13.a). **Each Off-grid app's page has its "What it connects to" line** right below the legend (13.b). **The Vault page carries the sync line** (13.e.ii). [Legal]
-    - Why: a badge with no definition is a vague claim. "Off-grid" alone suggests "offline", which is false for Catche. Vault must not look Off-grid by association.
+6. **Off-grid is explained wherever the badge appears**, using the legal reviewer's short form or full legend (13.a). **Each Off-grid app's page has its "What it connects to" line** right below the legend (13.b; Vault's is 13.b.v). **The Vault page carries the sync line** (13.e.ii). [Legal]
+    - **The definition stays visible.** A popup may repeat it, but never replaces it (17.c). The Off-grid section comes directly after the hero (17.a.v). [Legal] (2026-10-06)
+    - Why: a badge with no definition is a vague claim. "Off-grid" alone suggests "offline", which is false for Catche. Every Off-grid page, Vault's included, needs its definition beside the badge and its connects line.
+        - *Supersedes the last reason: "Vault must not look Off-grid by association."* [Legal] (2026-10-06)
     - *Supersedes: "explained in one plain sentence" and "the Vault page says plainly that its sync uses the cloud." The legal reviewer's approved lines now fill both.*
 7. **HTTPS on bengusa.pro and www.bengusa.pro.**
     - Why: https://bengusa.pro refuses connections today, and forms must be secure.
@@ -813,19 +967,27 @@
     - **a.** **All apps:** no dates, months, seasons or "soon". No guaranteed seat. No cap or wave numbers. No discount number. No "free forever" or "lifetime". No pre-orders and no payment. No price and no pricing model (decision 11).
         - Every app added later takes on all of these (16.e). [Legal], [Team]
     - **b.** **Catche:** no final name. It shows as "Catche (working name)" (13.e.i, A4). *(Supersedes: "it shows under its current name, A4.")* No list of platforms, because that is not settled. Never "never touches the internet": downloading the AI model is an internet call. The legal reviewer wrote that line: 13.b.ii. **Never say what the AI does** (13.b.ii). [Legal]
+        - **"A computer app" is allowed** [Product], [Legal] (2026-10-05). It names no system. Never "PC", "Windows" or "Mac" for Catche, because which computers is not settled. Never "only" or "computer-only", because a phone app is planned.
     - **c.** **TimeTracker:** Windows only, so promise no other platform. No team or multi-user use, no emailing invoices, no phone app, no cloud backup.
-    - **d.** **Vault:** Windows only, so promise no other platform. No sync, phone or Mac at early access (they come in v1.1 or later). Never "audited" until an audit exists. Keep the "working name" label (13.e.i).
-        - **"Sync" here means our hosted sync** [Product], which comes in v1.1 (A5). People keeping the vault file in their own cloud folder is not our sync, so mentioning it would not break this line. Whether the Vault page mentions it is the legal reviewer's call (13.e.ii).
+    - **d.** **Vault:** Windows only, so promise no other platform. No phone or Mac at early access (they come in v1.1 or later). No sync of ours in this version: our hosted sync belongs to a later version, with no date, no "v1.1", no "soon", no price and no name on the site. Never "audited" until an audit exists. Keep the "working name" label (13.e.i). [Legal], [Product] (changed 2026-10-06)
+        - People keeping the vault file in their own cloud folder is not our sync. The Vault page doesn't mention it.
+        - *Supersedes: "No sync, phone or Mac at early access (they come in v1.1 or later)." and its note: ""Sync" here means our hosted sync, which comes in v1.1 (A5). … Whether the Vault page mentions it is the legal reviewer's call (13.e.ii)."*
     - **e.** **Words the legal reviewer banned** [Legal] (one checklist for every page and email):
-        - **i.** **Catche and TimeTracker:** "offline", "100% offline", "never connects", "nothing leaves your device", "never touches the internet", "zero data" (13.a.iii).
+        - **i.** **Every Off-grid app (Catche, TimeTracker, Vault):** "offline", "100% offline", "never connects", "nothing leaves your device", "never touches the internet", "zero data" (13.a.iii). *(Was "Catche and TimeTracker"; Vault added 2026-10-06.)*
         - **ii.** **Vault, until sync is built and the security reviewer verifies it:** "end-to-end", "zero-knowledge", "we can't read it", "unhackable", "military-grade", "audited" (13.e.iii).
         - **iii.** **Perks:** a number or "%", dates, months, seasons, "soon", "guaranteed", "lifetime", "free forever", "pre-order", "reserve your copy" (13.f.v).
-        - **iv.** **"Cloud-killers":** never in the hero, page titles, share text, email subjects, the Vault page, or next to a named company (13.d.i).
-        - **v.** **The hero line:** never shortened to "Mind your own business" or "MYOB" (13.d.iii).
-        - **vi.** **No ™** on "Cloud-killers" or the hero line. **No "LLC", "Inc." or "company"** in any identity line (13.g).
+        - **iv.** **"Cloud-killers":** never in the hero, page titles, share text, email subjects, or next to a named company. On Vault's page, only in the legend (13.d.i). *(Was "…, the Vault page, …"; changed 2026-10-06.)*
+        - **v.** **The cleared line ("Apps that mind their own business."):** never shortened, and never turned into initials (13.d.iii). *(Changed 2026-10-06.)*
+            - *Supersedes an earlier wording that named another company. That detail now lives only in the project's private decision notes.*
+        - **vi.** **No ™** on "Off-grid", "Cloud-killers" or the hero line, and no registration of them (13.k.i). **No "LLC", "Inc." or "company"** in any identity line (13.g). *("Off-grid" added 2026-10-06.)*
         - **vii.** **"Subscription"** in the Off-grid promise. Say "purchase record" (13.c).
         - **viii.** **Once any showcase card is live:** perks promised for "our apps" or "every app". Perk lines tie the perks to the pick (16.i.vi). [Legal] (new 2026-10-05)
         - **ix.** **On a showcase card or its page:** any perk word, "Coming", "On the way", "Launching", "soon", "Notify me about [app]", "Join the [app] waitlist" (16.i.iv–v). [Legal] (new 2026-10-05)
+        - **x.** **Names and Off-grid** [Legal] (new 2026-10-06):
+            - "Off-grid Apps" or "Off-Grid Apps" written like a name, and "Off-grid apps" used as a name, title, logo, domain or seller name (13.k.ii);
+            - "for now", "Off-grid for now", or anything hinting Vault's badge is temporary (13.e.vi);
+            - any public name for Vault's later version, and any date, "v1.1", "soon", "coming", season, price or perk for it (13.e.v);
+            - "Our Off-grid apps include…" (17.b.ii), and "Off-grid" on the "More in the works" tile (16.c).
     - Why: none of these is settled or true yet. A promise an app cannot keep is a false public claim. Every early-access promise also waits on a signed installer, which has no date.
 19. **Signup consent text** on the signup form covers **news, early access and the occasional one-question survey.**
     - Why: the day-90 price question (after v1, section 6) emails people on the list one question. They must have agreed to that when they signed up.
@@ -935,7 +1097,7 @@
     - *Was → the legal reviewer: if the site launches before the box is live (13.h.v), what does the Privacy page's "write to [PO box address]" line (13.g.ii) say?*
 19. **What a showcase card may hold** — **decided 2026-10-05** [Legal], [Product] (16.i).
     - **a.** Showcase is only for real apps we'll sell: **case A** (passed the bar, no milestone yet; retired after 90 days without one) or **case B** (left the picker after its perks ended).
-    - **b.** The card says "In the works", never "Coming". It may carry an Off-grid badge only if earned (checked against a real build), and a "Get launch news" link. No perk words, and no signup that names the app.
+    - **b.** The card says "In the works", never "Coming". It may carry an Off-grid badge only if earned (checked against a real build, or, since 2026-10-06, resting on a firm written design rule with a build check before any stranger gets a build: 16.i.iv.b), and a "Get launch news" link. No perk words, and no signup that names the app.
     - **c.** **A free or live product gets no card** (the product lead's rule; the project lead's call). The legal reviewer's "Try it" card is not adopted. LanguageBasics gets at most a plain link outside the grid, and only if Rob asks (16.g.ii).
     - **d.** With it: the perks point now decides only whether an app is pickable (16.e), point viii "Only we get its list" joins the bar (16.e.viii), and open and showcase can switch under the legal reviewer's four conditions (16.d.iii).
     - *Was → the legal reviewer + the product lead, before any app is set to showcase. The bar applied its perks point in any status, which ruled out case B, and it blocked the legal reviewer's "Try it" card for a live product such as LanguageBasics.*
@@ -952,13 +1114,16 @@ These are not version 1 questions. They come back when the store is planned.
     - **b.** Does an account, login or receipt email break the promise?
     - **c.** How does an app check its subscription when the user is offline?
     - **d.** **The legal reviewer's store-phase check** [Legal]: the site promises "all we keep is your purchase record" (13.c). Today the shared billing service keeps more: sign-in details, the MFA secret, and the IP and browser of each terms acceptance. Before the store opens, either trim it, or change the line to "your account and purchase record."
+        - **For Vault** [Legal] (2026-10-06): its purchase check likely means an account, so "your account and purchase record" is the likelier end state (13.c.iii).
 4. Does the store need terms of sale? The legal reviewer reviews any legal page. *(Inferred)*
     - **Seller identity** [Legal]: selling needs a real seller identity (a company, or a registered trade name). Not v1.
 5. **Pricing model per app** — a subscription or a one-time licence? **Not decided.** [Product]
     - **a.** Rob's approved record: Catche's ADR 0001 (2026-05-03) makes Catche a subscription. **It stands until Rob changes it.**
-    - **b.** Team suggestion (the business advisor, 2026-10-04): Catche and TimeTracker as a one-time licence with 12 months of updates; Vault as a yearly subscription, charged only once its sync ships. Rob has not decided.
+    - **b.** Team suggestion (the business advisor, 2026-10-04): Catche and TimeTracker as a one-time licence with 12 months of updates. Vault: the yearly subscription idea now points at Vault's later cloud version, and how Off-grid Vault is priced is open. Rob has not decided. Either way, the Off-grid promise says "purchase record" (13.c). [Legal], [Product] (changed 2026-10-06)
+        - *Supersedes: "…; Vault as a yearly subscription, charged only once its sync ships. Rob has not decided."*
     - **c.** The early-bird discount's shape depends on this → **the finance lead**, before the store opens.
     - **d.** Version 1 is not affected: the site shows no price and no pricing model (decision 11).
+6. **Registering names** [Legal] (new 2026-10-06): the house brand, "bengUSA", and each app's final name are registered in the store phase, each after a clearance search. Never "Off-grid", "Cloud-killers" or the hero line (13.k).
 
 ---
 
@@ -1008,12 +1173,16 @@ These are not version 1 questions. They come back when the store is planned.
 ## 8. Acceptance checks (for testing)
 
 1. https://bengusa.pro and https://www.bengusa.pro show the new site. The Admin app is no longer there.
-2. **Header:** landing shows a large logo. Scroll down: it shrinks into the top-left hexagon tab at 2–3× today's header logo size. Scroll up: it reverses. With reduce-motion on: no animation.
-3. Catche and TimeTracker show the Off-grid badge. Vault does not. Off-grid is explained wherever the badge appears, using the legal reviewer's short form or legend with every fact intact (13.a).
-    - **a.** Each Off-grid app's page shows its "What it connects to" line right below the legend (13.b).
+2. **Header:** landing shows a large logo. Scroll down: it shrinks into the top-left hexagon tab at 2× today's header logo size: 92 px tall on a computer, 58 px on a phone (6.c). Scroll up: it reverses. With reduce-motion on: no animation.
+    - *Supersedes: "at 2–3× today's header logo size." Rob set 2× on 2026-10-06.*
+3. Catche, TimeTracker and Vault show the Off-grid badge. Off-grid is explained wherever the badge appears, using the legal reviewer's short form or legend with every fact intact (13.a).
+    - *Supersedes: "Catche and TimeTracker show the Off-grid badge. Vault does not." (2026-10-06)*
+    - **a.** Each Off-grid app's page shows its "What it connects to" line right below the legend (13.b). Vault's connects line starts "Vault is still being built. As designed," until its first outside build is checked (13.b.v).
     - **b.** Catche and Vault show as "Catche (working name)" and "Vault (working name)" at every fixed spot (card, signup app picker, header menu, footer, page titles, share text, email pick lists) and at their first mention on each page. The "What Catche connects to" line never carries the label. Vault's page carries the sync line (13.e).
         - *Supersedes: "Vault shows as 'Vault (working name)' on its card, in the signup app picker and at its first mention on each page." Catche added 2026-10-05.*
-    - **c.** "Cloud-killers" appears only in the badge legend and on the Catche and TimeTracker pages (13.d.i).
+    - **c.** "Cloud-killers" appears only in the badge legend and on the Catche, TimeTracker and Vault pages (on Vault, in the legend only) (13.d.i).
+        - *Supersedes: "…and on the Catche and TimeTracker pages (13.d.i)." (2026-10-06)*
+    - **d.** No page or email prints a name for Vault's later version (13.e.v). (new 2026-10-06)
 4. **Waitlist signup:**
     - **a.** A valid email plus at least one app → saved with the join date.
     - **b.** A bad email → a clear error.
@@ -1031,7 +1200,8 @@ These are not version 1 questions. They come back when the store is planned.
     - **c.** Every email has a working unsubscribe link, and unsubscribing stops the emails.
     - **d.** Every list email, **including the confirm email**, shows the postal address (must-have 20).
 11. **Page copy:** no page breaks the must-not-promise list (must-have 18). Check every page for: dates or "soon", a price or pricing model, a discount number, seat or wave numbers, "free forever" or "lifetime", and pre-orders. Also check every page and email against the legal reviewer's banned words (must-have 18.e).
-12. **Signup consent:** the signup form's consent text names news, early access and the occasional one-question survey. It also shows the mailing address and the Contact page link. The perk terms sit under the form, and the news tick box reads "News only: launch news, no perks." (must-have 19)
+12. **Signup consent:** the signup form's consent text names news, early access and the occasional one-question survey. It also shows the mailing address and the Contact page link. The perk terms sit under the form, and the news tick box reads "Only news, no apps? You get launch news, no perks." The consent sentence says "an occasional one-question survey" (13.f.ii, 13.f.vi, must-have 19).
+    - *Supersedes: "the news tick box reads 'News only: launch news, no perks.'" (2026-10-05, round 1)*
     - **The perk terms include the cancel line:** "If an app is renamed, your perks move with it. If it's cancelled, we'll tell you." (13.f.iii, must-have 24) [Team] (2026-10-05)
 13. **Signup gate:** on the live site, the signup is open only if the real PO box address is in the form and the emails, and a message sent from the Contact page reaches Rob's inbox (must-have 21).
 14. **Confirm email:** no app pitches, no discount talk beyond restating the picks, and no sales-sounding subject line. It shows the address footer, and "Not you? Remove this address" works (must-have 22).
@@ -1049,11 +1219,17 @@ These are not version 1 questions. They come back when the store is planned.
 23. **List emails** (new 2026-10-05): every list email shows "Didn't sign up for this? Unsubscribe below." above the footer's address line. The confirm email doesn't repeat the signup consent sentence. The welcome email is off unless every condition in 13.j passed. A perk email sent under the fallback goes to one app's list only and names that app (13.f.vii).
 24. **More apps** (new 2026-10-05) [Team] (must-haves 31–34):
     - **a.** Home shows every app card with no click, no arrows and nothing that moves. The last tile is "More in the works", and it names no app, no date and no "soon".
+        - **Added 2026-10-06** [Legal]: the tile shows the approved words exactly (16.c). Its "Get launch news" link moves focus to the news box and leaves the box unticked.
     - **b.** On the preview site, a test run with 5 and then 8 dummy apps in the app list lays out the cards, the menus, the footer and the signup picker correctly on a computer and a phone, with no other code change. The dummy apps are removed afterwards.
     - **c.** A showcase app gets a card and a page but no tick box. The server refuses a pick for a showcase or retired app.
         - **Added 2026-10-05** [Legal]: a showcase card and its page carry no perk word, no "Coming" and no signup that names the app. Once any showcase card is live, no line on the site promises perks for "our apps" or "every app" (16.i, must-have 18.e.viii–ix).
     - **d.** The build fails if an app ID is removed, renamed or reused, or if a retired app's status changes (14.g.vi).
     - **e.** The live site shows only Catche, TimeTracker and Vault, unless another app has cleared the listing bar (16.e).
+25. **Home hero, heading and the Off-grid popup** (new 2026-10-06) [C3] (decision 17):
+    - **a.** The hero reads "Makers of Off-grid apps.", with "Off-grid" in green and never split across two lines, and the subline under it. "apps" is lowercase. The app grid or the Home legend comes directly after, with nothing in between.
+    - **b.** The grid heading reads "Meet our Off-grid apps" while every card wears the badge. A preview test with one card that lacks the badge (open or showcase) shows "Meet our apps". The "More in the works" tile never says "Off-grid".
+    - **c.** Every badge still shows the short form beside it. The popup opens on tap, keyboard focus and hover. Esc and a tap outside close it. It shows the approved words exactly. Its text is in the page with scripts off. A card or app-page popup's link reads "What <App> connects to" and goes to that app's box.
+    - **d.** Colours (6.f): red only on the signup button, never on light blue. Green only for Off-grid. The popup is a navy box with white text, "Off-grid:" in bold white, and its trigger has a dotted green underline (17.c.vi).
 
 ---
 
@@ -1129,3 +1305,5 @@ These are covered by A2, must-have 10 and acceptance check 6.
 | 2026-10-05 | **Showcase cards, the listing bar and status moves [Legal], [Product], [Architect]. Open item 19 closed.** The [Legal], [Product] and [Architect] tags now also cover this work. **Listing bar** (16.e): new lead line, so the perks point decides only whether an app is pickable, not whether it appears; point ii becomes "Real, and meant to release" (sold or free); "meant to sell" moves into point iii, "To be pickable (open): it can honour both perks", with the legal reviewer's last sentence ("It may still show as a showcase app") left out because the project lead kept the product lead's rule; new point viii, "Only we get its list", in the legal reviewer's exact words, added at the end. **Showcase** (new 16.i): only real apps we'll sell, case A (passed the bar, no milestone yet; retired after 90 days without one) or case B (left the picker after its perks ended); never a free or live product, and never a stalled app; "In the works", never "Coming"; an Off-grid badge only if earned against a real build; a "Get launch news" link; no perk words and no app-named signup; the legal reviewer's "Try it" card not adopted; once any showcase card is live, no line promises perks for "our apps" or "every app"; a buy link waits for the store. **Status moves** (16.d.iii, from ADR-0004): retired is final; open and showcase switch either way under the legal reviewer's four conditions (leave the picker no later than the day the early-bird codes go out; late confirms count; never a parking spot for a cancelled app; back to open only with something new); when each move happens; who decides (the product lead sets status and every move, the legal reviewer clears the words, the project lead runs the change, Rob decides retirements and bar exceptions). **Add-an-app steps** (16.f): the email template lines now go live before the release that opens an app (ADR-0004 8.a.5). **LanguageBasics** (16.g.ii): no card in any status; at most a plain link outside the grid, only if Rob asks. Updated: header ("Waiting on rulings", sources), how to read this, 16.d.i, 16.d.ix (ADR-0004 written), 16.h; must-haves 18.e (new viii and ix) and 33; open item 19; section 6 (more-apps row); acceptance check 24.c. **Supersedes** (each marked in place): "open item 19 waits on the legal reviewer and the product lead" (header); "What a showcase card may hold is open item 19" (16.d.i); "Statuses only move forward" (16.d.iii); "in any status, until it clears every point" (16.e lead); "Real, and meant to sell" (16.e.ii); "It can honour the perks" (16.e.iii); the old template-after-engineer step order (16.f); "LanguageBasics: not at launch" (16.g.ii); "No card goes up for an app that isn't ready" (16.h); open item 19 as an open question. Threat detail stays out of this file. | The legal reviewer, the product lead and the architect, 2026-10-05, with the project lead's call on free products |
 | 2026-10-05 | **Add-an-app fold: cost, steps, retirement, no "Try it" [Architect], the project lead.** **Cost** (16.d.x): the add-an-app path is about 13 hours of team effort in all (about 2.25 already spent on design), about 4.5–5 hours of calendar time, done before the signup code (BUWEB-107b); each later app about 1 hour of engineering plus 3–4 hours of words, legal and product; the grid and tile figures are unchanged. **Steps** (16.f), matched to ADR-0004 8.a: step 1 adds whether the app will have a free beta and who owns the code and the name; new step 3, the project lead confirms the new ID (format, not already used, the one permanent choice); a newly opened app carries its template-check date, and opening again needs a fresh one (step 5, ADR-0004 6.i); the engineer's change adds the ID at the end of the ID list and the check date (step 6); the later steps move down one number. **Retirement** (the project lead's ruling; 16.d.iii, 16.i.iii): a case-A app (never opened, no list) is retired by the product lead after 90 days with no milestone, no email and no go from Rob; retiring any app with a list needs Rob's go and an email to that list. **No "Try it"** (ADR-0004 3.a; 16.d.i, 16.i.ii.a, must-have 33): only three statuses, no "Try it" status or flag, a free or live product never enters the app list, and if Rob wants one shown it is a plain link outside the grid with words the legal reviewer clears. Updated: header sources, how to read this ([Architect] sections), the 16.d.iii cross-reference to the template step (now 16.f steps 5–6). **Supersedes** (each marked in place): "about 6 hours of team effort (about 3.5 hours wall-clock)" and "(the project lead confirms)" (16.d.x); the old step 1 facts and the old step numbering (16.f); "Rob decides every retirement (he emails the app's list)" (16.d.iii); "the 'Try it' card is not adopted" as the whole rule (16.i.ii.a). Threat detail stays out of this file. | The architect (ADR-0004, rev 5), with the project lead's cost figure and retirement ruling, 2026-10-05 |
 | 2026-10-05 | **Roles, not names, and one retirement ruling [Privacy], the project lead.** **Sanitize pass**, so this file can live in the private repo: every team member's name is now a role. Tags are now [Legal], [Product], [Architect], [Privacy], [Threat model], [Finance], [Brand], [Frontend] and [Analyst]; [Team] is unchanged. Body text and the Source column name roles too. Pointers to team notes now read "kept in the project's private decision notes". The local folder path in 9.1 is gone. 16.g.i now names only the listing-bar points PharmPay fails. The engineer-notes pointer in the header now names the root `README.md` and `tests/README.md`. ADR-0004 is now kept in `docs/adr/` (16.d.ix). No rule changed in this pass. **Ruling** (16.d.iii, header sources): the product lead may retire a case-A app (never opened, no list) at any time if it is cancelled or shelved. No go from Rob is needed; he sees it as an FYI in the weekly status report. Retirement is final. ADR-0004 step 8.c.7 carries the same line. Supersedes nothing: it closes a gap left when "Rob decides every retirement" was replaced. | The privacy reviewer's docs ruling and the project lead's ruling, 2026-10-05 |
+| 2026-10-06 | **Rob's changes [C3]: Vault is Off-grid, a new hero and heading, the Off-grid popup, a 2× docked header, and names and marks. Plus the queued round-1 and second-draft words.** New tag [C3]. **Vault wears the badge** (Rob, 2026-10-06; replaces [R3]); the product lead recorded the later version as opt-in the same day (summary 4, 4.c, A5). Our hosted sync moves to a later version with no date and no public name; it would keep an encrypted copy in our cloud, never wears the badge, and is never switched on by an update; if it comes as an upgrade inside the same app, the legal reviewer re-checks the badge first; if it ever replaces Off-grid Vault, the badge comes off before that build ships (A5.a–c, 13.e.v). **New 13.b.v:** Vault's design-based connects box, the build check before its first beta invite, the design conditions (no vault data on our side; no user logs on the update host or the purchase service) and the clipboard condition with its fallback line. New sync line and trust line, card shows the short form only (13.e.ii); never "for now" (13.e.vi). Vault joins 13.a, 13.a.iii, 13.d.i (legend only), must-haves 6, 18.d and 18.e.i/iv, and acceptance check 3 (3.a, 3.c, new 3.d). 16.i.iv.b lets a badge rest on a firm written design rule plus a build check; 16.e.vi drops "like Vault"; the 15.i.vii.b note changes, its Privacy line doesn't. **New decision 17:** the hero's main line "Makers of Off-grid apps.", subline "Apps that mind their own business." (Rob's "Off-grid apps mind their own business." passes too), lowercase "apps", the definition directly after the hero; heading "Meet our Off-grid apps" with its fall-back guard, no "…include", and no "Off-grid" on the tile (16.c); the popup as an extra only, with its words, links and accessibility rules, and its colours left open for the project lead. 13.d.ii now makes the cleared line the subline. **New 6.f colour rules.** **6.c, A1, acceptance check 2:** the docked size is 2×, 92 px computer / 58 px phone. **New 13.k and parked item 6:** no ™ or registration for "Off-grid", "Cloud-killers" or the hero line; "Off-grid apps" is never a name; the house brand and each app's final name are registered at the store phase after a clearance search. **13.c.iii–iv, parked 3.d:** Rob's "subscription" stays "purchase record"; Vault likely ends at "your account and purchase record". Parked 5.b: the pricing note now points the subscription idea at Vault's later version. New must-have 18.e.x and acceptance check 25. **Round 1 and the second drafts** [Legal], [Product]: 18.b allows "a computer app" for Catche; the news-only line is now "Only news, no apps? You get launch news, no perks." and the consent sentence says "an occasional one-question survey" (13.f.ii, 13.f.vi, 3.e.iv, 15.f.i, acceptance check 12), both before the 10-28 lock; 15.i.v's UK question is closed (UK law probably doesn't reach the site, no page change); new 15.i.viii holds the approved Privacy lines (the 1.8 transfer line without "or UK", the reply line and cells, "Amazon (Contact messages only)", the restore-copy tail, the "only Rob sees" line, the 1.10 GDPR line); 13.g.iii holds the approved three-line footer and the confirm-email variant; 13.j.iii the welcome's own footer; 13.f.vii's fallback words are now the default. "Only we get its list." was already in 16.e.viii. **Supersedes** (each marked in place): summary 4; [R3] in 4.c; A5 and its 2026-10-05 clarification; "Approved for Catche and TimeTracker" (13.a); "Never, for either app" (13.a.iii); 13.d.i's Vault ban; 13.d.ii as the hero line; the 13.e.ii sync line and its check note; the 15.i.vii.b notes; 16.e.vi's "like Vault"; 16.i.iv.b's plan-only rule; must-have 6's last reason; 18.d and its note; the 13.f.ii news-only line; "the odd"; 13.f.vii's fallback example; parked 5.b's Vault clause; 15.i.v's UK open item; acceptance checks 2, 3, 3.c and 12. Third-party trademark detail stays out of this file; it is kept in the project's private decision notes. | Rob, 2026-10-06; the legal reviewer, the product lead, the brand strategist and the frontend engineer, 2026-10-06; the legal reviewer's round-1 and second-draft approvals, 2026-10-05; via the project lead |
+| 2026-10-06 | **Touch-up: the legal reviewer's final read of the third page-word draft, and the popup colours [Legal], [Brand].** **Popup colours settled** (17.c.vi), as a product call: a navy (#002A42) box with white text, "Off-grid:" in bold white, and a dotted green (#006454) underline on the trigger; never green text on navy. 6.f.ii and acceptance check 25.d now name them. **Keep-it-whole rule trimmed** (13.d.iii, 18.e.v): the product rule stays (never shortened, never initials or an abbreviation, no ™, no registration). The other company's details are gone from this file, and both Supersedes notes say only that an earlier wording named another company. **E3 colon** (13.f.vii): both lines stay as written, and a note says why the fallback has no colon. **The tile's words** (16.c): title "More in the works", line "Other apps are on our workbench. Want to hear about launches?", link "Get launch news". Plus the legal reviewer's five conditions: the link moves focus to the news box and never ticks it; the news-only line sits under that box; the tile comes off when no planned app without a card is left; the words never allowed on it; any word change goes back to him. "In the queue" is kept off too. Acceptance check 24.a checks the words and the link. **Vault's feature lines** join the 13.b.v build check: a line naming a feature the first outside build lacks comes off before the first beta invite. The header's sources line and the [Legal] tag are updated. **Checked, no change:** the consent words at 3.e.iv, 13.f.ii, 13.f.vi and acceptance check 12 match the legal reviewer's final words for the 10-28 lock. The two retired page lines were never quoted here. | The legal reviewer's final read, 2026-10-06; the popup colours, a product call, 2026-10-06; via the project lead |

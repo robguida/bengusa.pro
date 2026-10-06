@@ -4,6 +4,7 @@ import OffGridBadge from './OffGridBadge';
 import siteWords from '../../../content/site-words.json';
 
 // One card in the Home grid. Everything on it comes from the app list.
+// A badged card shows the short Off-grid line, never only the popup (17.c.i).
 export default function AppCard({ app }) {
     return (
         <article className="flex w-full min-w-0 flex-col gap-3 rounded-xl border border-line bg-white px-[22px] pt-[22px] pb-5">
@@ -11,7 +12,7 @@ export default function AppCard({ app }) {
                 <AppName app={app} />
             </h3>
             <div className="flex min-h-7 items-center">
-                {app.offGrid && <OffGridBadge />}
+                {app.offGrid && <OffGridBadge link={app.connectsLink} />}
             </div>
             <p className="m-0 font-medium">{app.tagline}</p>
             <p className="m-0">{app.summary}</p>

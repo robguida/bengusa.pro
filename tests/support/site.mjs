@@ -5,12 +5,13 @@ import { expectedRoutes } from '../../scripts/lib/export-checks.mjs';
 // Every page, as the browser asks for it (trailingSlash: true).
 export const PAGES = expectedRoutes().map((r) => (r === '/' ? '/' : `${r}/`));
 
-// Header end sizes = the logo mark's height, as approved in BUWEB-104b.
+// Header end sizes = the logo mark's height. "dock" = 2x today's 46px logo,
+// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css).
 // "land" = Home at the very top. "dock" = scrolled, and every other page.
 // The phone landing size is a clamp() of the screen width: 128.69px at 390px.
 export const HEADER = {
-    desktop: { dock: 115, land: 240 },
-    phone: { dock: 69, land: 128.69 },
+    desktop: { dock: 92, land: 240 },
+    phone: { dock: 58, land: 128.69 },
 };
 export const PX_TOLERANCE = 0.75;
 
@@ -149,6 +150,34 @@ export async function logoHeight(page) {
         const el = document.querySelector('[data-logo="mark"]');
         return el ? Math.round(el.getBoundingClientRect().height * 100) / 100 : -1;
     });
+}
+
+// The header's shape has no test hook of its own (it is decoration, inside an
+// aria-hidden wrapper): the bar is that wrapper's <div>, and the tab is its
+// <svg>, whose last <path> is the navy edge. Its bottom is the bottom of the tab.
+const SHAPE = 'header [aria-hidden="true"]';
+export const TAB_EDGE = `${SHAPE} > svg > path:last-of-type`;
+export const BAR = `${SHAPE} > div`;
+
+// Header geometry right now, in screen px: the tab's bottom edge, the bar's
+// height and the logo's height.
+export async function headerGeometry(page) {
+    return page.evaluate(({ tab, bar }) => {
+        const round = (v) => Math.round(v * 100) / 100;
+        const edge = document.querySelector(tab);
+        const strip = document.querySelector(bar);
+        const logo = document.querySelector('[data-logo="mark"]');
+        return {
+            tabBottom: edge ? round(edge.getBoundingClientRect().bottom) : -1,
+            bar: strip ? round(strip.getBoundingClientRect().height) : -1,
+            logo: logo ? round(logo.getBoundingClientRect().height) : -1,
+            minBar: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-min-bar')) || -1,
+        };
+    }, { tab: TAB_EDGE, bar: BAR });
+}
+
+export async function tabBottom(page) {
+    return (await headerGeometry(page)).tabBottom;
 }
 
 export async function scrollToY(page, y) {

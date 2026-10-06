@@ -3,7 +3,12 @@
 @import "tailwindcss" source("..");
 
 :root {
-  /* Brand colours, kept from the old site with the same values. */
+  /* Brand colours, kept from the old site with the same values.
+     Colour rules for every page (spec 6.f): navy (--blue) is for text. Green
+     means Off-grid and nothing else: the badge, the word "Off-grid" in the
+     hero, and the dotted underline on a popup trigger. Red is for the signup
+     button only: no red text, and never red on light blue (it fails the
+     contrast minimum there). The logo art keeps its own colours. */
   --bluelight: #003251;
   --blue: #002A42;
   --bluedeep: #002942;
@@ -23,8 +28,11 @@
 
   /* Header geometry. The header and the page padding both read these, so the
      first frame is laid out by CSS alone, before any script runs.
-     --hdr-h-end is the docked logo height: 2.5x today's logo (115px computer,
-     69px phone). --hdr-h-land is the big logo on Home. */
+     --hdr-h-end is the docked logo height: 2x today's 46px logo, 92px on a
+     computer and 58px on a phone (spec 6.c, set 2026-10-06). At 92px the
+     computer bar is already at its 64px minimum, so the logo keeps shrinking
+     after the bar stops, as the phone always has. --hdr-h-land is the big
+     logo on Home. */
   --hdr-k-t: 0.585; /* tab apothem / logo height: logo hexagon 0.475 + padding 0.11 */
   --hdr-min-bar: 64px;
   --hdr-bar-pad: 14px;
@@ -32,7 +40,7 @@
   --hdr-edge: 3px;
   --hdr-gutter: 24px;
   --hdr-nav-w: 232px; /* room kept for the menu when sizing the wordmark */
-  --hdr-h-end: 115px;
+  --hdr-h-end: 92px;
   --hdr-h-land: clamp(160px, 23.5vw, 240px);
   --hdr-end-bottom: calc(max(var(--hdr-min-bar), var(--hdr-h-end) / 2 + var(--hdr-bar-pad)) + var(--hdr-h-end) * var(--hdr-k-t));
   --hdr-land-bottom: calc(max(var(--hdr-min-bar), var(--hdr-h-land) / 2 + var(--hdr-bar-pad)) + var(--hdr-h-land) * var(--hdr-k-t));
@@ -47,7 +55,7 @@
     --hdr-edge: 2.5px;
     --hdr-gutter: 16px;
     --hdr-nav-w: 44px;
-    --hdr-h-end: 69px;
+    --hdr-h-end: 58px;
     --hdr-h-land: clamp(112px, 33vw, 132px);
   }
 }

@@ -2,7 +2,8 @@
 // logo at its end size and no longer changing), never a fixed time, so a slow
 // machine cannot make them fail at random. See settle() in support/site.mjs.
 import {
-    test, expect, PAGES, expectLogoPx, headerSizes, isPhone, isReducedMotion, logoHeight, menuButton, scrollToY, settle,
+    test, expect, PAGES, expectLogoPx, expectPx, headerGeometry, headerSizes, isPhone, isReducedMotion, logoHeight, menuButton,
+    scrollToY, settle,
 } from '../support/site.mjs';
 
 test.describe('header end states', () => {
@@ -22,6 +23,65 @@ test.describe('header end states', () => {
 
         await scrollToY(page, 0);
         await expectLogoPx(page, top, 'Home back at the top');
+    });
+
+    // At 2x (92px) the computer bar reaches its minimum height before the logo
+    // has finished shrinking, so the logo goes on shrinking after the bar
+    // stops (the phone has always done this). Walks the whole shrink, down
+    // and back up, a few px at a time, and checks at every step:
+    //   - the tab's bottom edge moves exactly with the page, so the content
+    //     under it never jumps (spec 6.c: "it shrinks into the tab");
+    //   - the logo only ever shrinks on the way down and grows on the way up;
+    //   - the bar does stop at its minimum while the logo is still bigger
+    //     than docked (proves this path is the one being walked).
+    // Run it with E2E_SLOW_START_MS=150 too (see tests/README.md).
+    test('Home: the shrink path to 2x moves with the page (no jump), including after the bar stops at its minimum', async ({ page }, testInfo) => {
+        test.skip(isReducedMotion(testInfo), 'with reduce-motion nothing shrinks; the reduce-motion test covers it');
+        test.setTimeout(60_000); // ~100 scroll steps, each waiting for the page to settle
+        const { dock, land } = headerSizes(testInfo);
+        await page.goto('/');
+        await settle(page);
+        await expectLogoPx(page, land, 'Home at the top');
+        const top = await headerGeometry(page);
+        await scrollToY(page, 100000);
+        await expectLogoPx(page, dock, 'Home scrolled to the bottom');
+        const docked = await headerGeometry(page);
+        const travel = Math.ceil(top.tabBottom - docked.tabBottom) + 6; // a few px past the docking point
+        expect(travel, 'the tab has a shrink path to walk').toBeGreaterThan(20);
+
+        // 4px steps, then 1px steps over the last 16px, where the bar stops
+        // and the logo keeps shrinking (a window only ~4px of scroll wide).
+        const ys = [];
+        for (let y = 0; y < travel - 16; y += 4) ys.push(y);
+        for (let y = Math.max(0, travel - 16); y <= travel; y += 1) ys.push(y);
+        const walk = async (list, direction) => {
+            const seen = [];
+            for (const y of list) {
+                const at = await scrollToY(page, y);
+                expect(at, `scrolled to ${y}`).toBe(y);
+                seen.push({ y, ...(await headerGeometry(page)) });
+            }
+            let last = null;
+            for (const s of seen) {
+                const want = Math.max(docked.tabBottom, top.tabBottom - s.y);
+                expect.soft(Math.abs(s.tabBottom - want), `${direction}, scrollY ${s.y}: tab bottom ${s.tabBottom}px, want ${want.toFixed(2)}px`)
+                    .toBeLessThanOrEqual(1);
+                if (last) {
+                    const grew = direction === 'down' ? s.logo - last.logo : last.logo - s.logo;
+                    expect.soft(grew, `${direction}, scrollY ${last.y} -> ${s.y}: logo ${last.logo} -> ${s.logo}px goes the wrong way`)
+                        .toBeLessThanOrEqual(0.05);
+                }
+                last = s;
+            }
+            return seen;
+        };
+        const down = await walk(ys, 'down');
+        const knee = down.filter((s) => Math.abs(s.bar - s.minBar) <= 0.5 && s.logo > dock + 1);
+        expect(knee.length, `steps where the bar is at its ${down[0].minBar}px minimum and the logo still above ${dock}px`)
+            .toBeGreaterThan(0);
+        expectPx(down.at(-1).logo, dock, 'logo at the end of the shrink path');
+        await walk([...ys].reverse(), 'up');
+        await expectLogoPx(page, land, 'Home back at the top');
     });
 
     test('every other page starts docked', async ({ page }, testInfo) => {
