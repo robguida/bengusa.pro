@@ -6,8 +6,8 @@
 // "bengUSA.pro" lettering at the size the 2x option gave it (29px computer,
 // 24px phone). Spec 6.c and acceptance check 2.
 import {
-    test, expect, PAGES, expectLogoPx, expectPx, headerGeometry, headerSizes, isPhone, isReducedMotion, logoHeight, menuButton,
-    scrollToY, settle, wordHeight,
+    test, expect, PAGES, WORD, WORD_PATH, WORD_TOLERANCE, expectLogoPx, expectPx, headerGeometry, headerSizes, isPhone,
+    isReducedMotion, logoHeight, menuButton, scrollToY, settle, wordHeight,
 } from '../support/site.mjs';
 
 // The docked lettering. Call it once the logo is docked (after expectLogoPx):
@@ -15,6 +15,17 @@ import {
 async function expectDockedWord(page, testInfo, label) {
     expectPx(await wordHeight(page), headerSizes(testInfo).word, `${label}: docked "bengUSA.pro" lettering`);
 }
+
+// The lettering's drawn size, to WORD_TOLERANCE. Same timing rule as above.
+async function expectWordDrawn(page, want, label) {
+    const got = await wordHeight(page);
+    expect(Math.abs(got - want), `${label}: "bengUSA.pro" lettering ${got}px, want ${want}px (±${WORD_TOLERANCE})`)
+        .toBeLessThanOrEqual(WORD_TOLERANCE);
+}
+
+// Per step of scroll, the lettering may wobble by this much and still count
+// as "not moving" (a rounding step, far below any real change).
+const WORD_STEP_SLACK = 0.05;
 
 // The lettering never jumps: per px of scroll it changes by at most this much.
 // The build's steepest stretch is 0.33px per px, on both screens.
@@ -29,6 +40,9 @@ test.describe('header end states', () => {
         await settle(page);
         await expectLogoPx(page, top, 'Home at the top');
         if (isReducedMotion(testInfo)) await expectDockedWord(page, testInfo, 'Home at the top, reduce-motion');
+        // The big Home lettering: 61.63px at 1280px, 23.91px at 390px (a
+        // phone holds its docked size the whole way; it was 24.2px before r2).
+        else await expectWordDrawn(page, (isPhone(testInfo) ? WORD.phone : WORD.desktop).land, 'Home at the top');
 
         const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
         expect(max, 'Home must be tall enough to scroll').toBeGreaterThan(200);
@@ -113,6 +127,68 @@ test.describe('header end states', () => {
         expectPx(down.at(-1).word, word, 'lettering at the end of the shrink path');
         await walk([...ys].reverse(), 'up');
         await expectLogoPx(page, land, 'Home back at the top');
+    });
+
+    // The lettering through the whole shrink (spec 6.c), at each width in
+    // WORD_PATH: Home loads at that width, then scrolls from the very top to
+    // a few px past the docking point, 2px at a time, waiting for the page to
+    // settle at every step. Each step is read from the page, never timed.
+    //   - phones 390px and 430px ('hold'): 23.91px the whole way, never above 24px;
+    //   - phone 360px ('rise'): never shrinks, never above 24px, 23.91px docked;
+    //   - computer 760px and 1280px ('fall'): never grows (no bump), from its
+    //     Home size (37.88px / 61.63px) to 29.44px docked.
+    test('Home: the lettering through the whole shrink, at each phone and computer width (phones stay at or grow to 24px, computers only shrink)', async ({ page }, testInfo) => {
+        test.skip(isReducedMotion(testInfo), 'with reduce-motion nothing shrinks; the reduce-motion test covers it');
+        test.setTimeout(90_000); // ~35 to 75 scroll steps per width, each waiting for the page to settle
+        const phone = isPhone(testInfo);
+        const word = phone ? WORD.phone : WORD.desktop;
+        const { dock, word: specWord } = headerSizes(testInfo);
+        const height = page.viewportSize().height;
+        for (const { width, path, top } of phone ? WORD_PATH.phone : WORD_PATH.desktop) {
+            const at = `${width}px`;
+            await page.setViewportSize({ width, height });
+            await page.goto('/');
+            await settle(page);
+            const start = await headerGeometry(page);
+            await scrollToY(page, 100000);
+            await expectLogoPx(page, dock, `${at}: Home scrolled to the bottom`);
+            const travel = Math.ceil(start.tabBottom - (await headerGeometry(page)).tabBottom) + 6;
+            expect(travel, `${at}: the tab has a shrink path to walk`).toBeGreaterThan(20);
+
+            const seen = [];
+            for (let y = 0; y <= travel; y += 2) {
+                const got = await scrollToY(page, y);
+                const g = await headerGeometry(page);
+                seen.push({ y: got, word: g.word, logo: g.logo });
+            }
+            const first = seen[0];
+            const last = seen.at(-1);
+            const max = Math.max(...seen.map((s) => s.word));
+            const steps = seen.slice(1).map((s, i) => ({ from: seen[i], to: s }));
+            const list = (bad) => bad.map((s) => `scrollY ${s.from.y} -> ${s.to.y}: ${s.from.word} -> ${s.to.word}px`);
+
+            expectPx(last.logo, dock, `${at}: logo at the end of the walk (the walk reached the dock)`);
+            expect.soft(Math.abs(last.word - word.dock), `${at}: docked lettering ${last.word}px, want ${word.dock}px (±${WORD_TOLERANCE})`)
+                .toBeLessThanOrEqual(WORD_TOLERANCE);
+            if (path === 'hold') {
+                const off = seen.filter((s) => Math.abs(s.word - word.dock) > WORD_TOLERANCE).map((s) => `scrollY ${s.y}: ${s.word}px`);
+                expect.soft(off, `${at}: steps where the lettering is not ${word.dock}px (±${WORD_TOLERANCE})`).toEqual([]);
+            }
+            if (path === 'hold' || path === 'rise') {
+                expect.soft(max, `${at}: largest lettering seen on the way down (never above ${specWord}px)`)
+                    .toBeLessThanOrEqual(specWord + WORD_STEP_SLACK);
+            }
+            if (path === 'rise') {
+                const shrank = list(steps.filter((s) => s.to.word < s.from.word - WORD_STEP_SLACK));
+                expect.soft(shrank, `${at}: steps where the lettering shrank (it may only grow on the way down)`).toEqual([]);
+            }
+            if (path === 'fall') {
+                expect.soft(Math.abs(first.word - top), `${at}: lettering at the top ${first.word}px, want ${top}px (±${WORD_TOLERANCE})`)
+                    .toBeLessThanOrEqual(WORD_TOLERANCE);
+                const grew = list(steps.filter((s) => s.to.word > s.from.word + WORD_STEP_SLACK));
+                expect.soft(grew, `${at}: steps where the lettering grew (it may only shrink on the way down)`).toEqual([]);
+            }
+        }
     });
 
     test('every other page starts docked', async ({ page }, testInfo) => {

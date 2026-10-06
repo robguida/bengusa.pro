@@ -38,6 +38,8 @@ export const WORDS = {
     // 13.e.ii: on Vault's page, after the connects box, never inside the legend.
     vaultSync: 'Vault (working name) starts on Windows. A later version may add sync between devices. That version would keep an encrypted copy of your vault in our cloud, so it won\'t wear the Off-grid badge.',
     vaultTrust: 'Your vault is saved on your PC, and we keep no copy of it.',
+    // 13.e.ii: the trust line, then the sync line, under this heading.
+    vaultWhereHeading: 'Where your vault lives',
 };
 
 // The popup link on a card or app-page badge (17.c.iv): the box label without

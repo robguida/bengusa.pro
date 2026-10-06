@@ -1,9 +1,11 @@
 // The Off-grid popup (spec 17.c, acceptance check 25.c). Every wait is on page
 // state (data-state, aria-expanded, :popover-open, focus), never a set time.
-// See support/offgrid.mjs for the hooks.
-import { test, expect, isPhone, isReducedMotion, settle, tabBottom } from '../support/site.mjs';
+// The mouse tests drive the page's own 150 ms / 300 ms timers with Playwright's
+// fake clock instead of waiting for them. See support/offgrid.mjs for the hooks.
+import { test, expect, heroSubline, isPhone, isReducedMotion, settle, tabBottom } from '../support/site.mjs';
 import {
-    TIP, TRIGGER, centre, expectClosed, expectOpen, isShowing, popupsLive, press, pressAt, tipOf, tipWords,
+    CLOSE_GRACE_MS, OPEN_DELAY_MS, TIP, TRIGGER, centre, expectClosed, expectOpen, expectStillOpen, freeze, isShowing, middle,
+    popupsLive, press, pressAt, softTipOf, tipOf, tipWords,
 } from '../support/offgrid.mjs';
 import { APPS, WORDS, connectsLabel } from '../support/words.mjs';
 
@@ -29,25 +31,32 @@ const vaultCardTrigger = (page) => page.locator('#apps article').filter({ hasTex
 test.describe('the Off-grid popup', () => {
     test('every popup shows the approved words exactly; a badge popup links to its own app\'s box', async ({ page }, testInfo) => {
         test.skip(isReducedMotion(testInfo), 'words do not change with motion; the normal pass covers them');
+        // Soft checks all the way down: one bad popup is reported, and every
+        // other popup on every page is still checked.
         for (const { page: p, popups } of WHERE) {
             await page.goto(p);
             await popupsLive(page);
             const triggers = page.locator(TRIGGER);
-            await expect(triggers, `${p}: number of popups`).toHaveCount(popups.length);
+            await expect.soft(triggers, `${p}: number of popups`).toHaveCount(popups.length);
+            // With the wrong number, the list below would pair the wrong
+            // popups with the wrong names: report it and go on to the next page.
+            if (await triggers.count() !== popups.length) continue;
             for (const [i, want] of popups.entries()) {
                 const label = `${p} ${want.where}`;
                 const trigger = triggers.nth(i);
-                await expect(trigger, `${label}: trigger words`).toHaveText(WORDS.offGridWord);
-                const tip = await tipOf(page, trigger);
-                expect(await tipWords(tip), `${label}: popup words`).toBe(WORDS.popup);
-                await expect(tip.locator('b'), `${label}: bold lead`).toHaveText('Off-grid:');
+                await expect.soft(trigger, `${label}: trigger words`).toHaveText(WORDS.offGridWord);
+                const found = await softTipOf(page, trigger, label);
+                if (!found) continue;
+                const { tip } = found;
+                expect.soft(await tipWords(tip), `${label}: popup words`).toBe(WORDS.popup);
+                await expect.soft(tip.locator('b'), `${label}: bold lead`).toHaveText('Off-grid:');
                 const links = tip.locator('a');
                 if (!want.link) {
-                    await expect(links, `${label}: no link`).toHaveCount(0);
+                    await expect.soft(links, `${label}: no link`).toHaveCount(0);
                 } else {
-                    await expect(links, `${label}: one link`).toHaveCount(1);
-                    await expect(links, `${label}: link label`).toHaveText(connectsLabel(want.link));
-                    await expect(links, `${label}: link target`).toHaveAttribute('href', `${want.link.page}#${want.link.box}`);
+                    await expect.soft(links, `${label}: one link`).toHaveCount(1);
+                    await expect.soft(links, `${label}: link label`).toHaveText(connectsLabel(want.link));
+                    await expect.soft(links, `${label}: link target`).toHaveAttribute('href', `${want.link.page}#${want.link.box}`);
                 }
             }
         }
@@ -159,7 +168,7 @@ test.describe('the Off-grid popup', () => {
     test('a tap or click outside closes it', async ({ page }, testInfo) => {
         await page.goto('/');
         await popupsLive(page);
-        const subline = page.locator('h1 + p');
+        const subline = heroSubline(page);
         for (const [name, trigger] of [['hero word', heroTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
             await centre(page, trigger);
             const tip = await tipOf(page, trigger);
@@ -256,21 +265,109 @@ test.describe('the Off-grid popup', () => {
     });
 });
 
+// WCAG 1.4.13 "hoverable" (spec 17.c.v): the mouse can move from the trigger
+// into its box, across the gap between them, and the box stays open; and a
+// click on a box opened by hover keeps it open. The page's fake clock stands
+// in for its 150 ms open delay and 300 ms grace: once frozen, the page's time
+// moves only when the test calls runFor(), so nothing here waits a real
+// 300 ms, and a box that wrongly closes after its grace closes every time.
+test.describe('the Off-grid popup and the mouse, on a fake clock', () => {
+    test.beforeEach(async ({ page }, testInfo) => {
+        test.skip(isPhone(testInfo), 'phones have no hover; tap is tested above');
+        await page.clock.install(); // time still flows until freeze()
+        await page.goto('/');
+        await popupsLive(page);
+    });
+
+    // Opens the popup by hover alone, on a frozen clock.
+    async function openByHover(page, trigger, tip, name) {
+        await centre(page, trigger); // needs running time: before freeze()
+        await expectClosed(trigger, tip, `${name} before hover`);
+        await freeze(page);
+        const at = await middle(trigger);
+        await page.mouse.move(at.x, at.y);
+        await page.clock.runFor(OPEN_DELAY_MS + 50);
+        await expectOpen(trigger, tip, `${name} opened by hover`);
+    }
+
+    test('the mouse can move from the trigger into its box, and the box stays open past the 300 ms grace', async ({ page }) => {
+        for (const [name, trigger] of [['hero word', heroTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
+            const tip = await tipOf(page, trigger);
+            await openByHover(page, trigger, tip, name);
+            // Into the box, in small steps, so the pointer crosses the gap
+            // and leaves the trigger before it reaches the box.
+            const inBox = await middle(tip.locator('b'));
+            await page.mouse.move(inBox.x, inBox.y, { steps: 8 });
+            await page.clock.runFor(CLOSE_GRACE_MS + 100);
+            await expectStillOpen(trigger, tip, `${name}: mouse in the box, past the grace`);
+            const link = tip.locator('a');
+            if (await link.count()) {
+                // The badge box's link: the reason to move into the box at all.
+                const onLink = await middle(link);
+                await page.mouse.move(onLink.x, onLink.y, { steps: 4 });
+                await page.clock.runFor(CLOSE_GRACE_MS + 100);
+                await expectStillOpen(trigger, tip, `${name}: mouse on the box's link, past the grace`);
+            }
+            // The control: leaving both closes it, but only once the grace is
+            // over. Seen open with no time gone, then closed after it.
+            await page.mouse.move(2, 2);
+            expect(await isShowing(tip), `${name}: still open inside the grace`).toBe(true);
+            await page.clock.runFor(CLOSE_GRACE_MS + 100);
+            await expectClosed(trigger, tip, `${name}: mouse gone from the trigger and the box, past the grace`);
+            await page.clock.resume();
+        }
+    });
+
+    test('a click on a box opened by hover keeps it open', async ({ page }) => {
+        // A click on the trigger pins the box: the mouse leaving no longer closes it.
+        const hero = heroTrigger(page);
+        const heroTip = await tipOf(page, hero);
+        await openByHover(page, hero, heroTip, 'hero word');
+        const at = await middle(hero);
+        await page.mouse.click(at.x, at.y);
+        await expectStillOpen(hero, heroTip, 'hero word, clicked after hover opened it');
+        await page.mouse.move(2, 2);
+        await page.clock.runFor(CLOSE_GRACE_MS + 100);
+        await expectStillOpen(hero, heroTip, 'hero word, clicked, then the mouse left, past the grace');
+        // A second click closes it, ready for the next part. Not Esc: the
+        // page adds its Esc listener a step after the box shows as open, and
+        // on a slow machine that step can still be pending here.
+        await page.mouse.click(at.x, at.y);
+        await expectClosed(hero, heroTip, 'hero word after a second click');
+        await page.clock.resume();
+
+        // A click inside the box (on its words, not its link) keeps it open too.
+        const badge = vaultCardTrigger(page);
+        const badgeTip = await tipOf(page, badge);
+        await openByHover(page, badge, badgeTip, 'Vault badge');
+        const inBox = await middle(badgeTip.locator('b'));
+        await page.mouse.move(inBox.x, inBox.y, { steps: 8 });
+        await page.mouse.click(inBox.x, inBox.y);
+        await page.clock.runFor(CLOSE_GRACE_MS + 100);
+        await expectStillOpen(badge, badgeTip, 'Vault badge, clicked inside its box, past the grace');
+        await expect(page, 'a click on the box\'s words goes nowhere').toHaveURL((url) => url.pathname === '/');
+    });
+});
+
 test.describe('the Off-grid popup with scripts off', () => {
     test.use({ javaScriptEnabled: false });
 
     test('its words are in the page, and the browser\'s own popover opens and closes it', async ({ page }, testInfo) => {
         test.skip(isReducedMotion(testInfo), 'no script runs, so motion changes nothing here; the normal pass covers it');
+        // Soft checks: one bad popup is reported, and the rest are still checked.
         for (const { page: p, popups } of WHERE) {
             await page.goto(p);
             const triggers = page.locator(TRIGGER);
-            await expect(triggers, `${p}: number of popups`).toHaveCount(popups.length);
-            for (let i = 0; i < popups.length; i++) {
+            await expect.soft(triggers, `${p}: number of popups`).toHaveCount(popups.length);
+            const count = await triggers.count();
+            for (let i = 0; i < count; i++) {
+                const label = `${p} popup ${i + 1}`;
                 const trigger = triggers.nth(i);
-                const tip = await tipOf(page, trigger);
-                await expect(trigger, `${p} popup ${i + 1}: no script state`).not.toHaveAttribute('data-state');
-                await expect(trigger, `${p} popup ${i + 1}: browser popover switch`).toHaveAttribute('popovertarget', await tip.getAttribute('id'));
-                expect(await tipWords(tip), `${p} popup ${i + 1}: words in the page`).toBe(WORDS.popup);
+                await expect.soft(trigger, `${label}: no script state`).not.toHaveAttribute('data-state');
+                const found = await softTipOf(page, trigger, label);
+                if (!found) continue;
+                await expect.soft(trigger, `${label}: browser popover switch`).toHaveAttribute('popovertarget', found.id);
+                expect.soft(await tipWords(found.tip), `${label}: words in the page`).toBe(WORDS.popup);
             }
         }
 
@@ -288,7 +385,7 @@ test.describe('the Off-grid popup with scripts off', () => {
 
         await press(trigger, testInfo);
         await expect.poll(() => isShowing(tip), 'a tap opens it again').toBe(true);
-        await pressAt(page, testInfo, 4, (await page.locator('h1 + p').boundingBox()).y + 4);
+        await pressAt(page, testInfo, 4, (await heroSubline(page).boundingBox()).y + 4);
         await expect.poll(() => isShowing(tip), 'a tap outside closes it').toBe(false);
     });
 });

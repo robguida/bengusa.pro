@@ -1,13 +1,14 @@
 // Home: the hero, the app-grid heading and the cards (spec 17.a, 17.b, 13.a;
 // acceptance checks 3, 25.a and 25.b). The words come from support/words.mjs
 // (copied from the spec), never from content/.
-import { test, expect, isPhone, isReducedMotion, settle } from '../support/site.mjs';
-import { TRIGGER, popupsLive } from '../support/offgrid.mjs';
+import { test, expect, heroSubline, isPhone, isReducedMotion, settle } from '../support/site.mjs';
+import { TIP, TRIGGER, popupsLive } from '../support/offgrid.mjs';
 import { APPS, COLOUR, WORDS } from '../support/words.mjs';
 
-// Read headings with innerText, never textContent: the popup's words sit
-// inside the heading's markup (hidden until opened).
+// The words a person sees. The heading test below also checks textContent
+// (what a crawler reads), now that each popup box sits after its heading.
 const text = (locator) => locator.evaluate((el) => el.innerText.replace(/\s+/g, ' ').trim());
+const allText = (locator) => locator.evaluate((el) => el.textContent.replace(/\s+/g, ' ').trim());
 const style = (locator, props) => locator.evaluate((el, names) => {
     const cs = getComputedStyle(el);
     return Object.fromEntries(names.map((n) => [n, cs[n]]));
@@ -51,33 +52,62 @@ test.describe('Home', () => {
         await page.setViewportSize(start);
         await settle(page);
 
-        // The subline: right after the heading, navy, about 45% of its size (17.a.ii).
-        const subline = h1.locator('xpath=following-sibling::*[1]');
-        expect.soft(await subline.evaluate((el) => el.tagName), 'the element after the hero heading').toBe('P');
+        // The subline: the hero heading's next paragraph, navy, about 45% of
+        // its size (17.a.ii). Only the hero word's popup box (hidden until
+        // opened) sits between them.
+        const subline = heroSubline(page);
+        await expect(subline).toHaveCount(1);
         expect.soft(await text(subline), 'subline words').toBe(WORDS.heroSubline);
         expect.soft(await style(subline, ['color']), 'subline is navy').toEqual({ color: COLOUR.navy });
-        const ratio = await page.evaluate(() => {
-            const h = document.querySelector('h1');
-            return parseFloat(getComputedStyle(h.nextElementSibling).fontSize) / parseFloat(getComputedStyle(h).fontSize);
-        });
+        const between = await h1.evaluate((h, sub) => {
+            const out = [];
+            for (let el = h.nextElementSibling; el && el.tagName !== 'P'; el = el.nextElementSibling) {
+                out.push(el.matches(sub) ? 'popup box' : el.tagName.toLowerCase());
+            }
+            return out;
+        }, TIP);
+        expect.soft(between, 'between the hero heading and the subline').toEqual(['popup box']);
+        const ratio = await subline.evaluate((p) => parseFloat(getComputedStyle(p).fontSize)
+            / parseFloat(getComputedStyle(document.querySelector('h1')).fontSize));
         expect.soft(ratio, 'subline size / hero size').toBeGreaterThanOrEqual(0.4);
         expect.soft(ratio, 'subline size / hero size').toBeLessThanOrEqual(0.5);
 
         // Nothing between the hero and the grid (17.a.v): the subline is the
         // hero's last element, and the next section is the app grid, whose
-        // heading and cards come first.
-        const order = await page.evaluate(() => {
-            const hero = document.querySelector('h1').closest('section');
+        // heading (with its popup box) and cards come first.
+        const order = await subline.evaluate((p, tip) => {
+            const hero = p.closest('section');
             const after = hero.nextElementSibling;
+            const name = (c) => (c.matches(tip) ? 'popup box' : c.tagName.toLowerCase() + (c.id ? `#${c.id}` : ''));
             return {
-                lastInHero: hero.lastElementChild === document.querySelector('h1').nextElementSibling,
+                lastInHero: hero.lastElementChild === p,
                 next: after ? `${after.tagName.toLowerCase()}#${after.id}` : 'nothing',
-                gridChildren: after ? [...after.children].map((c) => c.tagName.toLowerCase() + (c.id ? `#${c.id}` : '')) : [],
+                gridChildren: after ? [...after.children].map(name) : [],
             };
-        });
+        }, TIP);
         expect.soft(order.lastInHero, 'the subline is the last thing in the hero').toBe(true);
         expect.soft(order.next, 'right after the hero').toBe('section#apps');
-        expect.soft(order.gridChildren, 'the grid section: its heading, then the cards').toEqual(['h2#apps-title', 'ul']);
+        expect.soft(order.gridChildren, 'the grid section: its heading, its popup box, then the cards').toEqual(['h2#apps-title', 'popup box', 'ul']);
+    });
+
+    test('the hero and grid headings hold only their own words: each popup box sits right after its heading, never inside', async ({ page }) => {
+        const headings = [
+            { name: 'hero', locator: page.locator('h1'), words: WORDS.hero },
+            { name: 'grid heading', locator: page.locator('h2#apps-title'), words: WORDS.appsHeading },
+        ];
+        for (const h of headings) {
+            // textContent: every word in the heading's markup, hidden or not.
+            expect.soft(await allText(h.locator), `${h.name}: textContent is only its own words`).toBe(h.words);
+            const id = await h.locator.locator(TRIGGER).getAttribute('aria-controls');
+            const next = await h.locator.evaluate((el) => el.nextElementSibling?.id ?? null);
+            expect.soft(next, `${h.name}: its popup box comes right after it`).toBe(id);
+        }
+        // No heading holds a popup box, so a box's words can never become part
+        // of a heading, open or closed (an open box inside a heading can be
+        // read out as part of the heading's name).
+        const inside = await page.evaluate((tip) => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+            .filter((el) => el.querySelector(tip)).map((el) => el.tagName.toLowerCase() + (el.id ? `#${el.id}` : '')), TIP);
+        expect.soft(inside, 'headings with a popup box inside them').toEqual([]);
     });
 
     test('heading: "Meet our Off-grid apps" with "Off-grid" as a popup word; the "More in the works" tile never says Off-grid', async ({ page }) => {

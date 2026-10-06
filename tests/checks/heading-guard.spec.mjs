@@ -13,18 +13,15 @@
 // The copy is deleted afterwards. The real build's heading is checked in
 // e2e/home.spec.mjs.
 import { spawn } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../scripts/lib/export-checks.mjs';
 import { test as siteTest, expect, settle } from '../support/site.mjs';
 import { TRIGGER } from '../support/offgrid.mjs';
+import { BUILD_TIMEOUT, buildCopy, copySite, readJson, removeCopy, writeJson } from '../support/fixture-site.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
 
 const FIRST_PORT = Number(process.env.E2E_PORT || 4310) + 10;
-const BUILD_TIMEOUT = 180_000;
 const SERVE_TIMEOUT = 15_000;
-// Everything the build reads. Never .env: a fixture build gets no settings.
-const COPY = ['src', 'content', 'public', 'scripts/build.mjs', 'scripts/lib', 'next.config.mjs', 'postcss.config.mjs', 'jsconfig.json', 'package.json'];
 
 const FIXTURES = {
     open: {
@@ -42,35 +39,18 @@ const FIXTURES = {
 const SHOWN = new Set(['open', 'showcase']);
 const unbadged = (apps) => apps.filter((a) => SHOWN.has(a.status) && a.offGrid !== true).map((a) => a.id);
 
-function run(args, cwd) {
-    // Plain text output: Playwright's workers set FORCE_COLOR, and colour
-    // codes in the build log hide the route table from the build checks.
-    const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1', NO_COLOR: '1' };
-    delete env.FORCE_COLOR;
-    return new Promise((resolve) => {
-        const child = spawn(process.execPath, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
-        let log = '';
-        child.stdout.on('data', (c) => { log += c; });
-        child.stderr.on('data', (c) => { log += c; });
-        child.on('close', (code) => resolve({ code: code ?? 1, log }));
-    });
-}
-
 async function buildFixture(name, dir) {
     const fixture = FIXTURES[name];
-    fs.rmSync(dir, { recursive: true, force: true });
-    for (const item of COPY) fs.cpSync(path.join(ROOT, item), path.join(dir, item), { recursive: true });
+    copySite(dir);
     const file = path.join(dir, 'content', 'apps.json');
-    const apps = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const apps = readJson(file);
     // The fixture only means something if the real list is all badged and
     // the copy differs from it by exactly one unbadged card.
     expect(unbadged(apps), 'the real app list already has an unbadged card: this fixture tests nothing new').toEqual([]);
     fixture.change(apps.find((a) => a.id === fixture.app));
     expect(unbadged(apps), `${name} fixture: unbadged cards`).toEqual([fixture.app]);
-    fs.writeFileSync(file, `${JSON.stringify(apps, null, 2)}\n`);
-    // The copy's own guarded build (scripts/build.mjs); it finds next in the
-    // project's node_modules, two folders up.
-    const build = await run([path.join(dir, 'scripts', 'build.mjs')], dir);
+    writeJson(file, apps);
+    const build = await buildCopy(dir);
     if (build.code !== 0) throw new Error(`the ${name} fixture build failed (exit ${build.code}):\n${build.log.slice(-4000)}`);
 }
 
@@ -114,7 +94,7 @@ const test = siteTest.extend({
             await provide(site);
         } finally {
             for (const { child } of started.values()) child.kill();
-            fs.rmSync(base, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+            removeCopy(base);
         }
     }, { scope: 'worker' }],
     // The browser and the site guard (no outside requests) both use the
