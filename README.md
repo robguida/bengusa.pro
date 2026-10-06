@@ -15,7 +15,7 @@ bengUSA.pro is a brand name, not a company. The site never says "LLC", "Inc." or
 
 ## Before you start
 
-- **Node 20.9 or later.** `.nvmrc` names the exact version.
+- **Node 24 (LTS).** `.nvmrc` names the exact version.
 - Install packages with `npm ci`, not `npm install`, so `package-lock.json` decides every version.
 - First time on a machine, install the test browsers once: `npx playwright install chromium webkit`.
 - If Node is not on your system PATH, add it for the console window first. `scripts/release/gate.cmd` shows how.
