@@ -14,13 +14,22 @@
   /* bar height, and the tab hexagon's radius (centre to corner) */
   --bh: max(var(--hdr-min-bar), var(--h) / 2 + var(--hdr-bar-pad));
   --r: calc(var(--h) * var(--hdr-k-t) / 0.8660254);
-  /* The lettering is sized for its own logo height, --hw: the 2x logo
-     (--hdr-h-word-end) when docked, growing 1.5 times as fast as the real logo
-     until it catches up, 46px above the docked size on a computer (22px on a
-     phone). That is below the smallest big Home logo (179px computer, 112px
-     phone), so the big header is unchanged, and the size never jumps. */
+  /* The lettering is sized for its own logo height, --hw. On a computer: the
+     2x logo (--hdr-h-word-end) when docked, growing 1.5 times as fast as the
+     real logo until it catches up, 46px above the docked size. That is below
+     the smallest big Home logo (179px), so the big header is unchanged, and
+     the size never jumps. On a phone it never changes (see the phone rules
+     at the end). */
   --hw: min(var(--h), var(--hdr-h-word-end) + 1.5 * (var(--h) - var(--hdr-h-end)));
   --wbh: max(var(--hdr-min-bar), var(--hw) / 2 + var(--hdr-bar-pad));
+  /* The tab size the lettering's "fit before the menu" limit is worked out
+     for. On a computer: the big Home tab, the largest it gets. The room left
+     for the lettering then stays the same through the shrink, so a limit that
+     binds at the top can't let the lettering grow again partway down: it only
+     ever shrinks, from its Home size to its docked size. That room is still
+     about 38px at the narrowest computer screen (760px), above the 29px
+     docked lettering, so the docked size is unchanged. */
+  --rfit: calc(var(--hdr-h-land) * var(--hdr-k-t) / 0.8660254);
 
   position: fixed;
   inset: 0 0 auto 0;
@@ -131,9 +140,9 @@
 
 /* Just right of the tab, sized to fit before the menu, and centred in the bar.
    Its height comes from --wbh (the bar its own logo height would have), not
-   from the real bar. */
+   from the real bar. The fit uses --rfit, not the real tab. */
 .word {
-  --wh: max(14px, min(var(--wbh) * 0.46, (100cqw - var(--hdr-gutter) - var(--hdr-nav-w) - 2 * var(--hdr-gap) - 2 * var(--r)) / 5.4563463));
+  --wh: max(14px, min(var(--wbh) * 0.46, (100cqw - var(--hdr-gutter) - var(--hdr-nav-w) - 2 * var(--hdr-gap) - 2 * var(--rfit)) / 5.4563463));
   left: calc(2 * var(--r) + var(--hdr-gap));
   top: calc(var(--bh) / 2 - var(--wh) * 0.44);
   width: calc(var(--wh) * 5.4563463);
@@ -292,6 +301,16 @@
 }
 
 @media (max-width: 759.98px) {
+  /* Phone: the lettering stays at its docked size (24px) through the whole
+     shrink, so only the hexagon changes (spec 6.c). Its fit limit uses the
+     real tab: on a phone too narrow for 24px lettering at the top of Home
+     (below about 388px wide), the lettering can then still reach 24px once
+     docked, growing one way only as the tab shrinks. */
+  .header {
+    --hw: var(--hdr-h-word-end);
+    --rfit: var(--r);
+  }
+
   .desk {
     display: none;
   }
