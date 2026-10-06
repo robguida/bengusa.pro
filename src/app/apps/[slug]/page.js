@@ -34,7 +34,7 @@ export default async function AppPage({ params }) {
                 <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{app.intro}</p>
                 {app.offGrid && (
                     <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <OffGridBadge />
+                        <OffGridBadge link={app.connectsLink} />
                         <span>
                             <b className="font-semibold">{offGrid.badge}:</b> {offGrid.short}
                         </span>
@@ -42,19 +42,21 @@ export default async function AppPage({ params }) {
                 )}
             </div>
 
-            {app.offGrid && app.connects && (
+            {app.connectsId && (
                 <section className="max-w-[44em] pb-10" aria-labelledby="off-grid-title">
                     <h2 id="off-grid-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
                         Off-grid, explained
                     </h2>
-                    {/* The connects box sits directly below the legend, with nothing between them. */}
+                    {/* The connects box sits directly below the legend, with nothing between them.
+                        Nothing about a later version ever goes in the legend (13.d.i). */}
                     <p className="m-0 flex flex-wrap items-start gap-3">
-                        <OffGridBadge />
+                        <OffGridBadge link={app.connectsLink} />
                         <span className="min-w-0 flex-1 basis-64">
                             <b className="font-semibold">{offGrid.badge}:</b> {offGrid.legendOnAppPage}
                         </span>
                     </p>
-                    <div className="mt-3 rounded-xl border border-line bg-white p-5">
+                    {/* The badge popups' "What <App> connects to" link lands here. */}
+                    <div id={app.connectsId} className="mt-3 rounded-xl border border-line bg-white p-5">
                         <p className="m-0">
                             <b className="font-semibold">{app.connects.label}</b> {app.connects.text}
                         </p>
@@ -62,12 +64,17 @@ export default async function AppPage({ params }) {
                 </section>
             )}
 
-            {app.cloud && (
-                <section className="max-w-[44em] pb-10" aria-labelledby="cloud-title">
-                    <h2 id="cloud-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
-                        {app.cloud.heading}
+            {/* After the connects box, never inside the legend. Vault: the sync line, then the trust line (13.e.ii). */}
+            {app.whereItLives && (
+                <section className="max-w-[44em] pb-10" aria-labelledby="where-title">
+                    <h2 id="where-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
+                        {app.whereItLives.heading}
                     </h2>
-                    <p className="m-0">{app.cloud.text}</p>
+                    <div className="grid gap-3">
+                        {app.whereItLives.lines.map((line) => (
+                            <p key={line} className="m-0">{line}</p>
+                        ))}
+                    </div>
                 </section>
             )}
         </div>
