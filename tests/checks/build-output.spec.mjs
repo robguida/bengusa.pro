@@ -33,6 +33,7 @@ test.describe('build output', () => {
             llc: 'no "LLC"',
             email: 'no email addresses',
             oldSite: 'no old-site content (Digital Silk, client logos, maintenance switch)',
+            retiredVault: 'no retired Vault lines ("doesn\'t wear the Off-grid badge", the old sync card note), on any page or in any file',
         };
         for (const [key, title] of Object.entries(cases)) {
             test(title, () => {

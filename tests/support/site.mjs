@@ -152,6 +152,34 @@ export async function logoHeight(page) {
     });
 }
 
+// The header's shape has no test hook of its own (it is decoration, inside an
+// aria-hidden wrapper): the bar is that wrapper's <div>, and the tab is its
+// <svg>, whose last <path> is the navy edge. Its bottom is the bottom of the tab.
+const SHAPE = 'header [aria-hidden="true"]';
+export const TAB_EDGE = `${SHAPE} > svg > path:last-of-type`;
+export const BAR = `${SHAPE} > div`;
+
+// Header geometry right now, in screen px: the tab's bottom edge, the bar's
+// height and the logo's height.
+export async function headerGeometry(page) {
+    return page.evaluate(({ tab, bar }) => {
+        const round = (v) => Math.round(v * 100) / 100;
+        const edge = document.querySelector(tab);
+        const strip = document.querySelector(bar);
+        const logo = document.querySelector('[data-logo="mark"]');
+        return {
+            tabBottom: edge ? round(edge.getBoundingClientRect().bottom) : -1,
+            bar: strip ? round(strip.getBoundingClientRect().height) : -1,
+            logo: logo ? round(logo.getBoundingClientRect().height) : -1,
+            minBar: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-min-bar')) || -1,
+        };
+    }, { tab: TAB_EDGE, bar: BAR });
+}
+
+export async function tabBottom(page) {
+    return (await headerGeometry(page)).tabBottom;
+}
+
 export async function scrollToY(page, y) {
     await page.evaluate((v) => window.scrollTo(0, v), y);
     await settle(page);
