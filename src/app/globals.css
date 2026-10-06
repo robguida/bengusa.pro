@@ -28,11 +28,15 @@
 
   /* Header geometry. The header and the page padding both read these, so the
      first frame is laid out by CSS alone, before any script runs.
-     --hdr-h-end is the docked logo height: 2x today's 46px logo, 92px on a
-     computer and 58px on a phone (spec 6.c, set 2026-10-06). At 92px the
-     computer bar is already at its 64px minimum, so the logo keeps shrinking
-     after the bar stops, as the phone always has. --hdr-h-land is the big
-     logo on Home. */
+     --hdr-h-end is the docked logo height: 2.5x today's 46px logo, 115px on
+     a computer and 69px on a phone (spec 6.c, Rob 2026-10-06: "2.5x when it
+     scales back"). --hdr-h-word-end sizes the docked "bengUSA.pro" lettering
+     separately: it is the logo height the lettering is sized for, the 2x logo
+     (92px / 58px), so the docked lettering keeps its 2x size (29px on a
+     computer, 24px on a phone) while the logo docks at 2.5x. The lettering
+     catches up with the real logo early in the shrink (SiteHeader.module.css),
+     so the big Home header is unchanged. --hdr-h-land is the big logo on
+     Home. */
   --hdr-k-t: 0.585; /* tab apothem / logo height: logo hexagon 0.475 + padding 0.11 */
   --hdr-min-bar: 64px;
   --hdr-bar-pad: 14px;
@@ -40,7 +44,8 @@
   --hdr-edge: 3px;
   --hdr-gutter: 24px;
   --hdr-nav-w: 232px; /* room kept for the menu when sizing the wordmark */
-  --hdr-h-end: 92px;
+  --hdr-h-end: 115px;
+  --hdr-h-word-end: 92px;
   --hdr-h-land: clamp(160px, 23.5vw, 240px);
   --hdr-end-bottom: calc(max(var(--hdr-min-bar), var(--hdr-h-end) / 2 + var(--hdr-bar-pad)) + var(--hdr-h-end) * var(--hdr-k-t));
   --hdr-land-bottom: calc(max(var(--hdr-min-bar), var(--hdr-h-land) / 2 + var(--hdr-bar-pad)) + var(--hdr-h-land) * var(--hdr-k-t));
@@ -55,7 +60,8 @@
     --hdr-edge: 2.5px;
     --hdr-gutter: 16px;
     --hdr-nav-w: 44px;
-    --hdr-h-end: 58px;
+    --hdr-h-end: 69px;
+    --hdr-h-word-end: 58px;
     --hdr-h-land: clamp(112px, 33vw, 132px);
   }
 }
