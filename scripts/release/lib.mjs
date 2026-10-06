@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const IS_WIN = process.platform === 'win32';
-export const MIN_NODE = '20.9.0';
+export const MIN_NODE = '24.0.0';
 
 export const MANIFEST = 'MANIFEST.sha256';
 export const PUBLIC = 'public';
