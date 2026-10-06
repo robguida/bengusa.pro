@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import DraftLabel from '../../components/DraftLabel';
 import KeepWhole from '../../components/KeepWhole';
 import OffGridBadge from '../../components/OffGridBadge';
+import OffGridLegend from '../../components/OffGridLegend';
 import { getPublicApp, getPublicApps } from '@/lib/apps';
 import siteWords from '../../../../content/site-words.json';
 
@@ -46,16 +47,11 @@ export default async function AppPage({ params }) {
             {app.connectsId && (
                 <section className="max-w-[44em] pb-10" aria-labelledby="off-grid-title">
                     <h2 id="off-grid-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
-                        <KeepWhole text="Off-grid, explained" />
+                        <KeepWhole text={offGrid.explainedHeading} />
                     </h2>
                     {/* The connects box sits directly below the legend, with nothing between them.
                         Nothing about a later version ever goes in the legend (13.d.i). */}
-                    <p className="m-0 flex flex-wrap items-start gap-3">
-                        <OffGridBadge link={app.connectsLink} />
-                        <span className="min-w-0 flex-1 basis-64">
-                            <b className="font-semibold"><KeepWhole text={`${offGrid.badge}:`} /></b> <KeepWhole text={offGrid.legendOnAppPage} />
-                        </span>
-                    </p>
+                    <OffGridLegend text={offGrid.legendOnAppPage} link={app.connectsLink} />
                     {/* The badge popups' "What <App> connects to" link lands here. */}
                     <div id={app.connectsId} className="mt-3 rounded-xl border border-line bg-white p-5">
                         <p className="m-0">
