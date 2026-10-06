@@ -35,9 +35,11 @@
   transform: translateY(-50%);
 }
 
-/* The green badge: the same pill as before it became a button. */
+/* The green badge: the same pill as before it became a button. Its word
+   never splits at the hyphen. */
 .badge {
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 7px;
   padding: 4px 11px 4px 9px;

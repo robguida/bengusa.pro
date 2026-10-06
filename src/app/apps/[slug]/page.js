@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import DraftLabel from '../../components/DraftLabel';
+import KeepWhole from '../../components/KeepWhole';
 import OffGridBadge from '../../components/OffGridBadge';
 import { getPublicApp, getPublicApps } from '@/lib/apps';
 import siteWords from '../../../../content/site-words.json';
@@ -30,13 +31,13 @@ export default async function AppPage({ params }) {
             <div className="grid justify-items-start gap-[18px] pb-10">
                 <DraftLabel />
                 <p className="m-0 text-[13px] font-medium tracking-[0.12em] text-ink-soft uppercase">{app.name}</p>
-                <h1 className="m-0 max-w-[18ch] text-[clamp(2.4rem,7vw,4rem)] leading-[1.04]">{app.tagline}</h1>
-                <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{app.intro}</p>
+                <h1 className="m-0 max-w-[18ch] text-[clamp(2.4rem,7vw,4rem)] leading-[1.04]"><KeepWhole text={app.tagline} /></h1>
+                <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft"><KeepWhole text={app.intro} /></p>
                 {app.offGrid && (
                     <p className="m-0 flex flex-wrap items-center gap-x-3 gap-y-2">
                         <OffGridBadge link={app.connectsLink} />
                         <span>
-                            <b className="font-semibold">{offGrid.badge}:</b> {offGrid.short}
+                            <b className="font-semibold"><KeepWhole text={`${offGrid.badge}:`} /></b> <KeepWhole text={offGrid.short} />
                         </span>
                     </p>
                 )}
@@ -45,20 +46,20 @@ export default async function AppPage({ params }) {
             {app.connectsId && (
                 <section className="max-w-[44em] pb-10" aria-labelledby="off-grid-title">
                     <h2 id="off-grid-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
-                        Off-grid, explained
+                        <KeepWhole text="Off-grid, explained" />
                     </h2>
                     {/* The connects box sits directly below the legend, with nothing between them.
                         Nothing about a later version ever goes in the legend (13.d.i). */}
                     <p className="m-0 flex flex-wrap items-start gap-3">
                         <OffGridBadge link={app.connectsLink} />
                         <span className="min-w-0 flex-1 basis-64">
-                            <b className="font-semibold">{offGrid.badge}:</b> {offGrid.legendOnAppPage}
+                            <b className="font-semibold"><KeepWhole text={`${offGrid.badge}:`} /></b> <KeepWhole text={offGrid.legendOnAppPage} />
                         </span>
                     </p>
                     {/* The badge popups' "What <App> connects to" link lands here. */}
                     <div id={app.connectsId} className="mt-3 rounded-xl border border-line bg-white p-5">
                         <p className="m-0">
-                            <b className="font-semibold">{app.connects.label}</b> {app.connects.text}
+                            <b className="font-semibold"><KeepWhole text={app.connects.label} /></b> <KeepWhole text={app.connects.text} />
                         </p>
                     </div>
                 </section>
@@ -73,7 +74,7 @@ export default async function AppPage({ params }) {
                     </h2>
                     <div className="grid gap-3">
                         {app.whereItLives.lines.map((line) => (
-                            <p key={line} className="m-0">{line}</p>
+                            <p key={line} className="m-0"><KeepWhole text={line} /></p>
                         ))}
                     </div>
                 </section>
