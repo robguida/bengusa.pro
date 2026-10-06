@@ -33,10 +33,10 @@
      scales back"). --hdr-h-word-end sizes the docked "bengUSA.pro" lettering
      separately: it is the logo height the lettering is sized for, the 2x logo
      (92px / 58px), so the docked lettering keeps its 2x size (29px on a
-     computer, 24px on a phone) while the logo docks at 2.5x. The lettering
-     catches up with the real logo early in the shrink (SiteHeader.module.css),
-     so the big Home header is unchanged. --hdr-h-land is the big logo on
-     Home. */
+     computer, 24px on a phone) while the logo docks at 2.5x. On a computer
+     the lettering catches up with the real logo early in the shrink, so the
+     big Home header is unchanged; on a phone it stays 24px through the whole
+     shrink (SiteHeader.module.css). --hdr-h-land is the big logo on Home. */
   --hdr-k-t: 0.585; /* tab apothem / logo height: logo hexagon 0.475 + padding 0.11 */
   --hdr-min-bar: 64px;
   --hdr-bar-pad: 14px;

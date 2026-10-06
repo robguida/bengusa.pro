@@ -13,17 +13,38 @@ import appWords from '../../content/app-words.json';
 const SHOWN = new Set(['open', 'showcase']);
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-function toPublic(app) {
+// The content check. It looks at every shown app and lists every problem it
+// finds, so one build shows them all; then the build fails once, with the
+// full list. Failing the build on a bad app list is the spec's own pattern
+// (acceptance check 24.d).
+function problemsWith(app) {
+    const problems = [];
     const words = appWords[app.id];
     if (!words) {
-        throw new Error(`content/app-words.json has no entry for the app "${app.id}".`);
+        problems.push(`content/app-words.json has no entry for the app "${app.id}".`);
     }
     if (typeof app.slug !== 'string' || !SLUG.test(app.slug)) {
-        throw new Error(`content/apps.json: "${app.id}" needs a slug of lower-case words and dashes, like "photo-search".`);
+        problems.push(`content/apps.json: "${app.id}" needs a slug of lower-case words and dashes, like "photo-search".`);
     }
+    if (!words) return problems;
     if (words.whereItLives && !Array.isArray(words.whereItLives.lines)) {
-        throw new Error(`content/app-words.json: "${app.id}".whereItLives needs "lines", a list of sentences.`);
+        problems.push(`content/app-words.json: "${app.id}".whereItLives needs "lines", a list of sentences.`);
     }
+    const { connects } = words;
+    if (connects != null && (typeof connects.label !== 'string' || typeof connects.text !== 'string')) {
+        problems.push(`content/app-words.json: "${app.id}".connects needs a "label" and a "text".`);
+    }
+    // An Off-grid app's page must have its "What <App> connects to" box:
+    // without it, the page would quietly drop its "Off-grid, explained"
+    // section and its badges' popup link.
+    if (app.offGrid === true && connects == null) {
+        problems.push(`content/app-words.json: "${app.id}" is marked Off-grid in content/apps.json, so it needs "connects", its "What it connects to" line.`);
+    }
+    return problems;
+}
+
+function toPublic(app) {
+    const words = appWords[app.id];
     const offGrid = app.offGrid === true;
     const href = `/apps/${app.slug}/`;
     const connects = words.connects ?? null;
@@ -52,15 +73,21 @@ function toPublic(app) {
     };
 }
 
-const publicApps = apps.filter((app) => SHOWN.has(app.status)).map(toPublic);
+const shownApps = apps.filter((app) => SHOWN.has(app.status));
 
+const problems = shownApps.flatMap(problemsWith);
 const slugs = new Set();
-for (const app of publicApps) {
-    if (slugs.has(app.slug)) {
-        throw new Error(`content/apps.json: two apps use the slug "${app.slug}".`);
-    }
+for (const app of shownApps) {
+    if (typeof app.slug !== 'string') continue; // already listed above
+    if (slugs.has(app.slug)) problems.push(`content/apps.json: two apps use the slug "${app.slug}".`);
     slugs.add(app.slug);
 }
+if (problems.length > 0) {
+    throw new Error(`The content check found ${problems.length} problem${problems.length === 1 ? '' : 's'}:\n`
+        + problems.map((p) => `  - ${p}`).join('\n'));
+}
+
+const publicApps = shownApps.map(toPublic);
 
 export function getPublicApps() {
     return publicApps;

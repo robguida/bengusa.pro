@@ -3,6 +3,8 @@
     "badge": "Off-grid",
     "short": "your data lives on your device, not in our cloud.",
     "popup": "your data lives on your device, not in our cloud. If you buy it, all we keep is your purchase record.",
+    "explainedHeading": "Off-grid, explained",
+    "legendOnHome": "the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. Each app's page lists what it connects to. We call Off-grid apps Cloud-killers.",
     "legendOnAppPage": "the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. We call Off-grid apps Cloud-killers."
   },
   "home": {

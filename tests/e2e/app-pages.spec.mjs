@@ -37,7 +37,7 @@ test.describe('app pages', () => {
         });
     }
 
-    test('Vault: the legend, then the connects box, then the sync line, then the trust line, in that order', async ({ page }) => {
+    test('Vault: the legend, then the connects box, then the trust line, then the sync line, in that order', async ({ page }) => {
         const vault = APPS.find((a) => a.id === 'vault');
         await page.goto(vault.page);
         await settle(page);
@@ -56,11 +56,29 @@ test.describe('app pages', () => {
             const before = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
             const top = (el) => el.getBoundingClientRect().top + window.scrollY;
             const legendSection = legendEl.closest('section');
+            // 13.e.ii: side by side, in the same size and style, with no
+            // words between them, under the "Where your vault lives" heading.
+            const look = (el) => {
+                const cs = getComputedStyle(el);
+                return ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'lineHeight', 'color'].map((k) => `${k} ${cs[k]}`);
+            };
+            const range = document.createRange();
+            range.setStartAfter(trustEl);
+            range.setEndBefore(syncEl);
+            const section = trustEl.closest('section');
+            const heading = section?.querySelector('h2, h3');
             return {
                 missing,
-                domOrder: before(legendEl, boxEl) && before(boxEl, syncEl) && before(syncEl, trustEl),
-                screenOrder: top(legendEl) < top(boxEl) && top(boxEl) < top(syncEl) && top(syncEl) < top(trustEl),
+                domOrder: before(legendEl, boxEl) && before(boxEl, trustEl) && before(trustEl, syncEl),
+                screenOrder: top(legendEl) < top(boxEl) && top(boxEl) < top(trustEl) && top(trustEl) < top(syncEl),
                 syncInLegend: legendEl.contains(syncEl) || legendSection.contains(syncEl),
+                trustInLegend: legendEl.contains(trustEl) || legendSection.contains(trustEl),
+                sideBySide: trustEl.nextElementSibling === syncEl,
+                wordsBetween: norm(range.toString()),
+                lookTrust: look(trustEl),
+                lookSync: look(syncEl),
+                sameSection: !!section && section.contains(syncEl),
+                heading: heading ? norm(heading.innerText) : null,
                 syncText: norm(syncEl.innerText),
                 trustText: norm(trustEl.innerText),
                 cloudKillers: (norm(document.querySelector('main').innerText).match(/Cloud-killers/g) || []).length,
@@ -70,9 +88,17 @@ test.describe('app pages', () => {
         expect(parts.missing, 'parts found on the Vault page').toEqual([]);
         expect.soft(parts.syncText, 'sync line, word for word').toBe(WORDS.vaultSync);
         expect.soft(parts.trustText, 'trust line, word for word').toBe(WORDS.vaultTrust);
-        expect.soft(parts.domOrder, 'page order: legend, box, sync line, trust line').toBe(true);
-        expect.soft(parts.screenOrder, 'on screen, top to bottom: legend, box, sync line, trust line').toBe(true);
+        expect.soft(parts.domOrder, 'page order: legend, box, trust line, sync line').toBe(true);
+        expect.soft(parts.screenOrder, 'on screen, top to bottom: legend, box, trust line, sync line').toBe(true);
         expect.soft(parts.syncInLegend, 'the sync line is never inside the legend or its section (13.d.i)').toBe(false);
+        expect.soft(parts.trustInLegend, 'the trust line is never inside the legend or its section (13.e.ii)').toBe(false);
+        // 13.e.ii, acceptance check 3.b: under "Where your vault lives", side
+        // by side, the same size and style, nothing between them.
+        expect.soft(parts.sameSection, 'the trust line and the sync line sit in one section').toBe(true);
+        expect.soft(parts.heading, 'that section\'s heading').toBe(WORDS.vaultWhereHeading);
+        expect.soft(parts.sideBySide, 'the sync line comes straight after the trust line').toBe(true);
+        expect.soft(parts.wordsBetween, 'words between the trust line and the sync line').toBe('');
+        expect.soft(parts.lookSync, 'the sync line has the trust line\'s size and style').toEqual(parts.lookTrust);
         // 13.d.i / acceptance 3.c: on Vault, "Cloud-killers" is in the legend only.
         expect.soft(parts.cloudKillers, '"Cloud-killers" on the Vault page').toBe(1);
         expect.soft(parts.cloudKillersInLegend, '"Cloud-killers" in the legend').toBe(1);

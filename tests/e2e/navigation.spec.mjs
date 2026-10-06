@@ -4,16 +4,19 @@ import { describeBug, misnamedPageDataFiles, pathOf } from '../support/windows-e
 
 const APP_PAGES = PAGES.filter((p) => p.startsWith('/apps/'));
 
-test('footer with the Privacy link and "© 2026 bengUSA.pro" on every page', async ({ page }) => {
-    for (const p of PAGES) {
-        await page.goto(p);
+// One test per page, like the menu tests: a page whose files stall costs only
+// that page's test, and the report names it. The footer is in the page's HTML,
+// so each load waits for the HTML (domcontentloaded), not for every file.
+for (const p of PAGES) {
+    test(`footer on ${p}: the Privacy link and "© 2026 bengUSA.pro"`, async ({ page }) => {
+        await page.goto(p, { waitUntil: 'domcontentloaded' });
         const footer = page.locator('footer');
         const privacy = footer.getByRole('link', { name: 'Privacy', exact: true });
         await expect.soft(privacy, `${p}: Privacy link`).toBeVisible();
         await expect.soft(privacy, `${p}: Privacy link target`).toHaveAttribute('href', '/privacy/');
         await expect.soft(footer, `${p}: copyright line`).toContainText('© 2026 bengUSA.pro');
-    }
-});
+    });
+}
 
 for (const p of ['/', '/about/']) {
     test(`menu on ${p}: opens, then Escape closes it and puts focus back on its button`, async ({ page }, testInfo) => {

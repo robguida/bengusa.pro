@@ -20,11 +20,49 @@ export const HEADER = {
 };
 export const PX_TOLERANCE = 0.75;
 
+// The lettering's DRAWN size, in the build's own px, for the checks that need
+// more than the spec's whole numbers: Home at the top, and the whole shrink.
+// Measured 2026-10-06 (Chromium and WebKit agree to 0.01px). The project
+// lead accepted 23.91px at the top of Home on a phone as what spec 6.c's
+// "24px at every size" means (it was 24.2px at 390px before BUWEB-106a-r2).
+//   - docked: 29.44px on a computer, 23.91px on a phone (spec: 29 / 24);
+//   - Home at the top: 61.63px at 1280px, 23.91px at 390px.
+// WORD_TOLERANCE is small on purpose: the old phone path started at 24.2px.
+export const WORD = {
+    desktop: { dock: 29.44, land: 61.63 },
+    phone: { dock: 23.91, land: 23.91 },
+};
+export const WORD_TOLERANCE = 0.1;
+
+// The lettering's path through the whole shrink on Home, top to docked, by
+// screen width (spec 6.c):
+//   - 'hold': it stays at its docked size the whole way (phones about 388px
+//     wide and up);
+//   - 'rise': it never shrinks, and grows up to its docked size (narrower
+//     phones, where 24px does not fit at the top);
+//   - 'fall': it never grows, and shrinks from its Home size to its docked
+//     size (computers). 37.88px at 760px is the room left before the menu.
+export const WORD_PATH = {
+    phone: [
+        { width: 390, path: 'hold' },
+        { width: 430, path: 'hold' },
+        { width: 360, path: 'rise' },
+    ],
+    desktop: [
+        { width: 760, path: 'fall', top: 37.88 },
+        { width: 1280, path: 'fall', top: 61.63 },
+    ],
+};
+
 // RULE: never wait a fixed time and then measure. Wait for the STATE you need.
 // A timeout below is only a ceiling that turns "never got there" into a red
 // test; reaching the state early always ends the wait early.
 const START_TIMEOUT = 15_000; // the page's scripts have started (busy CI machines are slow)
 const STATE_TIMEOUT = 5_000; // a size or a scroll position has reached its end state
+// Each page load's own limit, shorter than any test's (30s, or 60s / 90s for
+// the long walks). A load that stalls then fails on its own, naming the
+// page, and the test still has time left to save its trace.
+const NAV_TIMEOUT = 15_000;
 const STABLE_FRAMES = 3; // "stopped changing" = this many animation frames in a row with no change
 
 // Stress knob (off by default): E2E_SLOW_START_MS=150 holds back every
@@ -203,6 +241,10 @@ export async function scrollToY(page, y) {
     return page.evaluate(() => Math.round(window.scrollY));
 }
 
+// Home's subline: the first <p> after the hero heading. Not simply the next
+// element: the hero word's popup box sits right after the heading.
+export const heroSubline = (page) => page.locator('h1').locator('xpath=following-sibling::p[1]');
+
 // The menu button for this screen: "Apps" on a computer, "Menu" on a phone.
 export function menuButton(page, testInfo) {
     return isPhone(testInfo)
@@ -212,13 +254,26 @@ export function menuButton(page, testInfo) {
 
 // Every browser test runs with these guards, automatically:
 //   - any request that leaves the local test server is BLOCKED and fails the test;
-//   - any JavaScript error (uncaught, or console.error) fails the test.
+//   - any JavaScript error (uncaught, or console.error) fails the test;
+//   - each page load has its own time limit (NAV_TIMEOUT).
 // Network errors such as a 404 are not JavaScript errors; the
 // "no 404s while browsing" test covers them.
+//
+// Why the block is a route with a match function, and stays one: in
+// Playwright 1.63 ANY route makes the browser pause every request (Chromium
+// and WebKit both intercept every address), whatever the route's URL
+// pattern. A pattern only moves the match from this test process into
+// Playwright's own driver; the browser still pauses each local request until
+// it is let through. So no pattern can stop local requests from being
+// paused. A proxy-based block was not taken either: it is a different guard
+// (Chromium skips a proxy for loopback addresses by default, and a blocked
+// request would no longer be recorded by its address), with no proof yet in
+// all three browsers. Checked in Playwright's own code, 2026-10-06.
 export const test = base.extend({
     siteGuards: [async ({ context, baseURL, javaScriptEnabled }, use) => {
         const outside = [];
         const jsErrors = [];
+        context.setDefaultNavigationTimeout(NAV_TIMEOUT);
         if (javaScriptEnabled === false) scriptsOff.add(context);
         await context.addInitScript(startProbe);
         const isLocal = (url) => url.startsWith(`${baseURL}/`) || url === baseURL
@@ -230,8 +285,13 @@ export const test = base.extend({
         if (SLOW_START_MS > 0) {
             await context.addInitScript((ms) => {
                 const post = MessagePort.prototype.postMessage;
+                // The real timer, kept here: this runs before a test's fake
+                // clock (page.clock) is put in, and a slow machine is slow in
+                // real time. On the fake clock's timer, a frozen clock would
+                // also freeze React.
+                const later = window.setTimeout.bind(window);
                 MessagePort.prototype.postMessage = function slowed(...args) {
-                    setTimeout(() => post.apply(this, args), ms);
+                    later(() => post.apply(this, args), ms);
                 };
             }, SLOW_START_MS);
         }

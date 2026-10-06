@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AppName from './AppName';
+import KeepWhole from './KeepWhole';
 import OffGridBadge from './OffGridBadge';
 import siteWords from '../../../content/site-words.json';
 
@@ -14,15 +15,15 @@ export default function AppCard({ app }) {
             <div className="flex min-h-7 items-center">
                 {app.offGrid && <OffGridBadge link={app.connectsLink} />}
             </div>
-            <p className="m-0 font-medium">{app.tagline}</p>
-            <p className="m-0">{app.summary}</p>
+            <p className="m-0 font-medium"><KeepWhole text={app.tagline} /></p>
+            <p className="m-0"><KeepWhole text={app.summary} /></p>
             <p className="m-0 mt-auto border-t border-line pt-3 text-sm leading-[1.55] text-ink-soft">
                 {app.offGrid ? (
                     <>
-                        <b className="font-semibold text-brand-navy">Off-grid:</b> {siteWords.offGrid.short}
+                        <b className="font-semibold text-brand-navy"><KeepWhole text="Off-grid:" /></b> <KeepWhole text={siteWords.offGrid.short} />
                     </>
                 ) : (
-                    app.cardNote
+                    app.cardNote && <KeepWhole text={app.cardNote} />
                 )}
             </p>
             <Link href={app.href} className="self-start font-medium text-brand-navy underline underline-offset-4 hover:no-underline">

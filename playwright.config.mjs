@@ -22,9 +22,10 @@ export default defineConfig({
     testDir: './tests',
     outputDir: './test-results',
     fullyParallel: true,
-    // Capped locally: more parallel WebKit windows than this starved each
-    // other on the laptop and timed out. CI uses Playwright's default.
-    workers: process.env.CI ? undefined : 4,
+    // Capped locally: with 4, connections to the local test server stalled
+    // for 10 to 30 s at a time on the laptop and tests timed out together.
+    // 2 runs clean, and faster. CI uses Playwright's default.
+    workers: process.env.CI ? undefined : 2,
     forbidOnly: !!process.env.CI,
     retries: 0, // a test that needs a retry to pass is a defect, not noise
     reporter: process.env.CI ? [['list'], ['github'], ['html', { open: 'never' }]] : [['list']],

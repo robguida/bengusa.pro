@@ -22,8 +22,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* An invisible tap area at least 44px tall (WCAG 2.5.8). The look and the
-   layout don't change. */
+/* An invisible tap area at least 44px tall (WCAG 2.5.5, Target Size). The
+   look and the layout don't change. */
 .trigger::after {
   content: "";
   position: absolute;
@@ -35,9 +35,11 @@
   transform: translateY(-50%);
 }
 
-/* The green badge: the same pill as before it became a button. */
+/* The green badge: the same pill as before it became a button. Its word
+   never splits at the hyphen. */
 .badge {
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 7px;
   padding: 4px 11px 4px 9px;
@@ -76,7 +78,9 @@
   color: var(--green);
 }
 
-/* The box. It may sit inside a heading, so every text setting is reset. */
+/* The box. It sits right after its badge, or right after the heading that
+   holds its word, never inside the heading. Every text setting is reset, so
+   it looks the same wherever it sits. */
 .tip {
   display: none;
   position: fixed;
