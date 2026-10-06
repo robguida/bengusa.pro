@@ -5,13 +5,14 @@ import { expectedRoutes } from '../../scripts/lib/export-checks.mjs';
 // Every page, as the browser asks for it (trailingSlash: true).
 export const PAGES = expectedRoutes().map((r) => (r === '/' ? '/' : `${r}/`));
 
-// Header end sizes = the logo mark's height. "dock" = 2x today's 46px logo,
-// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css).
+// Header end sizes = the logo mark's height. "dock" = 2.5x today's 46px logo,
+// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css). The docked
+// lettering keeps its 2x size (--hdr-h-word-end).
 // "land" = Home at the very top. "dock" = scrolled, and every other page.
 // The phone landing size is a clamp() of the screen width: 128.69px at 390px.
 export const HEADER = {
-    desktop: { dock: 92, land: 240 },
-    phone: { dock: 58, land: 128.69 },
+    desktop: { dock: 115, land: 240 },
+    phone: { dock: 69, land: 128.69 },
 };
 export const PX_TOLERANCE = 0.75;
 

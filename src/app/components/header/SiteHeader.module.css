@@ -14,6 +14,13 @@
   /* bar height, and the tab hexagon's radius (centre to corner) */
   --bh: max(var(--hdr-min-bar), var(--h) / 2 + var(--hdr-bar-pad));
   --r: calc(var(--h) * var(--hdr-k-t) / 0.8660254);
+  /* The lettering is sized for its own logo height, --hw: the 2x logo
+     (--hdr-h-word-end) when docked, growing 1.5 times as fast as the real logo
+     until it catches up, 46px above the docked size on a computer (22px on a
+     phone). That is below the smallest big Home logo (179px computer, 112px
+     phone), so the big header is unchanged, and the size never jumps. */
+  --hw: min(var(--h), var(--hdr-h-word-end) + 1.5 * (var(--h) - var(--hdr-h-end)));
+  --wbh: max(var(--hdr-min-bar), var(--hw) / 2 + var(--hdr-bar-pad));
 
   position: fixed;
   inset: 0 0 auto 0;
@@ -122,9 +129,11 @@
   height: var(--h);
 }
 
-/* Just right of the tab, sized to fit before the menu. */
+/* Just right of the tab, sized to fit before the menu, and centred in the bar.
+   Its height comes from --wbh (the bar its own logo height would have), not
+   from the real bar. */
 .word {
-  --wh: max(14px, min(var(--bh) * 0.46, (100cqw - var(--hdr-gutter) - var(--hdr-nav-w) - 2 * var(--hdr-gap) - 2 * var(--r)) / 5.4563463));
+  --wh: max(14px, min(var(--wbh) * 0.46, (100cqw - var(--hdr-gutter) - var(--hdr-nav-w) - 2 * var(--hdr-gap) - 2 * var(--r)) / 5.4563463));
   left: calc(2 * var(--r) + var(--hdr-gap));
   top: calc(var(--bh) / 2 - var(--wh) * 0.44);
   width: calc(var(--wh) * 5.4563463);
