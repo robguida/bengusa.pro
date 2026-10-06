@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import styles from './OffGridTip.module.css';
 
 // The Off-grid popup ("toggletip", spec 17.c). The trigger is a real button:
@@ -9,9 +9,17 @@ import styles from './OffGridTip.module.css';
 // approved words. It is an extra: the visible short line or legend always
 // stays on the page as well.
 //
+// Three parts, so the box never has to sit inside a heading:
+//   - OffGridTipRoot owns the state and renders the box right after its
+//     children (a heading on Home, or just the badge's button);
+//   - OffGridTrigger is the button, anywhere inside its root;
+//   - OffGridTip (the default export) is a badge's trigger with its box.
+// A heading's text is then only its own words (OffGridHeading.js).
+//
 // Before this script runs, the browser's own popover switch (popovertarget)
 // opens and closes the box on tap or click, and Esc or a click outside closes
-// it. Once the script runs it takes over:
+// it. It finds the box by its ID, so the box can sit after the heading. Once
+// the script runs it takes over:
 //   - opens on mouse hover (after 150 ms), on keyboard focus, and on tap/click;
 //   - closes on Esc (focus stays on, or goes back to, the trigger), a tap or
 //     click outside, focus moving away, a second tap, and the mouse leaving
@@ -29,6 +37,10 @@ const CLOSE_GRACE_MS = 300;
 const EDGE_PX = 16; // kept clear of the screen edge
 const GAP_PX = 8; // between the trigger and the box
 const OPEN_EVENT = 'offgrid-tip-open'; // tells any other open box to close
+
+// Each root adds its trigger's state under its own key, on top of any root
+// around it, so a heading with more than one "Off-grid" word still works.
+const TipContext = createContext({});
 
 // 'server' = the first frame (server HTML, and hydration); then 'popover', or
 // 'fallback' in a browser without popovers (plain show/hide).
@@ -77,10 +89,11 @@ function HexIcon() {
     );
 }
 
-// kind: 'badge' (the green pill) or 'word' (the word in a heading; green
-// sets the hero's green word). lead + text: the box's words ("Off-grid:" in
-// bold, then the rest). link: { href, label } or null.
-export default function OffGridTip({ kind = 'badge', green = false, word, lead, text, link = null }) {
+// Owns one popup: its state, and its box, which comes right after children.
+// tipKey: names this popup for its OffGridTrigger. lead + text: the box's
+// words ("Off-grid:" in bold, then the rest). link: { href, label } or null.
+export function OffGridTipRoot({ tipKey, lead, text, link = null, children }) {
+    const parent = useContext(TipContext);
     const buttonId = useId();
     const tipId = useId();
     const buttonRef = useRef(null);
@@ -267,31 +280,17 @@ export default function OffGridTip({ kind = 'badge', green = false, word, lead, 
     };
 
     const state = live ? (open ? 'open' : 'closed') : undefined;
-    const triggerClass = kind === 'badge'
-        ? `${styles.trigger} ${styles.badge}`
-        : `${styles.trigger} ${styles.word}${green ? ` ${styles.green}` : ''}`;
+    // The trigger gets a callback that stores its button, not the ref itself.
+    const attachButton = useCallback((el) => {
+        buttonRef.current = el;
+    }, []);
+    const trigger = {
+        attachButton, buttonId, tipId, live, open, state, onClick, onPointerEnter, onPointerLeave, onFocus, onBlur,
+    };
 
     return (
-        <>
-            <button
-                ref={buttonRef}
-                id={buttonId}
-                type="button"
-                className={triggerClass}
-                popoverTarget={live ? undefined : tipId}
-                aria-controls={tipId}
-                aria-expanded={live ? open : undefined}
-                data-offgrid="trigger"
-                data-state={state}
-                onClick={onClick}
-                onPointerEnter={onPointerEnter}
-                onPointerLeave={onPointerLeave}
-                onFocus={onFocus}
-                onBlur={onBlur}
-            >
-                {kind === 'badge' && <HexIcon />}
-                {word}
-            </button>
+        <TipContext.Provider value={{ ...parent, [tipKey]: trigger }}>
+            {children}
             <span
                 ref={tipRef}
                 id={tipId}
@@ -314,6 +313,50 @@ export default function OffGridTip({ kind = 'badge', green = false, word, lead, 
                     </Link>
                 )}
             </span>
-        </>
+        </TipContext.Provider>
+    );
+}
+
+// The button that opens the popup named tipKey. It must sit inside that
+// OffGridTipRoot. kind: 'badge' (the green pill) or 'word' (the word in a
+// heading; green sets the hero's green word).
+export function OffGridTrigger({ tipKey, kind = 'badge', green = false, word }) {
+    const shared = useContext(TipContext)[tipKey];
+    if (!shared) throw new Error(`OffGridTrigger "${tipKey}" is not inside its OffGridTipRoot.`);
+    const {
+        attachButton, buttonId, tipId, live, open, state, onClick, onPointerEnter, onPointerLeave, onFocus, onBlur,
+    } = shared;
+    const className = kind === 'badge'
+        ? `${styles.trigger} ${styles.badge}`
+        : `${styles.trigger} ${styles.word}${green ? ` ${styles.green}` : ''}`;
+    return (
+        <button
+            ref={attachButton}
+            id={buttonId}
+            type="button"
+            className={className}
+            popoverTarget={live ? undefined : tipId}
+            aria-controls={tipId}
+            aria-expanded={live ? open : undefined}
+            data-offgrid="trigger"
+            data-state={state}
+            onClick={onClick}
+            onPointerEnter={onPointerEnter}
+            onPointerLeave={onPointerLeave}
+            onFocus={onFocus}
+            onBlur={onBlur}
+        >
+            {kind === 'badge' && <HexIcon />}
+            {word}
+        </button>
+    );
+}
+
+// A trigger with its box right after it: the badge (OffGridBadge.js).
+export default function OffGridTip({ kind = 'badge', green = false, word, lead, text, link = null }) {
+    return (
+        <OffGridTipRoot tipKey="tip" lead={lead} text={text} link={link}>
+            <OffGridTrigger tipKey="tip" kind={kind} green={green} word={word} />
+        </OffGridTipRoot>
     );
 }

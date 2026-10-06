@@ -1,6 +1,6 @@
 import AppCard from './components/AppCard';
 import DraftLabel from './components/DraftLabel';
-import OffGridText from './components/OffGridText';
+import OffGridHeading from './components/OffGridHeading';
 import { getPublicApps } from '@/lib/apps';
 import siteWords from '../../content/site-words.json';
 
@@ -18,9 +18,14 @@ export default function Home() {
         <div className="home-top mx-auto max-w-[1088px] px-4 pb-16 md:px-6">
             <section className="grid justify-items-start gap-[18px] pb-16" aria-labelledby="home-title">
                 <DraftLabel />
-                <h1 id="home-title" className="m-0 max-w-[14ch] text-[clamp(2.6rem,8vw,5rem)] leading-[1.02]">
-                    <OffGridText text={home.heroTitle} green />
-                </h1>
+                {/* The popup box for "Off-grid" sits right after the heading (OffGridHeading). */}
+                <OffGridHeading
+                    as="h1"
+                    id="home-title"
+                    className="m-0 max-w-[14ch] text-[clamp(2.6rem,8vw,5rem)] leading-[1.02]"
+                    text={home.heroTitle}
+                    green
+                />
                 {/* About 45% of the heading's size, navy (17.a.ii). */}
                 <p className="m-0 -mt-1.5 font-display text-[clamp(1.2rem,3.6vw,2.25rem)] leading-[1.15] font-medium text-balance">
                     {home.heroSubline}
@@ -28,9 +33,12 @@ export default function Home() {
             </section>
 
             <section id="apps" className="py-10" aria-labelledby="apps-title">
-                <h2 id="apps-title" className="m-0 mb-[22px] text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">
-                    <OffGridText text={appsTitle} />
-                </h2>
+                <OffGridHeading
+                    as="h2"
+                    id="apps-title"
+                    className="m-0 mb-[22px] text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]"
+                    text={appsTitle}
+                />
                 <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 md:grid-cols-2 lg:grid-cols-3">
                     {apps.map((app) => (
                         <li key={app.id} className="flex">
