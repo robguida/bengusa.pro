@@ -28,8 +28,8 @@
     "whereItLives": {
       "heading": "Where your vault lives",
       "lines": [
-        "Vault (working name) starts on Windows. A later version may add sync between devices. That version would keep an encrypted copy of your vault in our cloud, so it won't wear the Off-grid badge.",
-        "Your vault is saved on your PC, and we keep no copy of it."
+        "Your vault is saved on your PC, and we keep no copy of it.",
+        "Vault (working name) starts on Windows. A later version may add sync between devices. That version would keep an encrypted copy of your vault in our cloud, so it won't wear the Off-grid badge."
       ]
     }
   }

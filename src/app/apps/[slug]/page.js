@@ -64,7 +64,8 @@ export default async function AppPage({ params }) {
                 </section>
             )}
 
-            {/* After the connects box, never inside the legend. Vault: the sync line, then the trust line (13.e.ii). */}
+            {/* After the connects box, never inside the legend or its section. Vault: the trust line, then
+                the sync line, side by side in the same size and style, with nothing between them (13.e.ii). */}
             {app.whereItLives && (
                 <section className="max-w-[44em] pb-10" aria-labelledby="where-title">
                     <h2 id="where-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">

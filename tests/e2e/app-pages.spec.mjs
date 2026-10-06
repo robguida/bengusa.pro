@@ -58,8 +58,8 @@ test.describe('app pages', () => {
             const legendSection = legendEl.closest('section');
             return {
                 missing,
-                domOrder: before(legendEl, boxEl) && before(boxEl, syncEl) && before(syncEl, trustEl),
-                screenOrder: top(legendEl) < top(boxEl) && top(boxEl) < top(syncEl) && top(syncEl) < top(trustEl),
+                domOrder: before(legendEl, boxEl) && before(boxEl, trustEl) && before(trustEl, syncEl),
+                screenOrder: top(legendEl) < top(boxEl) && top(boxEl) < top(trustEl) && top(trustEl) < top(syncEl),
                 syncInLegend: legendEl.contains(syncEl) || legendSection.contains(syncEl),
                 syncText: norm(syncEl.innerText),
                 trustText: norm(trustEl.innerText),
