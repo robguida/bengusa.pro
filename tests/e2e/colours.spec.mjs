@@ -8,10 +8,13 @@
 // the logo at all. When it lands, add its hook to RED_ALLOWED and keep the
 // "never on light blue" check below green.
 import { test, expect, PAGES, isReducedMotion, settle } from '../support/site.mjs';
-import { TRIGGER, expectOpen, popupsLive, press, tipOf } from '../support/offgrid.mjs';
-import { COLOUR } from '../support/words.mjs';
+import { TIP, TRIGGER, expectOpen, popupsLive, press, tipOf } from '../support/offgrid.mjs';
+import { COLOUR, WORDS } from '../support/words.mjs';
 
 const LOGO = '[data-logo]';
+// Home's "Off-grid, explained" section, as a CSS root for findColour(). The
+// test below first checks that this is the section with that heading.
+const HOME_SECTION = 'main section:has(> h2#home-off-grid-title)';
 const RED_ALLOWED = []; // e.g. '[data-signup="submit"]' once BUWEB-107 builds the button
 const GREEN_ALLOWED = [TRIGGER]; // the badge, the hero word and every popup trigger's underline
 
@@ -67,10 +70,46 @@ test.describe('colour rules (6.f)', () => {
         }
     });
 
+    test('Home\'s "Off-grid, explained" section: the badge green, the heading and legend words navy, no red', async ({ page }) => {
+        await page.goto('/');
+        await settle(page);
+        const section = page.locator(HOME_SECTION);
+        await expect(section).toHaveCount(1);
+        await expect(section.locator('h2'), 'the section found by its heading').toHaveText(WORDS.explainedHeading);
+
+        // The badge: green with white words, and no underline (17.c.vi).
+        const badge = section.locator(TRIGGER);
+        await expect(badge).toHaveCount(1);
+        expect.soft(await badge.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { backgroundColor: cs.backgroundColor, color: cs.color, textDecorationLine: cs.textDecorationLine };
+        }), 'section badge colours').toEqual({ backgroundColor: COLOUR.green, color: COLOUR.white, textDecorationLine: 'none' });
+
+        // Every element with words of its own (the heading, "Off-grid:" and
+        // the legend's words), outside the badge and its box, is navy.
+        const words = await section.evaluate((root, { trigger, tip }) => {
+            const ownText = (el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+            return [...root.querySelectorAll('*')]
+                .filter((el) => !el.closest(trigger) && !el.closest(tip) && ownText(el))
+                .map((el) => ({ el: el.tagName.toLowerCase(), color: getComputedStyle(el).color }));
+        }, { trigger: TRIGGER, tip: TIP });
+        expect.soft(words.length, 'elements with words in the section').toBeGreaterThanOrEqual(3);
+        expect.soft(words.filter((w) => w.color !== COLOUR.navy), 'words in the section that are not navy').toEqual([]);
+
+        expect.soft(await findColour(page, COLOUR.red, [], HOME_SECTION), 'red in the section').toEqual([]);
+        expect.soft(await findColour(page, COLOUR.green, GREEN_ALLOWED, HOME_SECTION), 'green in the section outside the badge').toEqual([]);
+    });
+
     test('an open popup is a navy box with white words, "Off-grid:" bold white, and no green', async ({ page }, testInfo) => {
         await page.goto('/');
         await popupsLive(page);
-        for (const sel of [`h1 ${TRIGGER}`, `#apps article ${TRIGGER}`]) {
+        // The hero and section badge popups have no link; a card's link is white.
+        const popups = [
+            { sel: `h1 ${TRIGGER}`, link: null },
+            { sel: `${HOME_SECTION} ${TRIGGER}`, link: null },
+            { sel: `#apps article ${TRIGGER}`, link: COLOUR.white },
+        ];
+        for (const { sel, link } of popups) {
             const trigger = page.locator(sel).first();
             const tip = await tipOf(page, trigger);
             await press(trigger, testInfo);
@@ -88,8 +127,7 @@ test.describe('colour rules (6.f)', () => {
                 };
             });
             expect.soft(look, `${sel}: popup colours (17.c.vi)`).toEqual({
-                box: COLOUR.navy, words: COLOUR.white, lead: COLOUR.white, leadBold: true,
-                link: sel.startsWith('h1') ? null : COLOUR.white, // the hero popup has no link; a card's link is white
+                box: COLOUR.navy, words: COLOUR.white, lead: COLOUR.white, leadBold: true, link,
             });
             const tipSel = `[id="${await tip.getAttribute('id')}"]`;
             expect.soft(await findColour(page, COLOUR.green, [], tipSel), `${sel}: green inside the open popup`).toEqual([]);

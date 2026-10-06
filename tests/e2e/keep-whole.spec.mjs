@@ -1,6 +1,7 @@
 // "Off-grid" and "Cloud-killers" never break across two lines at their hyphen
-// (spec 17.a.iv, kept for both brand terms): in the legend, in the short line
-// beside every badge and in Vault's sync line, on Home and on every app page.
+// (spec 17.a.iv, kept for both brand terms): in the legend (Home's and each
+// app page's), in the "Off-grid, explained" heading, in the short line beside
+// every badge and in Vault's sync line, on Home and on every app page.
 // The words stay byte for byte as approved (no no-break hyphen character);
 // the build keeps each term whole with no-wrap text instead.
 //
@@ -53,6 +54,11 @@ function expectPlaces(found, page) {
     if (page === '/') {
         const cards = found.filter((f) => f.term === 'Off-grid' && f.block === WORDS.shortForm).length;
         expect.soft(cards, 'Home: the short line on every badged card').toBeGreaterThanOrEqual(APPS.length);
+        // The Home legend, in the "Off-grid, explained" section (13.a.ii).
+        const homeLegend = WORDS.legendOnHome.replace(/^Off-grid: /, '');
+        expect.soft(has('off-grid', homeLegend), 'Home: "Off-grid" in the legend').toBe(true);
+        expect.soft(has('cloud-killers', homeLegend), 'Home: "Cloud-killers" in the legend').toBe(true);
+        expect.soft(has('off-grid', WORDS.explainedHeading), 'Home: "Off-grid" in the "Off-grid, explained" heading').toBe(true);
         return;
     }
     const legend = WORDS.legendOnAppPage.replace(/^Off-grid: /, '');

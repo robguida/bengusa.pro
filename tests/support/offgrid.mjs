@@ -4,9 +4,21 @@
 //   data-state="open|closed"  on both, once the page's script has taken over.
 // data-state is absent before that, and with scripts off.
 import { expect, isPhone, settle } from './site.mjs';
+import { WORDS } from './words.mjs';
 
 export const TRIGGER = '[data-offgrid="trigger"]';
 export const TIP = '[data-offgrid="tip"]';
+
+// The "Off-grid, explained" section (13.a.ii), found by its heading's words.
+// On Home it sits between the hero and the app grid (17.a.v); on each
+// Off-grid app's page it holds the legend and the connects box. The heading
+// is matched by its text, not its accessible name: a popup word wrongly put
+// inside it would change the name and hide the section from the very checks
+// that look for that mistake.
+const exactly = (s) => new RegExp(`^\\s*${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
+export const offGridSection = (page) => page.locator('main section').filter({
+    has: page.locator('h2').filter({ hasText: exactly(WORDS.explainedHeading) }),
+});
 
 // Waits until React has started the page AND every popup on it is run by the
 // script (data-state set). Before that, a click goes to the browser's own

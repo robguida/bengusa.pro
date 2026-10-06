@@ -26,9 +26,15 @@ export const WORDS = {
     popup: 'Off-grid: your data lives on your device, not in our cloud. If you buy it, all we keep is your purchase record.',
     // 13.a.i: the short form beside every badge.
     shortForm: 'Off-grid: your data lives on your device, not in our cloud.',
+    // 13.a.ii on Home: the full legend, every sentence kept, in its own
+    // section between the hero and the app grid (17.a.v).
+    legendOnHome: 'Off-grid: the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. Each app\'s page lists what it connects to. We call Off-grid apps Cloud-killers.',
     // 13.a.ii on an app's own page: the full legend without "Each app's page
     // lists what it connects to." (the connects box sits right below instead).
     legendOnAppPage: 'Off-grid: the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. We call Off-grid apps Cloud-killers.',
+    // 13.a.ii: the heading of the legend's section, on Home and on each
+    // Off-grid app's page. A plain heading: no popup word in it.
+    explainedHeading: 'Off-grid, explained',
     // 13.b: each Off-grid app's connects box.
     connects: {
         catche: 'What Catche connects to: its map loads from OpenStreetMap. Like any website, OpenStreetMap sees your IP address. It also sees which part of the map you view, which can hint at where your photos were taken. An optional AI model downloads from Hugging Face, only if you click Download. Catche doesn\'t send your photos, file names or tags anywhere. If your computer lacks a standard Microsoft component (WebView2), the installer may download it from Microsoft.', // 13.b.ii
