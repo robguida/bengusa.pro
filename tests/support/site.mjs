@@ -6,13 +6,17 @@ import { expectedRoutes } from '../../scripts/lib/export-checks.mjs';
 export const PAGES = expectedRoutes().map((r) => (r === '/' ? '/' : `${r}/`));
 
 // Header end sizes = the logo mark's height. "dock" = 2.5x today's 46px logo,
-// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css). The docked
-// lettering keeps its 2x size (--hdr-h-word-end).
+// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css).
 // "land" = Home at the very top. "dock" = scrolled, and every other page.
 // The phone landing size is a clamp() of the screen width: 128.69px at 390px.
+// "word" = the docked "bengUSA.pro" lettering's height. It keeps the size the
+// 2x option gave it (spec 6.c, acceptance check 2; --hdr-h-word-end): 29px on
+// a computer, 24px on a phone. The build draws 29.44px and 23.91px, inside
+// PX_TOLERANCE of the spec's whole numbers. Lettering that followed the 2.5x
+// logo would be 32.89px on a computer, far outside it.
 export const HEADER = {
-    desktop: { dock: 115, land: 240 },
-    phone: { dock: 69, land: 128.69 },
+    desktop: { dock: 115, land: 240, word: 29 },
+    phone: { dock: 69, land: 128.69, word: 24 },
 };
 export const PX_TOLERANCE = 0.75;
 
@@ -153,6 +157,16 @@ export async function logoHeight(page) {
     });
 }
 
+// The "bengUSA.pro" lettering's height. Read it after expectLogoPx() or
+// settle(): it is drawn from the same --h, so once the logo has stopped
+// changing, so has the lettering.
+export async function wordHeight(page) {
+    return page.evaluate(() => {
+        const el = document.querySelector('[data-logo="word"]');
+        return el ? Math.round(el.getBoundingClientRect().height * 100) / 100 : -1;
+    });
+}
+
 // The header's shape has no test hook of its own (it is decoration, inside an
 // aria-hidden wrapper): the bar is that wrapper's <div>, and the tab is its
 // <svg>, whose last <path> is the navy edge. Its bottom is the bottom of the tab.
@@ -161,17 +175,19 @@ export const TAB_EDGE = `${SHAPE} > svg > path:last-of-type`;
 export const BAR = `${SHAPE} > div`;
 
 // Header geometry right now, in screen px: the tab's bottom edge, the bar's
-// height and the logo's height.
+// height, the logo's height and the lettering's height.
 export async function headerGeometry(page) {
     return page.evaluate(({ tab, bar }) => {
         const round = (v) => Math.round(v * 100) / 100;
         const edge = document.querySelector(tab);
         const strip = document.querySelector(bar);
         const logo = document.querySelector('[data-logo="mark"]');
+        const word = document.querySelector('[data-logo="word"]');
         return {
             tabBottom: edge ? round(edge.getBoundingClientRect().bottom) : -1,
             bar: strip ? round(strip.getBoundingClientRect().height) : -1,
             logo: logo ? round(logo.getBoundingClientRect().height) : -1,
+            word: word ? round(word.getBoundingClientRect().height) : -1,
             minBar: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-min-bar')) || -1,
         };
     }, { tab: TAB_EDGE, bar: BAR });
