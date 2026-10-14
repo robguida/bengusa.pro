@@ -22,6 +22,7 @@
 - **[C1]** = a change Rob made after the interview (2026-10-04). It wins over an older answer.
 - **[C2]** = Rob's rulings on the project lead's plan (2026-10-05). They win over an older answer.
 - **[C3]** = Rob's changes of 2026-10-06: the docked header size (6.c), the hero, the place of Home's Off-grid section (17.a.v), the app-grid heading and the Off-grid popup (decision 17), and Vault's Off-grid badge (4.c, A5). They win over an older answer.
+- **[C4]** = Rob's change of 2026-10-15: the About page (decision 18). It wins over an older answer.
 - **[Spec]** = Rob said it before the interview. **[Rule]** = from Rob's standing rules.
 - **[Product]** = a call the product lead made. The 2026-10-04 calls are built from the business advisor's advice. The 2026-10-05 Vault sync facts come from Vault's own records. Her showcase rule (16.i) is also from 2026-10-05. Her 2026-10-06 record that Vault's later version is opt-in is in A5.b.
 - **[Legal]** = the legal reviewer's claims rulings (BUWEB-103), his wording checks on the rejoin and perk emails (BUWEB-100a), his Privacy page rulings (BUWEB-102b), and his showcase rulings (16.d.iii, 16.e, 16.i), all 2026-10-05. Also his 2026-10-06 rulings on Rob's changes and Vault's badge (A5, 13.b.v, 13.d, 13.e, 13.k, decision 17), his 2026-10-06 final read of the third page-word draft (13.b.v, 13.d.iii, 13.f.vii, 16.c, 18.e.v), and his 2026-10-06 ruling on the order of Vault's trust line and sync line (13.e.ii). They win over older wording. Lines they replace carry a *Supersedes* note.
@@ -50,7 +51,7 @@
 4. Catche, TimeTracker and Vault get an **"Off-grid"** badge. Each Off-grid app's page says **what it connects to** (decision 13.b). Vault's line is based on its design until its first outside build is checked (13.b.v). [C3]
     - *Supersedes: "Catche and TimeTracker get an 'Off-grid' badge. Vault does not." Rob reversed it on 2026-10-06 (4.c).*
 5. **"Cloud-killers"** is the playful tagline. Home leads with **"Makers of Off-grid apps."** (decision 17). [C3]
-6. Pages: **Home, one page per app, About us, Contact, Privacy.** Plus two small pages people land on after the confirm or unsubscribe link (5.e).
+6. Pages: **Home, one page per app, About us (decision 18), Contact, Privacy.** Plus two small pages people land on after the confirm or unsubscribe link (5.e).
 7. Logo and colors stay. The **header is new**: a big logo on landing that shrinks into a hexagon-shaped tab as you scroll.
 8. The team writes the words in a playful voice. Rob approves them.
 9. The store, payments and subscriptions come **later**. The site shows **no price and no pricing model** (pricing is not decided).
@@ -114,6 +115,7 @@
     - **c.** **Privacy** page — a must-have the business analyst added (section 4, item 1).
     - **d.** **No FAQ** in version 1. [R4]
     - **e.** **Two small landing pages, `/confirmed` and `/unsubscribed`.** The list service sends people there after they click the confirm or unsubscribe link in its email. [Architect] The Buttondown check confirms the service can do this (14.d).
+    - **f.** **About us** tells the founders' story and shows the two co-founders (decision 18). [C4]
 6. **Header, logo and brand**
     - **a.** **Keep the logo and colors.** [R1]
     - **b.** Rob is not keen on today's small top bar. He wants the header to **stand out.** [R1]
@@ -887,6 +889,37 @@
             - *Supersedes: "The trigger that opens the popup (17.c.ii) carries a dotted green (#006454) underline." It now matches the build (2026-10-06).*
             - *Supersedes the open item: "Open: the popup's colours → the project lead, before the popup is built (BUWEB-106). The brand strategist's call is a navy box with white text. The frontend engineer's design is a white box with navy text."*
 
+18. **The About page** [C4], [Legal], [Brand] (new 2026-10-15)
+    - **a.** **What Rob asked for.** An About page, built from his and his co-founder's resumes and photos. Rob's words: "Review these resumes and images and build out the About Us page." [C4]
+        - **i.** **Titles (Rob's words):** his own is "Co-Founder & CEO" and his co-founder's is "Co-founder & CTO". The legal reviewer cleared both on 2026-10-15 and set the casing as "Co-founder & CEO" and "Co-founder & CTO". The site uses the legal reviewer's casing. [C4], [Legal]
+        - **ii.** **Skills only.** Rob asked for no past employers or clients: "No, skills only." [C4]
+        - **iii.** **Consent.** Rob says his co-founder agreed to his name and photo going on the public site. The legal reviewer accepts Rob's word for the private preview only. His co-founder's written OK is a launch condition (18.e). [C4], [Legal]
+    - **b.** **What the page holds, in order** (the words are the copywriter's, as the legal reviewer approved them):
+        - **i.** **The top lines:** "Hi. We're bengUSA.pro." and "We build apps that mind their own business."
+        - **ii.** **"Our story"**, one paragraph of four lines: "We build software for a living. Rob made TimeTracker to turn his own hours into invoices. He's building Vault (working name) to sort his own server keys. Now we're making them for you." [Legal]
+            - The legal reviewer changed story lines 2 and 3. The first draft said "We made TimeTracker…" and "We're building Vault…". The record shows only Rob made TimeTracker and is building Vault. With no company, a public "we made" next to two names could be quoted later in a fight over who owns the code. If Rob says his co-founder is helping build Vault, line 3 can go back to "we"; the legal reviewer would pass it.
+            - *Supersedes: the first draft's story lines 2 and 3.*
+        - **iii.** **"Who we are"**: two co-founder blocks, Rob first, then his co-founder. Each block has a photo, the full name, the title and a short bio. The bios are skills and tools only. [Legal]
+        - **iv.** **"What we're making"**: Catche (working name), TimeTracker and Vault (working name), each name linking to its app page. This part is unchanged from the third page-word draft.
+        - **v.** **The bottom line:** "Want to say hi? Use the Contact page.", with "Contact page" linking to Contact.
+        - **vi.** **The "Pick your apps" button waits.** The "Want in early?" line and its "Pick your apps" button are off the About page until Home's signup section is built. Then they come back. The About page has no Off-grid badge, legend or popup.
+    - **c.** **Rules for the words.** [C4], [Legal]
+        - **i.** **Skills only.** No employer, client or school names. No home city or state. No phone, email, address or reference. No past-role lines that hint at an industry, a firm or a school. No degrees. No security, trust or compliance promises.
+        - **ii.** **Titles are exactly as the legal reviewer cleared them:** "Co-founder & CEO" and "Co-founder & CTO". The page never says LLC, Inc. or any other company word. No identity line is added; the footer's brand line already shows on the page.
+        - **iii.** **Names.** The full name is always used. Never the nickname "Rabbi" alone, and never the short name alone, anywhere on the site.
+        - **iv.** **Tool names and Google Play are text only.** Naming a tool to say what someone works with is fair use. No logos, icons or badges for any of them, and never a Google Play badge.
+        - **v.** **Only facts on record.** A bio holds only what the resume supports, in terms that stay true ("since 2015", "more than 30 years", "more than 30 Android apps"). "He also built the original code for this site" is a credit only; it says nothing about who owns the code.
+        - **vi.** **Alt text** starts with the person's name and says nothing about where the photo was taken.
+    - **d.** **Rules for the photos.** [Brand], [C4]
+        - **i.** **All metadata removed** from both files: no location, camera, software or colour-profile data. The colour is converted to the standard web colour space first, then the profile is stripped.
+        - **ii.** **A matched crop**, set by the brand strategist: both photos become 4:5 portraits, 480 × 600, with the same crop geometry, so the tops of the heads and the eyes sit on the same two lines. The crop box on the original is 945, 0, 480 × 600 for Rob and 1008, 564, 1920 × 2400 for his co-founder. Shown at 240 × 300 on a computer and 200 × 250 on a phone, with 12 px corners, a 1 px border, no shadow, no circle, never flipped. Both get the same 15% colour drop (saturation 0.85); brightness is unchanged.
+        - **iii.** **A file-size cap:** each photo file is 100 KB or less.
+        - **iv.** **Only the two finished files go in the repo**, under plain names in the images folder. The raw originals and their file names never do.
+        - **v.** **Layout:** two columns on a computer, Rob on the left, with a 48 px gap. One column on a phone, Rob first, with 40 px between the blocks.
+    - **e.** **Launch conditions, held for Rob** [Legal]. Not needed for the private preview.
+        - **i.** A written OK from his co-founder (an email or chat message is enough) that he has seen and agrees to his full name, the title, the bio words and the cropped photo going on the public site, plus a line saying he took the photo or may share it. Rob keeps that message in his own records, never in the repo. If he later asks to come off the page, his block comes down promptly.
+        - **ii.** Rob confirms the licence of his own headshot allows use on a business website. That confirmation stays in his own records too, never in the repo.
+
 ---
 
 ## 3. Assumptions
@@ -1053,6 +1086,8 @@
     - Why: every listed app is a promise. Taking signups for an app we can't or won't deliver is a false public claim.
 34. **App IDs are never renamed, removed or reused, and a retired app never comes back without the architect** (14.g.vi, 16.d.iii–iv).
     - Why: a person's join dates are stored under the ID. Changing or reusing it would move or lose their place.
+35. **The About page follows decision 18** [C4]: skills-only bios, the legal reviewer's cleared words and titles, photos with all metadata removed, a matched crop and a 100 KB cap per file, and tool and store names as text only.
+    - Why: the page names two real people. A stray employer, city or reference, or a photo that still carries its location, cannot be taken back once it is live.
 
 ---
 
@@ -1248,6 +1283,11 @@ These are not version 1 questions. They come back when the store is planned.
         - *Supersedes: "Every badge still shows the short form beside it." The badge in each "Off-grid, explained" section has the full legend beside it instead (2026-10-06).*
     - **d.** Colours (6.f): red only on the signup button, never on light blue. Green only for Off-grid. The popup is a navy box with white text, with "Off-grid:" in bold white. The word "Off-grid" in the hero and in the heading has a dotted green underline. Badges have no underline (17.c.vi). The logo and the wordmark keep their own colours (6.f.v).
         - *Supersedes: "and its trigger has a dotted green underline (17.c.vi)." (2026-10-06)*
+26. **About page** (new 2026-10-15) [C4] (decision 18):
+    - **a.** The page shows, in order: the top lines, "Our story" (the legal reviewer's four lines, as one paragraph), "Who we are" (Rob, then his co-founder), "What we're making" and the Contact line. It shows no "Pick your apps" button and no "Want in early?" line until Home's signup is built.
+    - **b.** Each co-founder block has a photo, a name, a title and a bio. The titles read exactly "Co-founder & CEO" and "Co-founder & CTO". The bios match the legal reviewer's cleared words.
+    - **c.** A word scan of the page finds no employer, client or school name, no city or state, no phone, email, address or reference, and no logo for any tool or for Google Play. "Rabbi" never appears alone.
+    - **d.** An image check on the two photo files: no EXIF, GPS, XMP, IPTC or colour-profile data, none of the words "Exif", "GPS", "xmpmeta", "Apple" or "iPhone" in the bytes, each file 100 KB or less, and both the same size, from the crop in 18.d. The raw originals are not in the repo.
 
 ---
 
@@ -1328,3 +1368,4 @@ These are covered by A2, must-have 10 and acceptance check 6.
 | 2026-10-06 | **Rob's header change [C3]: the docked logo is 2.5×. Plus two notes that match the build.** **6.c, A1, acceptance check 2:** the docked logo is now 2.5× today's header logo, 115 px tall on a computer and 69 px on a phone. The docked "bengUSA.pro" lettering keeps the size the 2× option gave it: 29 px tall on a computer, and 24 px on a phone, as at every size. 6.c quotes Rob's words. Each of the three lines carries a Supersedes note quoting the 92 px / 58 px wording. **17.c.vi, 6.f.ii, acceptance check 25.d:** the dotted green underline is on the word "Off-grid" in the hero and in the heading only. Badges carry no underline, because they are already green. **New 6.f.v:** the logo and the wordmark keep their own colours, and the colour rules cover everything else. Acceptance check 25.d names it too. The header's sources line is updated. The earlier 2026-10-06 row's "2×, 92 px computer / 58 px phone" is left as written: it records that day's first answer. | Rob, 2026-10-06; the build's popup and colour tests, 2026-10-06; via the project lead |
 | 2026-10-06 | **Touch-up: the order of Vault's trust line and sync line [Legal], [Brand], and one word for the docked logo in 6.c.** **13.e.ii:** new order note, in the legal reviewer's words. Under "Where your vault lives", the trust line comes first, then the sync line. Both stay after the connects box and outside the legend, side by side, in the same size and style, with no words between them. Neither line's words change. The spec never set an order, so the note supersedes nothing. The trust line's place now reads "under 'Where your vault lives'", written as a heading, the same as in the order note. **Acceptance check 3.b** gains a line that checks the order. **The header's sources line, the [Legal] tag and the [Brand] tag** now name the order ruling. **6.c:** the docked mark is now called "the logo" throughout, and the docked-logo line says once that the logo is the hexagon mark, which docks into the hexagon tab. The lettering line now ends "so only the logo changes size", not "so only the hexagon changes". The end of the 2× Supersedes note said only "Only the logo changes size.", which could be read against the phone-lettering line above it. It now says: on a phone, the lettering stays 24 px tall through the whole shrink, and only the logo changes size; on a computer, the lettering shrinks from its landing size to 29 px tall when docked. The old wording quoted inside that note keeps "hexagon", because it is a quote. No size changed. | The brand strategist's suggestion and the legal reviewer's ruling, 2026-10-06; via the project lead |
 | 2026-10-06 | **Rob's change [C3]: Home gets its own "Off-grid, explained" section, between the hero and the app grid.** Rob's words are quoted in 17.a.v. **17.a.v:** Home's order is now fixed: the hero lines, then the "Off-grid, explained" section (its heading, the badge and the Home legend, word for word), then the app grid, with nothing in between. The Home legend keeps "Each app's page lists what it connects to.", which Rob's quote leaves out (the project lead's ruling). No new legal ruling is needed (the project lead's call): the words are already approved, and the old rule already allowed the legend in this place. **13.a.ii:** a new line says where the Home legend sits and names the section heading once: "Off-grid, explained", on Home and on each Off-grid app's page. It is a plain heading that opens no popup. **17.c.i:** "the full legend on Home" and "the Off-grid section directly after the hero" are now one line that names that one section. **17.c.iv:** the badge in Home's section names no single app, so its popup has no link. **Must-have 6 and acceptance check 25.a:** the fixed order. **Acceptance check 25.c:** a badge in an "Off-grid, explained" section has the full legend beside it, not the short form, and the popup on Home's section badge has no link. The app pages' section is unchanged. The header's sources line and the [C3] tag are updated. **Supersedes** (each marked in place): 17.a.v's "either the app grid … or the Home legend"; 17.c.i's two lines; must-have 6's "The Off-grid section comes directly after the hero"; 25.a's "The app grid or the Home legend comes directly after"; 25.c's "Every badge still shows the short form beside it." | Rob, 2026-10-06; the project lead's ruling, 2026-10-06 |
+| 2026-10-15 | **Rob's change [C4]: the About page (BUWEB-106c-3a).** New tag [C4]. **New decision 18:** the About page tells the story, shows two co-founder blocks (photo, name, title, a skills-only bio) and links to the apps. The words are the legal reviewer's approved words (the first draft's story lines 2 and 3 were reworded to name Rob). Rob's title is "Co-founder & CEO" and his co-founder's is "Co-founder & CTO", exactly as cleared. The "Pick your apps" button waits for Home's signup. **Rules:** skills only (no employer, client or school names, no home city or state, no contact details or references); all photo metadata removed; a matched crop; a file-size cap of 100 KB; tool names and Google Play as text only, with no logos; never the nickname "Rabbi" alone. **New:** pages item 5.f, must-have 35, acceptance check 26, a pointer in summary item 6. **Launch condition:** the co-founder's written OK to the name, title, bio and photo (18.e). | Rob, 2026-10-15; the legal reviewer and the brand strategist, 2026-10-15; the project lead (the photo file-size cap) |
