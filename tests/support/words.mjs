@@ -60,3 +60,45 @@ export const COLOUR = {
     lightBlue: 'rgb(216, 235, 255)', // #D8EBFF: red never sits on it
     white: 'rgb(255, 255, 255)',
 };
+
+// The About page, word for word (spec decision 18; the words as passed by the
+// legal reviewer on 2026-10-15, story lines 2 and 3 as he reworded them).
+// "Rabbi" is never used alone on the site: only inside the full name.
+export const ABOUT = {
+    path: '/about/',
+    title: 'Hi. We\'re bengUSA.pro.',
+    line: 'We build apps that mind their own business.',
+    storyHeading: 'Our story',
+    story: 'We build software for a living. Rob made TimeTracker to turn his own hours into invoices. He\'s building Vault (working name) to sort his own server keys. Now we\'re making them for you.',
+    peopleHeading: 'Who we are',
+    people: [
+        {
+            name: 'Rob Guida',
+            title: 'Co-founder & CEO',
+            bio: 'He has built software and led development teams for more than 30 years. He designs systems, rescues stuck projects and helps teams choose what to build and what to buy. His tools: AWS, SQL, Node.js, GraphQL, React, Python, Rust and PHP.',
+            alt: 'Rob Guida, in glasses, a gray jacket and a light-blue shirt, against a dark blue background.',
+            photo: '/images/about/rob.webp',
+        },
+        {
+            name: 'Fojle Rabbi Saikat',
+            title: 'Co-founder & CTO',
+            bio: 'He has been a software engineer since 2015 and has shipped more than 30 Android apps on Google Play. He designs system architecture, leads teams and builds with Java, Kotlin, Spring Boot, Laravel, Node.js, Vue.js, PostgreSQL and MySQL. He also built the original code for this site.',
+            alt: 'Fojle Rabbi Saikat, in glasses and a navy kurta, outdoors with greenery behind him.',
+            photo: '/images/about/rabbi.webp',
+        },
+    ],
+    makingHeading: 'What we\'re making',
+    making: {
+        catche: 'finds your photos.',
+        timetracker: 'turns your hours into invoices.',
+        vault: 'sorts your dev secrets.',
+    },
+    contactBefore: 'Want to say hi? Use the ',
+    contactLink: 'Contact page',
+    contactAfter: '.',
+    // The old placeholder that must be gone.
+    gone: 'Coming in a later draft.',
+    // The photos: 480 x 600 files, shown at 240 x 300 (computer) / 200 x 250 (phone).
+    photoFile: { width: 480, height: 600, maxBytes: 100 * 1024 },
+    shown: { desktop: { width: 240, height: 300 }, phone: { width: 200, height: 250 } },
+};

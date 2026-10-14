@@ -69,3 +69,15 @@ export function scanOut(outDir) {
     }
     return { files: files.length, textCount, hits };
 }
+
+// Phone-number SHAPES (any number, not a specific one), for the About page
+// scan (tests/checks/about-files.spec.mjs). Used on visible text and words files
+// only: script files hold long digit runs that are not phone numbers.
+export const PHONE_SHAPES = [
+    /(?<!\d)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)/g, // 10 digits, with or without a leading 1
+    /\+\d{1,3}[\s.-]?\(?\d{1,4}\)?(?:[\s.-]?\d{2,4}){2,4}(?!\d)/g, // international, starts with +
+];
+
+export function findPhones(text) {
+    return PHONE_SHAPES.flatMap((re) => [...text.matchAll(re)].map((m) => m[0].trim()));
+}
