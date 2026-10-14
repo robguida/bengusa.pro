@@ -1,6 +1,7 @@
 import 'server-only';
 import apps from '../../content/apps.json';
 import appWords from '../../content/app-words.json';
+import aboutWords from '../../content/about-words.json';
 
 // The one app list. Cards, app pages, the header and phone menus and the footer
 // are all built from content/apps.json, in its order. Its words (card lines,
@@ -73,9 +74,33 @@ function toPublic(app) {
     };
 }
 
+// The About page's words are part of the same content check: every shown app
+// needs a line under "What we're making", and every About string must be text.
+function aboutProblems(shown) {
+    const found = [];
+    const lines = aboutWords.making?.lines ?? {};
+    for (const app of shown) {
+        const line = lines[app.id];
+        if (typeof line !== 'string' || line.trim() === '') {
+            found.push(`content/about-words.json: "making.lines" needs a line for the app "${app.id}".`);
+        }
+    }
+    const walk = (value, path) => {
+        if (Array.isArray(value)) {
+            value.forEach((item, i) => walk(item, `${path}[${i}]`));
+        } else if (value !== null && typeof value === 'object') {
+            for (const [key, item] of Object.entries(value)) walk(item, path ? `${path}.${key}` : key);
+        } else if (path !== 'headingLevel' && typeof value !== 'string') {
+            found.push(`content/about-words.json: "${path}" must be text.`);
+        }
+    };
+    walk(aboutWords, '');
+    return found;
+}
+
 const shownApps = apps.filter((app) => SHOWN.has(app.status));
 
-const problems = shownApps.flatMap(problemsWith);
+const problems = [...shownApps.flatMap(problemsWith), ...aboutProblems(shownApps)];
 const slugs = new Set();
 for (const app of shownApps) {
     if (typeof app.slug !== 'string') continue; // already listed above

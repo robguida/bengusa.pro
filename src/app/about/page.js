@@ -40,7 +40,6 @@ export default function AboutPage() {
                                 alt={person.alt}
                                 width={240}
                                 height={300}
-                                sizes="(min-width: 768px) 240px, 200px"
                                 className="mb-5 h-auto w-[200px] rounded-xl border border-line md:w-[240px]"
                             />
                             <Heading offset={1} className="m-0 text-xl font-semibold leading-tight">{person.name}</Heading>

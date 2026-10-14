@@ -6,5 +6,5 @@ images/svg/bengusaicon.svg
 images/svg/bengusaicon_hor.svg
 images/svg/bengusaicon_text.svg
 images/svg/bengusaicon_ver.svg
-images/about/rob.webp
-images/about/rabbi.webp
+images/about/rob-guida.webp
+images/about/fojle-rabbi-saikat.webp
