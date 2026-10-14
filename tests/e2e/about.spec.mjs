@@ -1,11 +1,20 @@
 // The About page (spec decision 18, acceptance check 26). The words come from
 // support/words.mjs (copied from the spec), never from content/.
-import { test, expect, isPhone, isReducedMotion, settle, expectPx } from '../support/site.mjs';
-import { APPS, ABOUT } from '../support/words.mjs';
+// Loops over people, photos and apps check softly and name the item, or are
+// one test per item, so one bad item never hides the others.
+import { test, expect, isPhone, isReducedMotion, settle, PX_TOLERANCE } from '../support/site.mjs';
+import { APPS, ABOUT, WORDS, aboutMainText } from '../support/words.mjs';
+import { TRIGGER, TIP, offGridSection } from '../support/offgrid.mjs';
 
 const clean = (s) => s.replace(/\s+/g, ' ').trim();
 const main = (page) => page.locator('main');
 const PEOPLE = 'section[aria-labelledby="about-people-title"] > ul > li';
+
+// A soft size check (expectPx in support/site.mjs stops the test).
+function softPx(actual, expected, label) {
+    expect.soft(Math.abs(actual - expected), `${label}: got ${actual}px, want ${expected}px (±${PX_TOLERANCE})`)
+        .toBeLessThanOrEqual(PX_TOLERANCE);
+}
 
 test.describe('About page', () => {
     test.beforeEach(async ({}, testInfo) => {
@@ -32,6 +41,38 @@ test.describe('About page', () => {
         expect.soft(text).not.toContain('our own server keys');
         // No early signup button (Home's signup is not built yet).
         expect.soft(text).not.toContain('Pick your apps');
+    });
+
+    test('the main text is exactly the approved words, block by block, with nothing added anywhere', async ({ page }) => {
+        await page.goto(ABOUT.path);
+        await settle(page);
+        const want = aboutMainText();
+        // What a reader sees: one line per block, in order. An extra paragraph
+        // anywhere (under the top lines, in the story, in a bio, at the end)
+        // adds a line.
+        const lines = (await main(page).innerText()).split('\n').map(clean).filter(Boolean);
+        expect.soft(lines, 'main, block by block (what the page shows)').toEqual(want);
+        // What a crawler or a screen reader gets, hidden text included: the
+        // same characters and nothing more (spaces ignored, as textContent
+        // does not put any between blocks).
+        const squash = (s) => s.replace(/\s+/g, '');
+        const all = await main(page).evaluate((el) => el.textContent);
+        expect.soft(squash(all), 'main, all text including hidden text').toBe(squash(want.join('')));
+    });
+
+    test('no Off-grid badge, legend or popup anywhere on the page', async ({ page }) => {
+        await page.goto(ABOUT.path);
+        await settle(page);
+        await expect.soft(page.locator(TRIGGER), 'Off-grid badges or popup words').toHaveCount(0);
+        await expect.soft(page.locator(TIP), 'Off-grid popup boxes').toHaveCount(0);
+        await expect.soft(page.locator('[popover], [popovertarget]'), 'popups of any kind').toHaveCount(0);
+        await expect.soft(offGridSection(page), 'an "Off-grid, explained" section').toHaveCount(0);
+        const text = clean(await page.evaluate(() => document.body.textContent));
+        expect.soft(text.match(/off\W?grid/giu) ?? [], 'the word "Off-grid", anywhere in the page').toEqual([]);
+        const offGridWords = { popup: WORDS.popup, 'short form': WORDS.shortForm, 'Home legend': WORDS.legendOnHome, 'app-page legend': WORDS.legendOnAppPage };
+        for (const [name, words] of Object.entries(offGridWords)) {
+            expect.soft(text, `the ${name} words`).not.toContain(words.replace(/^Off-grid: /, ''));
+        }
     });
 
     test('two people blocks, in order, each with photo, name, title and bio', async ({ page }) => {
@@ -62,13 +103,14 @@ test.describe('About page', () => {
             await expect.soft(img, `${person.name}: width attribute`).toHaveAttribute('width', '240');
             await expect.soft(img, `${person.name}: height attribute`).toHaveAttribute('height', '300');
             expect.soft(await img.getAttribute('src'), `${person.name}: source`).toContain(person.photo);
-            expect.soft(await img.getAttribute('srcset'), 'no srcset: the files are served as they are').toBeNull();
-            // It loads, at the file's own size (480 x 600).
-            await expect.poll(() => img.evaluate((el) => el.complete && el.naturalWidth), `${person.name}: loads`).toBe(ABOUT.photoFile.width);
-            expect.soft(await img.evaluate((el) => el.naturalHeight)).toBe(ABOUT.photoFile.height);
+            expect.soft(await img.getAttribute('srcset'), `${person.name}: no srcset, the file is served as it is`).toBeNull();
+            // It loads, at the file's own size (480 x 600). Soft and retried:
+            // naturalWidth is 0 until the photo has loaded.
+            await expect.soft(img, `${person.name}: loads, 480 wide`).toHaveJSProperty('naturalWidth', ABOUT.photoFile.width);
+            await expect.soft(img, `${person.name}: loads, 600 high`).toHaveJSProperty('naturalHeight', ABOUT.photoFile.height);
             const res = await page.request.get(person.photo);
-            expect.soft(res.status(), `${person.photo} status`).toBe(200);
-            expect.soft(res.headers()['content-type']).toContain('image/webp');
+            expect.soft(res.status(), `${person.name}: ${person.photo} status`).toBe(200);
+            expect.soft(res.headers()['content-type'], `${person.name}: ${person.photo} type`).toContain('image/webp');
         }
     });
 
@@ -98,11 +140,12 @@ test.describe('About page', () => {
             return { w: r.width, h: r.height, top: r.top + window.scrollY, left: r.left, right: r.right };
         }));
         expect(rects).toHaveLength(2);
-        for (const r of rects) {
+        rects.forEach((r, i) => {
+            const who = ABOUT.people[i].name;
             // Within PX_TOLERANCE: the 1px border sits inside the box, so the height is 0.5px short of 5:4 (299.5 / 249.5).
-            expectPx(r.w, shown.width, 'photo width');
-            expectPx(r.h, shown.height, 'photo height');
-        }
+            softPx(r.w, shown.width, `${who}: photo width`);
+            softPx(r.h, shown.height, `${who}: photo height`);
+        });
         if (isPhone(testInfo)) {
             expect.soft(rects[1].top, 'stacked: the second photo is below the first').toBeGreaterThan(rects[0].top + rects[0].h);
         } else {
@@ -155,14 +198,18 @@ test.describe('About page', () => {
             expect.soft(clean(await item.innerText()), `${app.shortName}: the line`).toBe(`${app.name} ${ABOUT.making[app.id]}`);
             await expect.soft(item.locator('a'), `${app.shortName}: link`).toHaveAttribute('href', app.page);
         }
-        for (const app of APPS) {
+    });
+
+    // One test per app, so a broken link never hides the others.
+    for (const app of APPS) {
+        test(`"What we're making": the ${app.shortName} link reaches its page`, async ({ page }) => {
             await page.goto(ABOUT.path);
             await settle(page);
             await main(page).getByRole('link', { name: app.name, exact: true }).click();
             await expect(page, `${app.shortName}: the link reaches its page`).toHaveURL(new RegExp(`${app.page}$`));
-            await expect(page.locator('h1')).toBeVisible();
-        }
-    });
+            await expect(page.locator('h1'), `${app.shortName}: its page has a heading`).toBeVisible();
+        });
+    }
 
     test('the Contact line, word for word, and its link reaches /contact/', async ({ page }) => {
         await page.goto(ABOUT.path);
@@ -175,13 +222,16 @@ test.describe('About page', () => {
         await expect(page).toHaveURL(/\/contact\/$/);
     });
 
-    test('"Rabbi" never appears except inside "Fojle Rabbi Saikat" (text and alt)', async ({ page }) => {
+    // The shown page. The built files, the photo addresses and the file names
+    // are checked in checks/about-files.spec.mjs.
+    test('"Rabbi", "Fojle" and "Saikat" never appear except inside "Fojle Rabbi Saikat" (text and alt)', async ({ page }) => {
         await page.goto(ABOUT.path);
         await settle(page);
         const text = await page.evaluate(() => `${document.body.innerText}\n${[...document.images].map((i) => i.alt).join('\n')}`);
         const stripped = text.split('Fojle Rabbi Saikat').join('');
-        expect(stripped).not.toMatch(/Rabbi/);
-        expect(stripped, 'nor "Saikat" alone').not.toMatch(/Saikat/);
-        expect(text.match(/Fojle Rabbi Saikat/g)?.length ?? 0, 'the full name is there').toBeGreaterThanOrEqual(2);
+        for (const part of ['Rabbi', 'Fojle', 'Saikat']) {
+            expect.soft(stripped.match(new RegExp(part, 'gi')) ?? [], `"${part}" alone`).toEqual([]);
+        }
+        expect.soft(text.match(/Fojle Rabbi Saikat/g)?.length ?? 0, 'the full name is there').toBeGreaterThanOrEqual(2);
     });
 });

@@ -13,6 +13,10 @@
 //     no connects line. The build fails once and its report names both.
 //   - an Off-grid app with no connects line, and nothing else wrong: the
 //     build fails, and that rule is the reason.
+//   - the About words (content/about-words.json), checked by the same build
+//     check: Catche's "What we're making" line empty, Vault's line missing,
+//     and the co-founder's bio not text. The build fails once and its report
+//     names all three.
 import path from 'node:path';
 import { test, expect } from '@playwright/test';
 import { ROOT } from '../../scripts/lib/export-checks.mjs';
@@ -36,6 +40,21 @@ const CASES = [
             delete words.timetracker.connects;
         },
         problems: [/^content\/app-words\.json: "timetracker" is marked Off-grid\b.*needs "connects"/],
+    },
+    {
+        name: 'about-lines',
+        title: 'a test-only build where About misses app lines and has a non-text bio fails once, and its one report names each',
+        change: (apps, words, about) => {
+            about.making.lines.catche = '';
+            delete about.making.lines.vault;
+            about.people.list[1].bio = 42;
+        },
+        // The app lines in app-list order, then the rest of the About words.
+        problems: [
+            /^content\/about-words\.json: "making\.lines" needs a line for the app "catche"\.$/,
+            /^content\/about-words\.json: "making\.lines" needs a line for the app "vault"\.$/,
+            /^content\/about-words\.json: "people\.list\[1\]\.bio" must be text\.$/,
+        ],
     },
 ];
 
@@ -63,16 +82,21 @@ test.describe('the content check in the build', () => {
                 copySite(dir);
                 const appsFile = path.join(dir, 'content', 'apps.json');
                 const wordsFile = path.join(dir, 'content', 'app-words.json');
+                const aboutFile = path.join(dir, 'content', 'about-words.json');
                 const apps = readJson(appsFile);
                 const words = readJson(wordsFile);
+                const about = readJson(aboutFile);
                 // The case only means something if the real content is clean
                 // where the copy is broken.
                 expect(apps.find((a) => a.id === 'timetracker').offGrid, 'real list: TimeTracker is Off-grid').toBe(true);
                 expect(apps.find((a) => a.id === 'vault').offGrid, 'real list: Vault is Off-grid').toBe(true);
                 expect(words.timetracker.connects && words.vault.connects, 'real words: both have a connects line').toBeTruthy();
-                c.change(apps, words);
+                expect(about.making.lines.catche && about.making.lines.vault, 'real About words: Catche and Vault have a line').toBeTruthy();
+                expect(typeof about.people.list[1].bio, 'real About words: the co-founder\'s bio is text').toBe('string');
+                c.change(apps, words, about);
                 writeJson(appsFile, apps);
                 writeJson(wordsFile, words);
+                writeJson(aboutFile, about);
 
                 const build = await buildCopy(dir);
                 const tail = build.log.slice(-3000);
