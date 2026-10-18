@@ -1,5 +1,4 @@
 import AppCard from './components/AppCard';
-import DraftLabel from './components/DraftLabel';
 import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
 import OffGridLegend from './components/OffGridLegend';
@@ -25,7 +24,6 @@ export default function Home() {
     return (
         <div className="home-top mx-auto max-w-[1088px] px-4 pb-16 md:px-6">
             <section className="grid justify-items-start gap-[18px] pb-16" aria-labelledby="home-title">
-                <DraftLabel />
                 {/* The popup box for "Off-grid" sits right after the heading (OffGridHeading). */}
                 <OffGridHeading
                     as="h1"

@@ -246,7 +246,8 @@ export function checkGuardedFields(outDir = OUT_DIR, retired = retiredIds()) {
 // Hidden content (BUWEB-114). While content/site-settings.json hides the apps
 // or Contact, nothing of theirs may reach out/: no page or page-data file, and
 // no name, words, link or menu in any text file (pages, page data, scripts,
-// styles). The words to look for are read from the content files, so a new app or a
+// styles). Always banned: the old draft label, "Draft words. Not final.".
+// The words to look for are read from the content files, so a new app or a
 // new line is covered with no change here. Every file is read in full and
 // every hit is listed (Rob's loop rule).
 // ---------------------------------------------------------------------------
@@ -259,6 +260,9 @@ const CUT_WHILE_APPS_HIDDEN = [
 ];
 // The parked Contact page's own words (src/app/_parked/contact/page.js).
 const CONTACT_PAGE_WORDS = ['Say hi.', 'The contact form comes in a later build.'];
+// The old "Draft words. Not final." label (BUWEB-114 took it off every page and
+// deleted it). Banned whatever the switch says, so it can't come back.
+const DRAFT_LABEL_WORDS = ['Draft words', 'Not final'];
 
 function stringsIn(value, acc = []) {
     if (typeof value === 'string') acc.push(value);
@@ -324,6 +328,7 @@ export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
         link(group, '/contact');
         label(group, 'Contact');
     }
+    DRAFT_LABEL_WORDS.forEach((s) => phrase('draft label', s));
     return patterns;
 }
 

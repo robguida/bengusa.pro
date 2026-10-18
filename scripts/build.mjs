@@ -8,7 +8,7 @@
 //     or a hidden page was built;
 //   - a list-only field or a retired app ID reaches out/ (§6.1 item 11);
 //   - anything of a hidden page reaches out/: its files, or its names, words,
-//     links or menu in any text file; or the old draft label appears.
+//     links or menu in any text file; or the old draft label appears anywhere.
 // Every check runs to the end and every problem is listed (Rob's loop rule).
 // Telemetry is always off for the build. No packages: Node built-ins only.
 import { spawn } from 'node:child_process';
