@@ -326,10 +326,12 @@
 
   /* No Apps menu (content/site-settings.json hides the apps): no menu
      button, so the plain links from the computer menu show on a phone too.
-     Each link's tap area is at least 44 x 44 px. The lettering's fit limit
-     keeps room for "About" instead of the 44px menu button. */
+     Each link's tap area is at least 44 x 44 px. No side padding: "About"
+     is then 44.5px wide, about the menu button's 44px, so the lettering's fit
+     limit (45px kept for it) still gives the 24px phone lettering at 390px
+     (spec 6.c). */
   .plain {
-    --hdr-nav-w: 52px; /* "About" is 48.5px wide */
+    --hdr-nav-w: 45px;
   }
 
   .plain .desk {
@@ -344,7 +346,7 @@
     justify-content: center;
     min-width: 44px;
     min-height: 44px;
-    padding-block: 0;
+    padding: 0;
   }
 }
 

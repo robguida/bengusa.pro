@@ -127,8 +127,16 @@
   outline: none;
 }
 
+/* Home is at least one screen tall plus the shrink distance (the big tab's
+   bottom minus the docked tab's), so the logo can always shrink all the way to
+   its docked size, however short Home's words are. BUWEB-114 hid the apps
+   section, which used to make Home long; without this the logo stopped half
+   shrunk at the bottom of a short page. The room shows as space under the
+   last section, before the footer. With reduce-motion the shrink distance is
+   0, so Home is just one screen tall. */
 .home-top {
   padding-top: calc(var(--hdr-land-bottom) - var(--hdr-end-bottom));
+  min-height: calc(100vh - 32px + var(--hdr-land-bottom) - 2 * var(--hdr-end-bottom));
 }
 
 .skip-link {
