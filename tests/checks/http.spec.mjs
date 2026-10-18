@@ -2,6 +2,8 @@
 import { test, expect } from '@playwright/test';
 import { expectedRoutes } from '../../scripts/lib/export-checks.mjs';
 import { readFixtureList } from '../support/fixtures.mjs';
+import { SHOW } from '../support/settings.mjs';
+import { APPS } from '../support/words.mjs';
 
 const PAGES = expectedRoutes().map((r) => (r === '/' ? '/' : `${r}/`));
 const encodePath = (p) => p.split('/').map(encodeURIComponent).join('/');
@@ -27,6 +29,40 @@ test.describe('pages and old addresses', () => {
             if (res.status() !== 404) notGone.push(`${p} = ${res.status()}`);
         }
         expect(notGone).toEqual([]);
+    });
+
+    test('Release 1: the hidden pages return 404 (no /contact/, no /apps/ or app page)', async ({ request }) => {
+        test.skip(SHOW.apps && SHOW.contact, 'the apps and Contact are shown');
+        const hidden = [
+            ...(SHOW.contact ? [] : ['/contact/']),
+            ...(SHOW.apps ? [] : ['/apps/', ...APPS.map((a) => a.page)]),
+        ];
+        const served = [];
+        for (const p of hidden) {
+            const res = await request.get(p, { maxRedirects: 0 });
+            if (res.status() !== 404) served.push(`${p} = ${res.status()}`);
+        }
+        expect(served, 'hidden addresses that are served').toEqual([]);
+    });
+
+    test('Privacy returns 200 with its heading, no placeholder and no form', async ({ request }) => {
+        const res = await request.get('/privacy/', { maxRedirects: 0 });
+        expect(res.status()).toBe(200);
+        const html = await res.text();
+        expect.soft(html, 'h1 Privacy').toMatch(/<h1[^>]*>\s*Privacy\s*<\/h1>/);
+        expect.soft(html, 'the old placeholder').not.toMatch(/being written/i);
+        expect.soft(html, 'a form').not.toMatch(/<form\b/i);
+    });
+
+    test('robots.txt allows everything, names no sitemap and no outside address', async ({ request }) => {
+        const res = await request.get('/robots.txt', { maxRedirects: 0 });
+        expect(res.status(), '/robots.txt').toBe(200);
+        const body = await res.text();
+        expect.soft(body, 'User-agent line').toMatch(/^User-agent: \*\s*$/m);
+        expect.soft(body, 'Allow line').toMatch(/^Allow: \/\s*$/m);
+        expect.soft(body, 'a blanket Disallow').not.toMatch(/^Disallow:\s*\/\s*$/m);
+        expect.soft(body, 'a sitemap line (the sitemap is not in Release 1)').not.toMatch(/^Sitemap:/mi);
+        expect.soft(body, 'an outside address').not.toMatch(/https?:\/\//i);
     });
 
     test('an unknown address returns 404 with the site\'s not-found page', async ({ request }) => {

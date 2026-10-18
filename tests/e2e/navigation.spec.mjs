@@ -1,6 +1,7 @@
 // Footer, menus and network behaviour on every page.
 import { test, expect, PAGES, isPhone, menuButton, networkQuiet, scrollToY, settle } from '../support/site.mjs';
 import { describeBug, misnamedPageDataFiles, pathOf } from '../support/windows-export-bug.mjs';
+import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 
 const APP_PAGES = PAGES.filter((p) => p.startsWith('/apps/'));
 
@@ -15,11 +16,38 @@ for (const p of PAGES) {
         await expect.soft(privacy, `${p}: Privacy link`).toBeVisible();
         await expect.soft(privacy, `${p}: Privacy link target`).toHaveAttribute('href', '/privacy/');
         await expect.soft(footer, `${p}: copyright line`).toContainText('© 2026 bengUSA.pro');
+        // Release 1: the footer links only to pages that are shown (no app pages, no Contact).
+        const hrefs = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+        expect.soft(hrefs.filter((h) => !PAGES.includes(h)), `${p}: footer links to pages that are not shown`).toEqual([]);
+    });
+}
+
+// The menu: with the apps hidden there is no "Apps" menu, and About is the only page in it.
+for (const p of ['/', '/about/']) {
+    test(`menu on ${p} (Release 1): no Apps menu, only About, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
+        test.skip(SHOW.apps, 'the apps are shown: the menu tests below cover this page');
+        await page.goto(p);
+        await settle(page);
+        const nav = page.getByRole('navigation', { name: 'Main' });
+        await expect.soft(nav.getByRole('button', { name: 'Apps', exact: true }), 'an "Apps" menu button').toHaveCount(0);
+        // The phone shows About as a plain link, or behind a Menu button; either is fine, so open the menu if there is one.
+        const menu = nav.getByRole('button', { name: 'Menu', exact: true });
+        if (isPhone(testInfo) && await menu.count()) {
+            await menu.click();
+            await expect.soft(menu).toHaveAttribute('aria-expanded', 'true');
+        }
+        const hrefs = await nav.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+        expect.soft(hrefs, 'links in the main menu').toEqual(['/about/']);
+        await expect.soft(nav.getByRole('link', { name: 'About', exact: true }), 'the About link').toBeVisible();
+        for (const gone of ['Contact', 'Apps']) {
+            await expect.soft(nav.getByText(gone, { exact: true }), `"${gone}" in the menu`).toHaveCount(0);
+        }
     });
 }
 
 for (const p of ['/', '/about/']) {
     test(`menu on ${p}: opens, then Escape closes it and puts focus back on its button`, async ({ page }, testInfo) => {
+        test.skip(!SHOW.apps, APPS_PARKED);
         await page.goto(p);
         await settle(page);
         // The phone button's name changes when open, so find it again by the panel it controls.

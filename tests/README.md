@@ -30,6 +30,14 @@ To prove a change keeps it that way, run with the page's start-up slowed down. I
 
 `E2E_SLOW_START_MS=150 npx playwright test tests/e2e --repeat-each=5`
 
+## Release 1: apps and Contact hidden (BUWEB-114)
+
+`content/site-settings.json` (`showApps`, `showContact`) hides the apps and Contact. Their pages sit in `src/app/_parked/` and are **not built into `out/`**. `support/settings.mjs` reads the file.
+
+- **Parked tests** (app pages, the cards, the Apps menu, "What we're making", the Contact line, the heading guard) skip with the reason "apps hidden by site-settings; re-enable when the tiles return". They are not deleted, and they switch themselves back on when the setting turns on. There is no "apps shown" test build (Quinn's ruling). The apps-return ticket re-enables them and fixes whatever has drifted.
+- **New checks** (`checks/release1.spec.mjs`, `e2e/release1.spec.mjs`, `e2e/csp.spec.mjs`): no app name, slug or ID in `out/`; no link, folder, file or route-table row for a hidden page; no "Draft words"; no form, no inline style or handler; Privacy built, word for word, linked from every footer; no outside host and every font from `out/`; "Rabbi", "Saikat" and "Fojle" never alone anywhere in the build; the page descriptions; no cookies; no Content-Security-Policy violation on any page. Each scan reports every hit and has a made-up-bad-string test next to it.
+- `support/words.mjs` matches the spec (decision 19). Change both in the same commit.
+
 ## What is checked
 
 - **Build** (`checks/build-output.spec.mjs`): every route is static (○ or ●) and every page exists; no `freeBeta`, `templatesCheckedAt`, `sold` key or retired app ID in `out/`; no outside web addresses, Google fonts, "LLC", email addresses, old-site content or Vault's retired lines ("doesn't wear the Off-grid badge", the old sync card note) in `out/`; `public/` holds only the files in `fixtures/public-allowlist.txt`.

@@ -19,6 +19,7 @@ import { test as siteTest, expect, settle } from '../support/site.mjs';
 import { TRIGGER } from '../support/offgrid.mjs';
 import { BUILD_TIMEOUT, buildCopy, copySite, readJson, removeCopy, writeJson } from '../support/fixture-site.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
+import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 
 const FIRST_PORT = Number(process.env.E2E_PORT || 4310) + 10;
 const SERVE_TIMEOUT = 15_000;
@@ -106,6 +107,9 @@ const test = siteTest.extend({
 
 for (const [name, fixture] of Object.entries(FIXTURES)) {
     test.describe(`heading guard, test-only build with ${fixture.label}`, () => {
+        // PARKED while the apps are hidden (BUWEB-114): the grid and its heading are not built.
+        // Skipped here, before the fixture's build starts.
+        test.skip(!SHOW.apps, APPS_PARKED);
         test.use({ fixture: name });
 
         test('the heading falls back to "Meet our apps"; that card has no badge and no popup link points at its box', async ({ page }) => {

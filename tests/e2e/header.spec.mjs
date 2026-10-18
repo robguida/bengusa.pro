@@ -241,6 +241,9 @@ test.describe('header end states', () => {
             }));
             expect.soft(closed.doc, `${p} menu closed: page width vs screen`).toBeLessThanOrEqual(closed.view);
             expect.soft(closed.body, `${p} menu closed: body width vs screen`).toBeLessThanOrEqual(closed.view);
+            // Release 1 (BUWEB-114): with the apps hidden, About is the only page in the menu, so the
+            // phone shows it as a plain link and there is no menu to open. Then only the closed check applies.
+            if (await menuButton(page, testInfo).count() === 0) continue;
             // The button's name changes when the menu opens, so find it again by the panel it controls.
             const panelId = await menuButton(page, testInfo).getAttribute('aria-controls');
             const button = page.locator(`button[aria-controls="${panelId}"]`);

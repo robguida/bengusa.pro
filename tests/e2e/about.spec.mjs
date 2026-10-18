@@ -3,7 +3,8 @@
 // Loops over people, photos and apps check softly and name the item, or are
 // one test per item, so one bad item never hides the others.
 import { test, expect, isPhone, isReducedMotion, settle, PX_TOLERANCE } from '../support/site.mjs';
-import { APPS, ABOUT, WORDS, aboutMainText } from '../support/words.mjs';
+import { APPS, ABOUT, DRAFT_LABEL, WORDS, aboutMainText } from '../support/words.mjs';
+import { APPS_PARKED, CONTACT_PARKED, SHOW } from '../support/settings.mjs';
 import { TRIGGER, TIP, offGridSection } from '../support/offgrid.mjs';
 
 const clean = (s) => s.replace(/\s+/g, ' ').trim();
@@ -28,7 +29,8 @@ test.describe('About page', () => {
         await expect.soft(page.locator('h1')).toHaveText(ABOUT.title);
         await expect.soft(main(page).getByText(ABOUT.line, { exact: true })).toHaveCount(1);
         const h2 = await main(page).locator('h2').allTextContents();
-        expect.soft(h2.map(clean), 'section headings, in order').toEqual([ABOUT.storyHeading, ABOUT.peopleHeading, ABOUT.makingHeading]);
+        // "What we're making" is on the page only while the apps are shown (BUWEB-114).
+        expect.soft(h2.map(clean), 'section headings, in order').toEqual([ABOUT.storyHeading, ABOUT.peopleHeading, ...(SHOW.apps ? [ABOUT.makingHeading] : [])]);
         // The story is one paragraph, word for word (the legal reviewer's two lines included).
         const story = main(page).locator('p', { hasText: 'We build software for a living.' });
         await expect.soft(story).toHaveCount(1);
@@ -41,6 +43,32 @@ test.describe('About page', () => {
         expect.soft(text).not.toContain('our own server keys');
         // No early signup button (Home's signup is not built yet).
         expect.soft(text).not.toContain('Pick your apps');
+        // Release 1 (BUWEB-114): the draft label is off every page.
+        expect.soft(text, 'the draft label').not.toContain(DRAFT_LABEL);
+        expect.soft(text, 'the draft label, any case').not.toMatch(/draft words|not final/i);
+    });
+
+    test('Release 1: no app named or linked, and no Contact line or link, anywhere on About', async ({ page }) => {
+        test.skip(SHOW.apps && SHOW.contact, 'the apps and Contact are shown: the tests for their lines cover this page');
+        await page.goto(ABOUT.path);
+        await settle(page);
+        const seen = await page.evaluate(() => ({
+            text: document.body.textContent.replace(/\s+/g, ' '),
+            hrefs: [...document.querySelectorAll('a[href]')].map((a) => a.getAttribute('href')),
+        }));
+        if (!SHOW.apps) {
+            for (const app of APPS) {
+                for (const word of [app.shortName, app.name, app.page]) expect.soft(seen.text, `About text holds "${word}"`).not.toContain(word);
+            }
+            expect.soft(seen.text, 'About text holds "What we\'re making"').not.toContain(ABOUT.makingHeading);
+            expect.soft(seen.hrefs.filter((h) => h.includes('/apps')), 'links to app pages').toEqual([]);
+            await expect.soft(page.locator('section[aria-labelledby="about-making-title"]'), 'the "What we\'re making" section').toHaveCount(0);
+        }
+        if (!SHOW.contact) {
+            expect.soft(seen.text, 'About text holds the Contact line').not.toContain('Want to say hi');
+            expect.soft(seen.text, 'About text holds "Contact page"').not.toContain(ABOUT.contactLink);
+            expect.soft(seen.hrefs.filter((h) => h.includes('/contact')), 'links to the Contact page').toEqual([]);
+        }
     });
 
     test('the main text is exactly the approved words, block by block, with nothing added anywhere', async ({ page }) => {
@@ -189,6 +217,7 @@ test.describe('About page', () => {
     }
 
     test('"What we\'re making": each app name links to its page, with its line', async ({ page }) => {
+        test.skip(!SHOW.apps, APPS_PARKED);
         await page.goto(ABOUT.path);
         await settle(page);
         const items = main(page).locator('section[aria-labelledby="about-making-title"] li');
@@ -203,6 +232,7 @@ test.describe('About page', () => {
     // One test per app, so a broken link never hides the others.
     for (const app of APPS) {
         test(`"What we're making": the ${app.shortName} link reaches its page`, async ({ page }) => {
+            test.skip(!SHOW.apps, APPS_PARKED);
             await page.goto(ABOUT.path);
             await settle(page);
             await main(page).getByRole('link', { name: app.name, exact: true }).click();
@@ -212,6 +242,7 @@ test.describe('About page', () => {
     }
 
     test('the Contact line, word for word, and its link reaches /contact/', async ({ page }) => {
+        test.skip(!SHOW.contact, CONTACT_PARKED);
         await page.goto(ABOUT.path);
         await settle(page);
         const link = page.getByRole('link', { name: ABOUT.contactLink, exact: true });

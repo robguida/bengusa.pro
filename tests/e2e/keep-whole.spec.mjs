@@ -14,6 +14,7 @@
 // Closed popup boxes are not drawn, so they are left out.
 import { test, expect, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
+import { SHOW } from '../support/settings.mjs';
 
 const WIDTHS = { phone: [390, 320, 360, 375, 414, 430], desktop: [1280, 760, 1024, 1440] };
 const TERMS = 'off-grid|cloud-killers';
@@ -53,7 +54,8 @@ function expectPlaces(found, page) {
     const has = (term, words) => found.some((f) => f.term.toLowerCase() === term && f.block.includes(words));
     if (page === '/') {
         const cards = found.filter((f) => f.term === 'Off-grid' && f.block === WORDS.shortForm).length;
-        expect.soft(cards, 'Home: the short line on every badged card').toBeGreaterThanOrEqual(APPS.length);
+        // The cards are PARKED with the apps (BUWEB-114): Home has the legend only.
+        if (SHOW.apps) expect.soft(cards, 'Home: the short line on every badged card').toBeGreaterThanOrEqual(APPS.length);
         // The Home legend, in the "Off-grid, explained" section (13.a.ii).
         const homeLegend = WORDS.legendOnHome.replace(/^Off-grid: /, '');
         expect.soft(has('off-grid', homeLegend), 'Home: "Off-grid" in the legend').toBe(true);
@@ -74,7 +76,8 @@ test('"Off-grid" and "Cloud-killers" never break at the hyphen: the legend, the 
     test.skip(isReducedMotion(testInfo), 'line breaks do not change with motion; the normal pass covers them');
     const widths = isPhone(testInfo) ? WIDTHS.phone : WIDTHS.desktop;
     const height = page.viewportSize().height;
-    for (const p of ['/', ...APPS.map((a) => a.page)]) {
+    // The app pages are PARKED while the apps are hidden (they are not built).
+    for (const p of ['/', ...(SHOW.apps ? APPS.map((a) => a.page) : [])]) {
         await page.setViewportSize({ width: widths[0], height });
         await page.goto(p);
         await settle(page);
