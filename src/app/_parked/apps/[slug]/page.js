@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
-import DraftLabel from '../../components/DraftLabel';
-import KeepWhole from '../../components/KeepWhole';
-import OffGridBadge from '../../components/OffGridBadge';
-import OffGridLegend from '../../components/OffGridLegend';
+import DraftLabel from '@/app/components/DraftLabel';
+import KeepWhole from '@/app/components/KeepWhole';
+import OffGridBadge from '@/app/components/OffGridBadge';
+import OffGridLegend from '@/app/components/OffGridLegend';
 import { getPublicApp, getPublicApps } from '@/lib/apps';
-import siteWords from '../../../../content/site-words.json';
+import { siteWords } from '@/lib/content';
 
 // One template for every app page, built from the app list. Pages exist only
 // under /apps/<slug>/, and only for the slugs in the list.

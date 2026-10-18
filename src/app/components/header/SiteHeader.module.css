@@ -323,6 +323,29 @@
     height: var(--bh);
     pointer-events: auto;
   }
+
+  /* No Apps menu (content/site-settings.json hides the apps): no menu
+     button, so the plain links from the computer menu show on a phone too.
+     Each link's tap area is at least 44 x 44 px. The lettering's fit limit
+     keeps room for "About" instead of the 44px menu button. */
+  .plain {
+    --hdr-nav-w: 52px; /* "About" is 48.5px wide */
+  }
+
+  .plain .desk {
+    display: flex;
+  }
+
+  .plain .deskList {
+    gap: 12px;
+  }
+
+  .plain .deskLink {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding-block: 0;
+  }
 }
 
 /* Reads the landing logo height from CSS so the script never repeats it. */

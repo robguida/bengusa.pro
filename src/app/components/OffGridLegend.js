@@ -6,9 +6,10 @@ import siteWords from '../../../content/site-words.json';
 // bold and the legend's words, with each brand term kept whole. It sits
 // under the "Off-grid, explained" heading on Home and on each Off-grid
 // app's page, so both look the same.
-// text: the words after "Off-grid: ". Home's version keeps "Each app's page
-// lists what it connects to."; an app's page drops it, because its connects
-// box sits right below.
+// text: the words after "Off-grid: ". Home's version (Release 1, legal ruling
+// 1.1) names no app page and no purchase, because the apps are hidden; the
+// legal reviewer re-reads it when they come back. An app's page has its own,
+// with its connects box right below.
 // link: for the badge's popup. The app's connects box ({ href, label }) on
 // its page; null on Home, where the legend names no single app (17.c.iv).
 export default function OffGridLegend({ text, link = null }) {

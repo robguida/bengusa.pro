@@ -35,14 +35,109 @@ export function readJson(file) {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+// ---------------------------------------------------------------------------
+// The site switch, content/site-settings.json (BUWEB-114): what the live site
+// shows. A hidden page's folder sits in src/app/_parked/, so Next builds
+// nothing for it, and src/lib/site.js leaves it out of every list. The code is
+// kept. A missing file counts as "everything shown" (the site before
+// BUWEB-114), and is itself reported as a problem.
+// ---------------------------------------------------------------------------
+export const SETTINGS_FILE = 'content/site-settings.json';
+
+// key: the switch. what: for messages. folder: its page folder under src/app/.
+// route: its address.
+export const SWITCHES = [
+    { key: 'showApps', what: 'the apps are', folder: 'apps', route: '/apps' },
+    { key: 'showContact', what: 'Contact is', folder: 'contact', route: '/contact' },
+];
+
+export function readSiteSettings(root = ROOT) {
+    const file = path.join(root, SETTINGS_FILE);
+    const problems = [];
+    let raw = {};
+    if (!fs.existsSync(file)) {
+        problems.push(`${SETTINGS_FILE} is missing`);
+    } else {
+        try {
+            raw = readJson(file);
+        } catch (err) {
+            problems.push(`${SETTINGS_FILE} is not valid JSON: ${err.message}`);
+        }
+    }
+    const settings = {};
+    for (const { key } of SWITCHES) {
+        if (key in raw && typeof raw[key] !== 'boolean') problems.push(`${SETTINGS_FILE}: "${key}" must be true or false`);
+        settings[key] = raw[key] !== false;
+    }
+    return { ...settings, problems };
+}
+
 // The pages the site must build, as static files. The app pages come from the
-// app list, so adding an app adds its page here too.
+// app list, so adding an app adds its page here too. Hidden pages are left out.
 export function expectedRoutes(root = ROOT) {
+    const { showApps, showContact } = readSiteSettings(root);
     const apps = readJson(path.join(root, 'content', 'apps.json'));
-    const appRoutes = apps
-        .filter((app) => app.status === 'open' || app.status === 'showcase')
-        .map((app) => `/apps/${app.slug}`);
-    return ['/', '/about', '/contact', '/privacy', ...appRoutes];
+    const appRoutes = showApps
+        ? apps.filter((app) => app.status === 'open' || app.status === 'showcase').map((app) => `/apps/${app.slug}`)
+        : [];
+    return ['/', '/about', ...(showContact ? ['/contact'] : []), '/privacy', ...appRoutes];
+}
+
+// The addresses that must NOT be built: each hidden switch's route, and
+// everything under it.
+export function hiddenRoutes(root = ROOT) {
+    const settings = readSiteSettings(root);
+    return SWITCHES.filter((s) => !settings[s.key]).map((s) => s.route);
+}
+
+const underRoute = (route, base) => route === base || route.startsWith(`${base}/`);
+
+// The switch and the folders must agree, so the code is never lost and never
+// built by mistake. Shown: src/app/<folder>/ exists and src/app/_parked/<folder>/
+// does not. Hidden: the reverse.
+export function checkSettingsMatchFolders(root = ROOT) {
+    const settings = readSiteSettings(root);
+    const problems = [...settings.problems];
+    for (const { key, what, folder } of SWITCHES) {
+        const live = fs.existsSync(path.join(root, 'src', 'app', folder));
+        const parked = fs.existsSync(path.join(root, 'src', 'app', '_parked', folder));
+        const where = `(${SETTINGS_FILE} has "${key}": ${settings[key]})`;
+        if (settings[key]) {
+            if (!live) problems.push(`${what} shown, but src/app/${folder}/ is missing ${where}: move it back from src/app/_parked/`);
+            if (parked) problems.push(`${what} shown, but src/app/_parked/${folder}/ still exists ${where}`);
+        } else {
+            if (live) problems.push(`${what} hidden, but src/app/${folder}/ exists, so Next would build it ${where}: move it to src/app/_parked/`);
+            if (!parked) problems.push(`${what} hidden, but the code is not in src/app/_parked/${folder}/ ${where}: it must be kept`);
+        }
+    }
+    return { ok: problems.length === 0, problems };
+}
+
+// ---------------------------------------------------------------------------
+// public/ allow-list (Cora, BUWEB-114): every file in public/ is copied into
+// out/ and served, whether git tracks it or not, so the build fails on any file
+// there that tests/fixtures/public-allowlist.txt does not name. This walks the
+// folder itself, so untracked and git-ignored files are caught too. An
+// allow-listed file that is missing is reported as well.
+// ---------------------------------------------------------------------------
+export const PUBLIC_ALLOWLIST = 'tests/fixtures/public-allowlist.txt';
+
+export function checkPublicAllowlist(root = ROOT) {
+    const listFile = path.join(root, PUBLIC_ALLOWLIST);
+    if (!fs.existsSync(listFile)) return { ok: false, problems: [`${PUBLIC_ALLOWLIST} is missing`], strays: [], missing: [] };
+    const allowed = fs.readFileSync(listFile, 'utf8')
+        .split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+    const publicDir = path.join(root, 'public');
+    const actual = fs.existsSync(publicDir) ? walk(publicDir).map((f) => rel(publicDir, f)) : [];
+    const listed = new Set(allowed);
+    const present = new Set(actual);
+    const strays = actual.filter((f) => !listed.has(f)).sort();
+    const missing = allowed.filter((f) => !present.has(f)).sort();
+    const problems = [
+        ...strays.map((f) => `public/${f} is not on ${PUBLIC_ALLOWLIST} (it would be served): remove it, or add it to the list in a reviewed commit`),
+        ...missing.map((f) => `public/${f} is on ${PUBLIC_ALLOWLIST} but missing`),
+    ];
+    return { ok: problems.length === 0, problems, strays, missing };
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +147,9 @@ export function expectedRoutes(root = ROOT) {
 // a server-only route (for example a POST-only API route) still builds green,
 // then is silently left out of out/.
 // ---------------------------------------------------------------------------
-export function checkRouteTable(logText, wanted = expectedRoutes()) {
+// hidden: routes that must not be built (content/site-settings.json). A hidden
+// route that still builds would pass every "static" check, so it is named.
+export function checkRouteTable(logText, wanted = expectedRoutes(), hidden = hiddenRoutes()) {
     const lines = logText.split(/\r?\n/);
     const start = lines.findIndex((l) => /^Route \(app\)/.test(l));
     if (start < 0) {
@@ -86,6 +183,10 @@ export function checkRouteTable(logText, wanted = expectedRoutes()) {
     const built = new Set(rows.filter((r) => r.sym === '○' || r.sym === '●').map((r) => r.route));
     for (const route of wanted) {
         if (!built.has(route)) problems.push(`missing static route ${route}`);
+    }
+    for (const row of rows) {
+        const base = hidden.find((h) => underRoute(row.route, h));
+        if (base) problems.push(`hidden page built: ${row.route} (${SETTINGS_FILE} hides ${base})`);
     }
     return { ok: problems.length === 0, rows, problems };
 }
@@ -139,4 +240,140 @@ export function checkGuardedFields(outDir = OUT_DIR, retired = retiredIds()) {
         }
     }
     return { ok: hits.length === 0, scanned: files.length, retired, hits };
+}
+
+// ---------------------------------------------------------------------------
+// Hidden content (BUWEB-114). While content/site-settings.json hides the apps
+// or Contact, nothing of theirs may reach out/: no page or page-data file, and
+// no name, words, link or menu in any text file (pages, page data, scripts,
+// styles). The words to look for are read from the content files, so a new app or a
+// new line is covered with no change here. Every file is read in full and
+// every hit is listed (Rob's loop rule).
+// ---------------------------------------------------------------------------
+
+// Lines the legal reviewer cut from the live words for Release 1 (ruling 1.1).
+// They point at app pages and a store that are not shown.
+const CUT_WHILE_APPS_HIDDEN = [
+    "Each app's page lists what it connects to.",
+    'If you buy it, all we keep is your purchase record.',
+];
+// The parked Contact page's own words (src/app/_parked/contact/page.js).
+const CONTACT_PAGE_WORDS = ['Say hi.', 'The contact form comes in a later build.'];
+
+function stringsIn(value, acc = []) {
+    if (typeof value === 'string') acc.push(value);
+    else if (Array.isArray(value)) value.forEach((v) => stringsIn(v, acc));
+    else if (value && typeof value === 'object') Object.values(value).forEach((v) => stringsIn(v, acc));
+    return acc;
+}
+
+// "TimeTracker" -> "Time Tracker"
+const spacedCamel = (s) => s.replace(/(\p{Ll})(\p{Lu})/gu, '$1 $2');
+
+// The words as whole words, in any case, with any run of spaces between them.
+function phraseRe(text) {
+    const words = text.trim().split(/\s+/).map(escapeRe);
+    return new RegExp(String.raw`(?<![\p{L}\p{N}])` + words.join(String.raw`\s+`) + String.raw`(?![\p{L}\p{N}])`, 'giu');
+}
+
+export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
+    const patterns = [];
+    const seen = new Set();
+    const phrase = (group, raw) => {
+        const text = String(raw).replace(/\{offGrid\}/g, 'Off-grid').trim();
+        if ((text.match(/\p{L}/gu) || []).length < 4) return; // "." or "OK" would hit everything
+        const key = `${group}|${text.toLowerCase()}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        patterns.push({ name: `${group}: "${text.length > 60 ? `${text.slice(0, 57)}...` : text}"`, re: phraseRe(text) });
+    };
+    // A link (href, or a page-data address) to the route or anything under it.
+    const link = (group, route) => patterns.push({
+        name: `${group}: a link to ${route}/`,
+        re: new RegExp(escapeRe(route) + String.raw`(?=[/"'?#\s\\]|$)`, 'g'),
+    });
+    // A rendered menu label or link text: >Apps< in a page, "children":"Apps" in page data.
+    const label = (group, word) => patterns.push({
+        name: `${group}: a "${word}" menu or link`,
+        re: new RegExp(String.raw`(?:>|"children":")\s*` + escapeRe(word) + String.raw`\s*(?:<|")`, 'g'),
+    });
+    const content = (file) => readJson(path.join(root, 'content', file));
+
+    if (!settings.showApps) {
+        const group = 'hidden apps';
+        for (const app of content('apps.json')) {
+            for (const value of [app.id, app.name, app.shortName, app.slug]) {
+                if (typeof value !== 'string') continue;
+                phrase(group, value);
+                phrase(group, spacedCamel(value));
+            }
+        }
+        stringsIn(content('app-words.json')).forEach((s) => phrase(group, s));
+        stringsIn(content('about-words.json').making ?? {}).forEach((s) => phrase(group, s));
+        const site = content('site-words.json');
+        [site.home?.appsTitle, site.home?.appsTitleNotAllOffGrid, site.offGrid?.legendOnAppPage, ...stringsIn(site.moreInTheWorks ?? {})]
+            .filter((s) => typeof s === 'string').forEach((s) => phrase(group, s));
+        CUT_WHILE_APPS_HIDDEN.forEach((s) => phrase(group, s));
+        link(group, '/apps');
+        label(group, 'Apps');
+    }
+    if (!settings.showContact) {
+        const group = 'hidden Contact';
+        stringsIn(content('about-words.json').contact ?? {}).forEach((s) => phrase(group, s));
+        CONTACT_PAGE_WORDS.forEach((s) => phrase(group, s));
+        link(group, '/contact');
+        label(group, 'Contact');
+    }
+    return patterns;
+}
+
+// Page text as a reader sees it: HTML entities decoded (&#x27; -> ') and the
+// page data's escapes undone (\" -> "), so words match however they are stored.
+function decoded(text) {
+    return text
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+        .replace(/\\(["'\\/])/g, '$1')
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+        .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+        .replace(/&(quot|apos|lt|gt|nbsp|amp);/g, (_, n) => ({ quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', amp: '&' })[n]);
+}
+
+function hitsIn(view, re) {
+    re.lastIndex = 0;
+    return [...view.matchAll(re)].map((m) => {
+        const s = Math.max(0, m.index - 30);
+        return view.slice(s, m.index + m[0].length + 30).replace(/\s+/g, ' ');
+    });
+}
+
+export function checkHiddenContent(outDir = OUT_DIR, root = ROOT) {
+    const settings = readSiteSettings(root);
+    const patterns = hiddenPatterns(root, settings);
+    const hits = [...settings.problems];
+    const all = walk(outDir);
+
+    // No file of a hidden page at all: its page, or its page data.
+    const hiddenFolders = SWITCHES.filter((s) => !settings[s.key]).map((s) => s.folder);
+    for (const file of all) {
+        const name = rel(outDir, file);
+        const folder = hiddenFolders.find((f) => name.split(/[/.]/).includes(f));
+        if (folder) hits.push(`hidden page file in out/: ${name}`);
+    }
+
+    // No hidden words, link or menu in any text file. A page is read twice:
+    // with its tags (names in alt text, links in href) and without them (words
+    // split by an inline tag, like a no-wrap span). The view with more hits counts.
+    const files = all.filter((f) => TEXT_EXT.has(path.extname(f).toLowerCase()));
+    for (const file of files) {
+        const text = decoded(fs.readFileSync(file, 'utf8'));
+        const isHtml = path.extname(file).toLowerCase() === '.html';
+        const plain = isHtml ? text.replace(/<[^>]*>/g, ' ') : null;
+        for (const { name, re } of patterns) {
+            const withTags = hitsIn(text, re);
+            const withoutTags = plain === null ? [] : hitsIn(plain, re);
+            const found = withoutTags.length > withTags.length ? withoutTags : withTags;
+            for (const context of found) hits.push(`${name} in ${rel(outDir, file)}: …${context}…`);
+        }
+    }
+    return { ok: hits.length === 0, scanned: files.length, patterns: patterns.length, hits };
 }
