@@ -16,7 +16,8 @@
 // It also re-runs the build's other checks on these exact files, so a build
 // that failed them can never be packaged by hand: the site settings agree with
 // the page folders, public/ holds only allow-listed files (git-ignored ones
-// included), and nothing of a hidden page is in out/.
+// included), nothing of a hidden page is in out/, and every page carries its
+// own security policy, matching its inline scripts.
 import fs from 'node:fs';
 import path from 'node:path';
 import { misnamedPageDataFiles } from '../../tests/support/windows-export-bug.mjs';
@@ -24,6 +25,7 @@ import {
     BUILD_LOG, OUT_DIR,
     checkGuardedFields, checkHiddenContent, checkPublicAllowlist, checkRouteTable, checkSettingsMatchFolders, rel, walk,
 } from '../lib/export-checks.mjs';
+import { checkCsp } from '../lib/csp.mjs';
 import { git, writeBundle } from './lib.mjs';
 
 function arg(name, fallback) {
@@ -60,6 +62,7 @@ else {
     }
     refusals.push(...checkGuardedFields(outDir).hits.map((h) => `guarded field: ${h}`));
     refusals.push(...checkHiddenContent(outDir).hits.map((h) => `hidden content: ${h}`));
+    refusals.push(...checkCsp(outDir).problems.map((p) => `security policy: ${p}`));
 }
 refusals.push(...checkSettingsMatchFolders().problems.map((p) => `site settings: ${p}`));
 refusals.push(...checkPublicAllowlist().problems.map((p) => `public/: ${p}`));

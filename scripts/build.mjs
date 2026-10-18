@@ -8,7 +8,11 @@
 //     or a hidden page was built;
 //   - a list-only field or a retired app ID reaches out/ (§6.1 item 11);
 //   - anything of a hidden page reaches out/: its files, or its names, words,
-//     links or menu in any text file; or the old draft label appears anywhere.
+//     links or menu in any text file; or the old draft label appears anywhere;
+//   - a page's security policy can't be written, or doesn't match the page.
+// After `next build` it writes each page's Content-Security-Policy meta tag
+// (scripts/lib/csp.mjs), then saves the build log, so the log is newer than
+// every file in out/ (scripts/release/package.mjs refuses anything newer).
 // Every check runs to the end and every problem is listed (Rob's loop rule).
 // Telemetry is always off for the build. No packages: Node built-ins only.
 import { spawn } from 'node:child_process';
@@ -19,6 +23,7 @@ import {
     BUILD_LOG, OUT_DIR, ROOT,
     checkGuardedFields, checkHiddenContent, checkPublicAllowlist, checkRouteTable, checkSettingsMatchFolders,
 } from './lib/export-checks.mjs';
+import { checkCsp, injectCsp } from './lib/csp.mjs';
 
 const require = createRequire(import.meta.url);
 const nextBin = require.resolve('next/dist/bin/next', { paths: [ROOT] });
@@ -57,6 +62,10 @@ if (code !== 0) {
     process.exit(code);
 }
 
+// The pages' security policies are written before the log is saved.
+const written = injectCsp(OUT_DIR);
+problems.push(...written.problems.map((p) => `security policy: ${p}`));
+
 fs.mkdirSync(path.dirname(BUILD_LOG), { recursive: true });
 fs.writeFileSync(BUILD_LOG, log);
 
@@ -66,6 +75,8 @@ const guarded = checkGuardedFields(OUT_DIR);
 problems.push(...guarded.hits.map((h) => `guarded field: ${h}`));
 const hidden = checkHiddenContent(OUT_DIR);
 problems.push(...hidden.hits.map((h) => `hidden content: ${h}`));
+const csp = checkCsp(OUT_DIR);
+problems.push(...csp.problems.map((p) => `security policy: ${p}`));
 
 if (problems.length) {
     report(problems);
@@ -74,4 +85,5 @@ if (problems.length) {
 console.log(`\nBuild checks passed: ${routes.rows.filter((r) => r.sym).length} static routes; ` +
     `${guarded.scanned} text files in out/ free of list-only fields` +
     `${guarded.retired.length ? ` and retired IDs (${guarded.retired.join(', ')})` : ''}, ` +
-    `and of hidden pages' content (${hidden.patterns} patterns); public/ matches its allow-list.`);
+    `and of hidden pages' content (${hidden.patterns} patterns); public/ matches its allow-list; ` +
+    `security policy written and checked on ${csp.pages} pages.`);

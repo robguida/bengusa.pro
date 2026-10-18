@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import PageIntro from '../components/PageIntro';
 import { getShownApps } from '@/lib/apps';
@@ -39,11 +38,17 @@ export default function AboutPage() {
                 <ul className="m-0 grid list-none gap-10 p-0 md:grid-cols-2 md:gap-12">
                     {people.list.map((person) => (
                         <li key={person.id} className="min-w-0">
-                            <Image
+                            {/* A plain <img>, not next/image: next/image adds style="color:transparent",
+                                and the page's security policy allows no inline styles. The photos are
+                                served as they are (unoptimized), so nothing else changes. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                                 src={person.photo}
                                 alt={person.alt}
                                 width={240}
                                 height={300}
+                                loading="lazy"
+                                decoding="async"
                                 className="mb-5 h-auto w-[200px] rounded-xl border border-line md:w-[240px]"
                             />
                             <Heading offset={1} className="m-0 text-xl font-semibold leading-tight">{person.name}</Heading>
