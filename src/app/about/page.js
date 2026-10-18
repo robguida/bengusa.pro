@@ -6,6 +6,7 @@ import words from '../../../content/about-words.json';
 
 export const metadata = {
     title: 'About',
+    description: words.top.description,
 };
 
 const HEADING_CLASS = 'm-0 mb-3 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]';

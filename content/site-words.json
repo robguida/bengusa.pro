@@ -10,6 +10,7 @@
   "home": {
     "heroTitle": "Makers of {offGrid} apps.",
     "heroSubline": "Apps that mind their own business.",
+    "description": "Makers of Off-grid apps. Off-grid: your data lives on your device, not in our cloud.",
     "appsTitle": "Meet our {offGrid} apps",
     "appsTitleNotAllOffGrid": "Meet our apps"
   },

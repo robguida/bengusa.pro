@@ -2,7 +2,8 @@ import PageIntro from '../components/PageIntro';
 import words from '../../../content/privacy-words.json';
 
 export const metadata = {
-    title: 'Privacy',
+    title: words.title,
+    description: words.description,
 };
 
 const HEADING_CLASS = 'm-0 mb-3 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]';

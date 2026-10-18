@@ -3,6 +3,7 @@ import SiteHeader from "./components/header/SiteHeader";
 import SiteFooter from "./components/SiteFooter";
 import {getShownApps, toMenuItems} from "@/lib/apps";
 import {footerLinks, headerLinks} from "@/lib/site";
+import siteWords from "../../content/site-words.json";
 import "./globals.css";
 
 // The two brand fonts live in ./fonts (Latin, variable weight; licence texts
@@ -24,14 +25,33 @@ const oswald = localFont({
     variable: "--next-font-oswald",
 });
 
+// The site's default description is Home's (the legal reviewer's pre-cleared
+// words, in content/site-words.json); About and Privacy set their own.
+// Share preview: text only. Each page's share title and description come from
+// its own title and description, so no address and no image is needed.
+// Icons (Adam's wave-2a calls): the tab icon on its white tile,
+// src/app/icon.svg; the same at 16, 32 and 48px in public/favicon.ico, for
+// browsers that don't take an SVG icon; and the 180px phone home-screen icon,
+// src/app/apple-icon.png. Next serves the two src/app files at /icon.svg and
+// /apple-icon.png, but adds no links of its own while this list is set, so all
+// three are listed here.
 export const metadata = {
     title: {
         default: "bengUSA.pro · Apps that mind their own business",
         template: "%s · bengUSA.pro",
     },
+    description: siteWords.home.description,
+    openGraph: {
+        type: 'website',
+        siteName: 'bengUSA.pro',
+    },
     icons: {
-        icon: '/images/svg/bengusaicon.svg'
-    }
+        icon: [
+            {url: '/icon.svg', type: 'image/svg+xml'},
+            {url: '/favicon.ico', sizes: '16x16 32x32 48x48'},
+        ],
+        apple: [{url: '/apple-icon.png', sizes: '180x180', type: 'image/png'}],
+    },
 };
 
 // The header and footer get only what the site shows (src/lib/site.js): no
