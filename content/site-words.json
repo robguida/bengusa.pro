@@ -2,7 +2,17 @@
   "offGrid": {
     "badge": "Off-grid",
     "short": "your data lives on your device, not in our cloud.",
+    "popup": "your data lives on your device, not in our cloud.",
+    "explainedHeading": "Off-grid, explained",
+    "legendOnHome": "your data lives on your device, not in our cloud. We call Off-grid apps Cloud-killers.",
     "legendOnAppPage": "the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. We call Off-grid apps Cloud-killers."
+  },
+  "home": {
+    "heroTitle": "Makers of {offGrid} apps.",
+    "heroSubline": "Apps that mind their own business.",
+    "description": "Makers of Off-grid apps. Off-grid: your data lives on your device, not in our cloud.",
+    "appsTitle": "Meet our {offGrid} apps",
+    "appsTitleNotAllOffGrid": "Meet our apps"
   },
   "moreInTheWorks": {
     "heading": "More in the works",

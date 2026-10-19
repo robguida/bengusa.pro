@@ -1,0 +1,29 @@
+{
+  "title": "Privacy",
+  "intro": "This page covers the website at bengusa.pro.",
+  "description": "What the bengusa.pro website keeps, and for how long.",
+  "sections": [
+    {
+      "id": "privacy-keeps",
+      "heading": "What our server keeps",
+      "paragraphs": [
+        "Our server keeps a short visitor log for 14 days: the date and time, your IP address, the pages and files your browser asks for, and the browser and device type it reports. Backup copies of the log are gone within about 3 weeks. We use it to keep the site running and safe, and to count visits. We don't sell it or use it for ads."
+      ]
+    },
+    {
+      "id": "privacy-not",
+      "heading": "What the site doesn't do",
+      "paragraphs": [
+        "The site has no forms, no cookies, no ads, and no analytics or tracking scripts. It doesn't follow you to other sites. Every file, fonts included, comes from our server, which runs on Amazon Web Services in the US."
+      ]
+    },
+    {
+      "id": "privacy-changes",
+      "heading": "Changes",
+      "paragraphs": [
+        "If the site starts collecting anything else, or keeps it longer, this page will say so first.",
+        "Last updated: October 19, 2026."
+      ]
+    }
+  ]
+}

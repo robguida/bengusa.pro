@@ -5,20 +5,64 @@ import { expectedRoutes } from '../../scripts/lib/export-checks.mjs';
 // Every page, as the browser asks for it (trailingSlash: true).
 export const PAGES = expectedRoutes().map((r) => (r === '/' ? '/' : `${r}/`));
 
-// Header end sizes = the logo mark's height, as approved in BUWEB-104b.
+// Header end sizes = the logo mark's height. "dock" = 2.5x today's 46px logo,
+// set by Rob on 2026-10-06 (spec 6.c, --hdr-h-end in globals.css).
 // "land" = Home at the very top. "dock" = scrolled, and every other page.
 // The phone landing size is a clamp() of the screen width: 128.69px at 390px.
+// "word" = the docked "bengUSA.pro" lettering's height. It keeps the size the
+// 2x option gave it (spec 6.c, acceptance check 2; --hdr-h-word-end): 29px on
+// a computer, 24px on a phone. The build draws 29.44px and 23.91px, inside
+// PX_TOLERANCE of the spec's whole numbers. Lettering that followed the 2.5x
+// logo would be 32.89px on a computer, far outside it.
 export const HEADER = {
-    desktop: { dock: 115, land: 240 },
-    phone: { dock: 69, land: 128.69 },
+    desktop: { dock: 115, land: 240, word: 29 },
+    phone: { dock: 69, land: 128.69, word: 24 },
 };
 export const PX_TOLERANCE = 0.75;
+
+// The lettering's DRAWN size, in the build's own px, for the checks that need
+// more than the spec's whole numbers: Home at the top, and the whole shrink.
+// Measured 2026-10-06 (Chromium and WebKit agree to 0.01px). The project
+// lead accepted 23.91px at the top of Home on a phone as what spec 6.c's
+// "24px at every size" means (it was 24.2px at 390px before BUWEB-106a-r2).
+//   - docked: 29.44px on a computer, 23.91px on a phone (spec: 29 / 24);
+//   - Home at the top: 61.63px at 1280px, 23.91px at 390px.
+// WORD_TOLERANCE is small on purpose: the old phone path started at 24.2px.
+export const WORD = {
+    desktop: { dock: 29.44, land: 61.63 },
+    phone: { dock: 23.91, land: 23.91 },
+};
+export const WORD_TOLERANCE = 0.1;
+
+// The lettering's path through the whole shrink on Home, top to docked, by
+// screen width (spec 6.c):
+//   - 'hold': it stays at its docked size the whole way (phones about 388px
+//     wide and up);
+//   - 'rise': it never shrinks, and grows up to its docked size (narrower
+//     phones, where 24px does not fit at the top);
+//   - 'fall': it never grows, and shrinks from its Home size to its docked
+//     size (computers). 37.88px at 760px is the room left before the menu.
+export const WORD_PATH = {
+    phone: [
+        { width: 390, path: 'hold' },
+        { width: 430, path: 'hold' },
+        { width: 360, path: 'rise' },
+    ],
+    desktop: [
+        { width: 760, path: 'fall', top: 37.88 },
+        { width: 1280, path: 'fall', top: 61.63 },
+    ],
+};
 
 // RULE: never wait a fixed time and then measure. Wait for the STATE you need.
 // A timeout below is only a ceiling that turns "never got there" into a red
 // test; reaching the state early always ends the wait early.
 const START_TIMEOUT = 15_000; // the page's scripts have started (busy CI machines are slow)
 const STATE_TIMEOUT = 5_000; // a size or a scroll position has reached its end state
+// Each page load's own limit, shorter than any test's (30s, or 60s / 90s for
+// the long walks). A load that stalls then fails on its own, naming the
+// page, and the test still has time left to save its trace.
+const NAV_TIMEOUT = 15_000;
 const STABLE_FRAMES = 3; // "stopped changing" = this many animation frames in a row with no change
 
 // Stress knob (off by default): E2E_SLOW_START_MS=150 holds back every
@@ -151,11 +195,79 @@ export async function logoHeight(page) {
     });
 }
 
+// The "bengUSA.pro" lettering's height. Read it after expectLogoPx() or
+// settle(): it is drawn from the same --h, so once the logo has stopped
+// changing, so has the lettering.
+export async function wordHeight(page) {
+    return page.evaluate(() => {
+        const el = document.querySelector('[data-logo="word"]');
+        return el ? Math.round(el.getBoundingClientRect().height * 100) / 100 : -1;
+    });
+}
+
+// The header's shape has no test hook of its own (it is decoration, inside an
+// aria-hidden wrapper): the bar is that wrapper's <div>, and the tab is its
+// <svg>, whose last <path> is the navy edge. Its bottom is the bottom of the tab.
+const SHAPE = 'header [aria-hidden="true"]';
+export const TAB_EDGE = `${SHAPE} > svg > path:last-of-type`;
+export const BAR = `${SHAPE} > div`;
+
+// Header geometry right now, in screen px: the tab's bottom edge, the bar's
+// height, the logo's height and the lettering's height.
+export async function headerGeometry(page) {
+    return page.evaluate(({ tab, bar }) => {
+        const round = (v) => Math.round(v * 100) / 100;
+        const edge = document.querySelector(tab);
+        const strip = document.querySelector(bar);
+        const logo = document.querySelector('[data-logo="mark"]');
+        const word = document.querySelector('[data-logo="word"]');
+        return {
+            tabBottom: edge ? round(edge.getBoundingClientRect().bottom) : -1,
+            bar: strip ? round(strip.getBoundingClientRect().height) : -1,
+            logo: logo ? round(logo.getBoundingClientRect().height) : -1,
+            word: word ? round(word.getBoundingClientRect().height) : -1,
+            minBar: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hdr-min-bar')) || -1,
+        };
+    }, { tab: TAB_EDGE, bar: BAR });
+}
+
+export async function tabBottom(page) {
+    return (await headerGeometry(page)).tabBottom;
+}
+
+// The header's shrink distance on this screen: how far Home must scroll for
+// the logo to go from its Home size to docked. It is the big tab's bottom
+// minus the docked tab's, --hdr-land-bottom minus --hdr-end-bottom in
+// globals.css (the same sum SiteHeader.js walks), worked out by the browser
+// from the tokens, never typed here. 0 with reduce-motion: there the Home
+// size IS the docked size. Read through a hidden probe that is removed at
+// once (set through CSSOM, which the pages' security policy allows).
+export async function shrinkDistance(page) {
+    return page.evaluate(() => {
+        const resolve = (token) => {
+            const el = document.createElement('div');
+            el.style.setProperty('position', 'absolute');
+            el.style.setProperty('visibility', 'hidden');
+            el.style.setProperty('top', '0');
+            el.style.setProperty('height', `var(${token})`);
+            document.body.append(el);
+            const h = el.getBoundingClientRect().height;
+            el.remove();
+            return h;
+        };
+        return Math.round((resolve('--hdr-land-bottom') - resolve('--hdr-end-bottom')) * 100) / 100;
+    });
+}
+
 export async function scrollToY(page, y) {
     await page.evaluate((v) => window.scrollTo(0, v), y);
     await settle(page);
     return page.evaluate(() => Math.round(window.scrollY));
 }
+
+// Home's subline: the first <p> after the hero heading. Not simply the next
+// element: the hero word's popup box sits right after the heading.
+export const heroSubline = (page) => page.locator('h1').locator('xpath=following-sibling::p[1]');
 
 // The menu button for this screen: "Apps" on a computer, "Menu" on a phone.
 export function menuButton(page, testInfo) {
@@ -166,13 +278,26 @@ export function menuButton(page, testInfo) {
 
 // Every browser test runs with these guards, automatically:
 //   - any request that leaves the local test server is BLOCKED and fails the test;
-//   - any JavaScript error (uncaught, or console.error) fails the test.
+//   - any JavaScript error (uncaught, or console.error) fails the test;
+//   - each page load has its own time limit (NAV_TIMEOUT).
 // Network errors such as a 404 are not JavaScript errors; the
 // "no 404s while browsing" test covers them.
+//
+// Why the block is a route with a match function, and stays one: in
+// Playwright 1.63 ANY route makes the browser pause every request (Chromium
+// and WebKit both intercept every address), whatever the route's URL
+// pattern. A pattern only moves the match from this test process into
+// Playwright's own driver; the browser still pauses each local request until
+// it is let through. So no pattern can stop local requests from being
+// paused. A proxy-based block was not taken either: it is a different guard
+// (Chromium skips a proxy for loopback addresses by default, and a blocked
+// request would no longer be recorded by its address), with no proof yet in
+// all three browsers. Checked in Playwright's own code, 2026-10-06.
 export const test = base.extend({
     siteGuards: [async ({ context, baseURL, javaScriptEnabled }, use) => {
         const outside = [];
         const jsErrors = [];
+        context.setDefaultNavigationTimeout(NAV_TIMEOUT);
         if (javaScriptEnabled === false) scriptsOff.add(context);
         await context.addInitScript(startProbe);
         const isLocal = (url) => url.startsWith(`${baseURL}/`) || url === baseURL
@@ -184,8 +309,13 @@ export const test = base.extend({
         if (SLOW_START_MS > 0) {
             await context.addInitScript((ms) => {
                 const post = MessagePort.prototype.postMessage;
+                // The real timer, kept here: this runs before a test's fake
+                // clock (page.clock) is put in, and a slow machine is slow in
+                // real time. On the fake clock's timer, a frozen clock would
+                // also freeze React.
+                const later = window.setTimeout.bind(window);
                 MessagePort.prototype.postMessage = function slowed(...args) {
-                    setTimeout(() => post.apply(this, args), ms);
+                    later(() => post.apply(this, args), ms);
                 };
             }, SLOW_START_MS);
         }

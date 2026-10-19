@@ -15,8 +15,14 @@ const INERT_URL = [
     /^https?:\/\/(a|x|n|тест)([/@#?]|$)/u, // core-js URL feature tests + Next's server-side URL base, only passed to new URL()
 ];
 
+// An apostrophe as it can appear in out/: typed, curly, or HTML-escaped.
+const APOS = String.raw`(?:'|’|&#x27;|&#39;|&apos;|\\u0027)`;
+
 // The old site's content and other strings that must be gone for good.
 export const BANNED = {
+    // Vault's lines from before it wore the badge (spec 13.e.ii, 2026-10-06).
+    retiredVault: [new RegExp(`doesn${APOS}t wear the Off-grid badge`, 'i'), new RegExp(`That${APOS}s why Vault`, 'i'),
+        /Sync between devices is planned/i],
     googleFonts: [/fonts\.googleapis\.com/i, /fonts\.gstatic\.com/i],
     llc: [/\bLLC\b/, /\bL\.L\.C\b/i],
     email: [/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b/],
@@ -32,7 +38,7 @@ function addHit(list, file, text, index, length) {
 }
 
 export function scanOut(outDir) {
-    const hits = { outsideUrl: [], protocolRelative: [], googleFonts: [], llc: [], email: [], oldSite: [] };
+    const hits = { outsideUrl: [], protocolRelative: [], googleFonts: [], llc: [], email: [], oldSite: [], retiredVault: [] };
     let textCount = 0;
     const files = walk(outDir);
     for (const full of files) {
@@ -53,7 +59,7 @@ export function scanOut(outDir) {
         for (const m of text.matchAll(/(?:src|href|srcset|action|poster)\s*=\s*["']\/\/[^"']+|url\(\s*["']?\/\/[^)]+/gi)) {
             addHit(hits.protocolRelative, file, text, m.index, m[0].length);
         }
-        for (const cat of ['llc', 'email', 'oldSite']) {
+        for (const cat of ['llc', 'email', 'oldSite', 'retiredVault']) {
             for (const re of BANNED[cat]) {
                 for (const m of text.matchAll(new RegExp(re.source, `${re.flags}g`))) {
                     addHit(hits[cat], file, text, m.index, m[0].length);
@@ -62,4 +68,16 @@ export function scanOut(outDir) {
         }
     }
     return { files: files.length, textCount, hits };
+}
+
+// Phone-number SHAPES (any number, not a specific one), for the About page
+// scan (tests/checks/about-files.spec.mjs). Used on visible text and words files
+// only: script files hold long digit runs that are not phone numbers.
+export const PHONE_SHAPES = [
+    /(?<!\d)(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}(?!\d)/g, // 10 digits, with or without a leading 1
+    /\+\d{1,3}[\s.-]?\(?\d{1,4}\)?(?:[\s.-]?\d{2,4}){2,4}(?!\d)/g, // international, starts with +
+];
+
+export function findPhones(text) {
+    return PHONE_SHAPES.flatMap((re) => [...text.matchAll(re)].map((m) => m[0].trim()));
 }

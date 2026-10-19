@@ -1,15 +1,9 @@
 import Link from 'next/link';
 
-// Site footer. The app links come from the app list. Brand name only:
-// no company type and no email address.
-export default function SiteFooter({ apps }) {
-    const links = [
-        ...apps.map((app) => ({ key: app.id, href: app.href, label: app.name })),
-        { key: 'about', href: '/about/', label: 'About' },
-        { key: 'contact', href: '/contact/', label: 'Contact' },
-        { key: 'privacy', href: '/privacy/', label: 'Privacy' },
-    ];
-
+// Site footer. links: [{ key, href, label }], built by footerLinks() in
+// src/lib/site.js: the shown apps, About, Contact while it is shown, then
+// Privacy. Brand name only: no company type and no email address.
+export default function SiteFooter({ links }) {
     return (
         <footer className="mx-auto max-w-[1088px] px-4 md:px-6">
             <div className="flex flex-col gap-3 border-t border-line py-[22px] text-sm text-ink-soft">

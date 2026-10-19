@@ -13,10 +13,19 @@
 // route-table problem in that log, a guarded field in out/, or a file in out/
 // newer than the log (out/ changed after the guarded build). A bare
 // `next build` wipes .next/, so it leaves no log and cannot be packaged.
+// It also re-runs the build's other checks on these exact files, so a build
+// that failed them can never be packaged by hand: the site settings agree with
+// the page folders, public/ holds only allow-listed files (git-ignored ones
+// included), nothing of a hidden page is in out/, and every page carries its
+// own security policy, matching its inline scripts.
 import fs from 'node:fs';
 import path from 'node:path';
 import { misnamedPageDataFiles } from '../../tests/support/windows-export-bug.mjs';
-import { BUILD_LOG, OUT_DIR, checkGuardedFields, checkRouteTable, rel, walk } from '../lib/export-checks.mjs';
+import {
+    BUILD_LOG, OUT_DIR,
+    checkGuardedFields, checkHiddenContent, checkPublicAllowlist, checkRouteTable, checkSettingsMatchFolders, rel, walk,
+} from '../lib/export-checks.mjs';
+import { checkCsp } from '../lib/csp.mjs';
 import { git, writeBundle } from './lib.mjs';
 
 function arg(name, fallback) {
@@ -52,7 +61,11 @@ else {
         if (newer.length) refusals.push(`${newer.length} file(s) in out/ changed after the guarded build (newer than its log), e.g. ${rel(outDir, newer[0])}`);
     }
     refusals.push(...checkGuardedFields(outDir).hits.map((h) => `guarded field: ${h}`));
+    refusals.push(...checkHiddenContent(outDir).hits.map((h) => `hidden content: ${h}`));
+    refusals.push(...checkCsp(outDir).problems.map((p) => `security policy: ${p}`));
 }
+refusals.push(...checkSettingsMatchFolders().problems.map((p) => `site settings: ${p}`));
+refusals.push(...checkPublicAllowlist().problems.map((p) => `public/: ${p}`));
 if (refusals.length) {
     console.error('Package REFUSED:');
     for (const r of refusals) console.error(`  - ${r}`);

@@ -1,4 +1,4 @@
-import PageIntro from '../components/PageIntro';
+import PageIntro from '@/app/components/PageIntro';
 
 export const metadata = {
     title: 'Contact',
