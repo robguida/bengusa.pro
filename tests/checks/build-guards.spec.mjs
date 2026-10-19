@@ -297,6 +297,19 @@ test.describe('checkHiddenContent', () => {
         ]);
     });
 
+    // Cody's MINOR 1: per phrase, the old scan kept only the view with more
+    // hits, so the same phrase seen once only with the tags and once only
+    // without them gave one hit, not two.
+    test('the SAME phrase, once in alt text and once split by a span, gives two hits (one per view)', () => {
+        const body = '<img alt="Draft words" src="/a.webp"/><p>Draft <span class="nw">words</span> here.</p>';
+        const r = checkHiddenContent(out({ 'index.html': page({ body }) }), siteRoot());
+        expect(r.ok).toBe(false);
+        expect(r.hits).toEqual([
+            expect.stringMatching(/^draft label: "Draft words" in index\.html: .*alt="Draft words"/),
+            expect.stringMatching(/^draft label: "Draft words" in index\.html: .*Draft words here\./),
+        ]);
+    });
+
     test('one match that both views see is listed once; two real matches with the same words around them are both listed', () => {
         const once = checkHiddenContent(out({ 'index.html': page({ body: '<p>We made Quillmoth.</p>' }) }), siteRoot());
         expect(once.hits).toEqual([expect.stringContaining('hidden apps: "quillmoth" in index.html')]);
