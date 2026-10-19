@@ -9,6 +9,7 @@
 // "never on light blue" check below green.
 import { test, expect, PAGES, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, expectOpen, popupsLive, press, tipOf } from '../support/offgrid.mjs';
+import { SHOW } from '../support/settings.mjs';
 import { COLOUR, WORDS } from '../support/words.mjs';
 
 const LOGO = '[data-logo]';
@@ -104,10 +105,12 @@ test.describe('colour rules (6.f)', () => {
         await page.goto('/');
         await popupsLive(page);
         // The hero and section badge popups have no link; a card's link is white.
+        // Release 1: the cards are parked with the apps, so their entry (the
+        // white link) comes back with them; the two live popups are checked.
         const popups = [
             { sel: `h1 ${TRIGGER}`, link: null },
             { sel: `${HOME_SECTION} ${TRIGGER}`, link: null },
-            { sel: `#apps article ${TRIGGER}`, link: COLOUR.white },
+            ...(SHOW.apps ? [{ sel: `#apps article ${TRIGGER}`, link: COLOUR.white }] : []),
         ];
         for (const { sel, link } of popups) {
             const trigger = page.locator(sel).first();

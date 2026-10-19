@@ -235,6 +235,30 @@ export async function tabBottom(page) {
     return (await headerGeometry(page)).tabBottom;
 }
 
+// The header's shrink distance on this screen: how far Home must scroll for
+// the logo to go from its Home size to docked. It is the big tab's bottom
+// minus the docked tab's, --hdr-land-bottom minus --hdr-end-bottom in
+// globals.css (the same sum SiteHeader.js walks), worked out by the browser
+// from the tokens, never typed here. 0 with reduce-motion: there the Home
+// size IS the docked size. Read through a hidden probe that is removed at
+// once (set through CSSOM, which the pages' security policy allows).
+export async function shrinkDistance(page) {
+    return page.evaluate(() => {
+        const resolve = (token) => {
+            const el = document.createElement('div');
+            el.style.setProperty('position', 'absolute');
+            el.style.setProperty('visibility', 'hidden');
+            el.style.setProperty('top', '0');
+            el.style.setProperty('height', `var(${token})`);
+            document.body.append(el);
+            const h = el.getBoundingClientRect().height;
+            el.remove();
+            return h;
+        };
+        return Math.round((resolve('--hdr-land-bottom') - resolve('--hdr-end-bottom')) * 100) / 100;
+    });
+}
+
 export async function scrollToY(page, y) {
     await page.evaluate((v) => window.scrollTo(0, v), y);
     await settle(page);

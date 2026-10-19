@@ -32,6 +32,16 @@ test.describe('Release 1: the settings and the parked code', () => {
         expect.soft(SETTINGS.showContact, 'Release 1: showContact is false').toBe(false);
     });
 
+    // A new page or a new file route is a reviewed change: it fails here until
+    // this list is updated with it.
+    test('the pages are exactly /, /about and /privacy; the route table adds only the 404 and the three files Next makes from src/app', () => {
+        test.skip(SHOW.apps || SHOW.contact, HIDDEN);
+        expect.soft(expectedRoutes(), 'expectedRoutes(): the pages the build must make').toEqual(['/', '/about', '/privacy']);
+        expect(fs.existsSync(BUILD_LOG), `no build log at ${BUILD_LOG}: run "npm run build" first`).toBe(true);
+        const rows = checkRouteTable(fs.readFileSync(BUILD_LOG, 'utf8')).rows.map((r) => r.route).sort();
+        expect.soft(rows, 'route-table rows').toEqual(['/', '/_not-found', '/about', '/apple-icon.png', '/icon.svg', '/privacy', '/robots.txt']);
+    });
+
     test('the hidden code is kept: the app pages and Contact sit in src/app/_parked/, not in routing', () => {
         test.skip(SHOW.apps && SHOW.contact, HIDDEN);
         const exists = (...p) => fs.existsSync(path.join(ROOT, 'src', 'app', ...p));

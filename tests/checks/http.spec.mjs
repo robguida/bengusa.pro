@@ -68,7 +68,33 @@ test.describe('pages and old addresses', () => {
     test('an unknown address returns 404 with the site\'s not-found page', async ({ request }) => {
         const res = await request.get('/no-such-page/', { maxRedirects: 0 });
         expect(res.status()).toBe(404);
-        expect(await res.text()).toContain('data-logo="mark"');
+        const html = await res.text();
+        expect(html).toContain('data-logo="mark"');
+        // BUWEB-114: the site's own 404 (Next's stock words, inside the site's
+        // header and footer), not Next's stock page with its inline styles.
+        expect.soft(html, 'the heading reads "404"').toMatch(/<h1[^>]*>\s*404\s*<\/h1>/);
+        expect.soft(html, 'the line reads "This page could not be found."').toMatch(/<p[^>]*>\s*This page could not be found\.\s*<\/p>/);
+        expect.soft(html, 'the title').toMatch(/<title>404: This page could not be found\. · bengUSA\.pro<\/title>/);
+        expect.soft(html.match(/<h1\b/g) ?? [], 'one heading').toHaveLength(1);
+    });
+
+    test('the icons Next makes from src/app, the favicon and robots.txt are served', async ({ request }) => {
+        // BUWEB-114: icon.svg and apple-icon.png live in src/app (served at the
+        // root), favicon.ico in public/. Each must be served, and be what its name says.
+        const files = [
+            { path: '/favicon.ico', magic: [0, 0, 1, 0] }, // ICO header
+            { path: '/apple-icon.png', magic: [0x89, 0x50, 0x4e, 0x47] }, // PNG signature
+            { path: '/icon.svg', text: /<svg\b/ },
+            { path: '/robots.txt', text: /^User-agent: \*/m },
+        ];
+        for (const f of files) {
+            const res = await request.get(f.path, { maxRedirects: 0 });
+            expect.soft(res.status(), `${f.path} status`).toBe(200);
+            if (res.status() !== 200) continue;
+            const body = await res.body();
+            if (f.magic) expect.soft([...body.subarray(0, f.magic.length)], `${f.path}: file signature`).toEqual(f.magic);
+            if (f.text) expect.soft(body.toString('utf8'), `${f.path}: contents`).toMatch(f.text);
+        }
     });
 });
 

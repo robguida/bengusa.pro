@@ -7,7 +7,7 @@
 // 24px phone). Spec 6.c and acceptance check 2.
 import {
     test, expect, PAGES, WORD, WORD_PATH, WORD_TOLERANCE, expectLogoPx, expectPx, headerGeometry, headerSizes, isPhone,
-    isReducedMotion, logoHeight, menuButton, scrollToY, settle, wordHeight,
+    isReducedMotion, logoHeight, menuButton, scrollToY, settle, shrinkDistance, wordHeight,
 } from '../support/site.mjs';
 
 // The docked lettering. Call it once the logo is docked (after expectLogoPx):
@@ -32,7 +32,7 @@ const WORD_STEP_SLACK = 0.05;
 const WORD_RATE_MAX = 0.5;
 
 test.describe('header end states', () => {
-    test('Home: big at the top, docked when scrolled to the bottom, big again back at the top', async ({ page }, testInfo) => {
+    test('Home: big at the top; scrolls at least the header\'s shrink distance and ends fully docked; big again back at the top', async ({ page }, testInfo) => {
         const { dock, land } = headerSizes(testInfo);
         // With reduce-motion on, Home starts docked and never changes size.
         const top = isReducedMotion(testInfo) ? dock : land;
@@ -44,12 +44,25 @@ test.describe('header end states', () => {
         // phone holds its docked size the whole way; it was 24.2px before r2).
         else await expectWordDrawn(page, (isPhone(testInfo) ? WORD.phone : WORD.desktop).land, 'Home at the top');
 
+        // Home scrolls at least the header's shrink distance, so the logo can
+        // dock fully, however short Home's words are (BUWEB-114 hid the apps
+        // section, which used to make Home long). The distance comes from the
+        // header's own tokens (shrinkDistance), not a typed number.
+        const shrink = await shrinkDistance(page);
+        if (isReducedMotion(testInfo)) expect(shrink, 'reduce-motion: no shrink distance (Home starts docked)').toBeLessThanOrEqual(0.5);
+        else expect(shrink, 'the shrink distance read from the header tokens').toBeGreaterThan(20);
+        const atTop = await headerGeometry(page);
         const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
-        expect(max, 'Home must be tall enough to scroll').toBeGreaterThan(200);
+        // scrollHeight is a whole number of px: allow its rounding, nothing more.
+        expect(max, `Home scrolls at least the header's shrink distance (${shrink}px)`).toBeGreaterThanOrEqual(shrink - 0.5);
         const y = await scrollToY(page, max + 1000);
         expect(y).toBeGreaterThanOrEqual(max - 1);
+        // ... and the logo ends fully docked, with the tab risen by exactly that distance.
         await expectLogoPx(page, dock, `Home scrolled to the bottom (scrollY ${y})`);
         await expectDockedWord(page, testInfo, `Home scrolled to the bottom (scrollY ${y})`);
+        const atBottom = await headerGeometry(page);
+        expect(Math.abs((atTop.tabBottom - atBottom.tabBottom) - shrink), `the tab rose ${(atTop.tabBottom - atBottom.tabBottom).toFixed(2)}px, the shrink distance is ${shrink}px`)
+            .toBeLessThanOrEqual(1);
 
         await scrollToY(page, 0);
         await expectLogoPx(page, top, 'Home back at the top');

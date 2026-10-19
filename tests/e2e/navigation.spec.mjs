@@ -19,28 +19,41 @@ for (const p of PAGES) {
         // Release 1: the footer links only to pages that are shown (no app pages, no Contact).
         const hrefs = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
         expect.soft(hrefs.filter((h) => !PAGES.includes(h)), `${p}: footer links to pages that are not shown`).toEqual([]);
+        // With the apps and Contact both hidden: About and Privacy, in that order, and nothing else.
+        if (!SHOW.apps && !SHOW.contact) {
+            const links = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => `${e.textContent.trim()} ${e.getAttribute('href')}`));
+            expect.soft(links, `${p}: footer links (Release 1)`).toEqual(['About /about/', 'Privacy /privacy/']);
+        }
     });
 }
 
 // The menu: with the apps hidden there is no "Apps" menu, and About is the only page in it.
+// The header holds ONE "Main" nav at every width (the phone nav and its menu
+// button come back with the apps), and no button at all: on a phone About is a
+// plain link with a tap area of at least 44 x 44 px.
 for (const p of ['/', '/about/']) {
-    test(`menu on ${p} (Release 1): no Apps menu, only About, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
+    test(`menu on ${p} (Release 1): one Main nav, no menu button, only About, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
         test.skip(SHOW.apps, 'the apps are shown: the menu tests below cover this page');
         await page.goto(p);
         await settle(page);
+        // In the page's markup, shown or not, so a hidden second nav still counts.
+        await expect.soft(page.locator('header nav[aria-label="Main"]'), 'Main navs in the header').toHaveCount(1);
+        await expect.soft(page.locator('header button'), 'buttons in the header (no Apps menu, no phone menu button)').toHaveCount(0);
         const nav = page.getByRole('navigation', { name: 'Main' });
-        await expect.soft(nav.getByRole('button', { name: 'Apps', exact: true }), 'an "Apps" menu button').toHaveCount(0);
-        // The phone shows About as a plain link, or behind a Menu button; either is fine, so open the menu if there is one.
-        const menu = nav.getByRole('button', { name: 'Menu', exact: true });
-        if (isPhone(testInfo) && await menu.count()) {
-            await menu.click();
-            await expect.soft(menu).toHaveAttribute('aria-expanded', 'true');
-        }
+        await expect.soft(nav, 'the Main nav is shown').toBeVisible();
         const hrefs = await nav.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
         expect.soft(hrefs, 'links in the main menu').toEqual(['/about/']);
-        await expect.soft(nav.getByRole('link', { name: 'About', exact: true }), 'the About link').toBeVisible();
-        for (const gone of ['Contact', 'Apps']) {
-            await expect.soft(nav.getByText(gone, { exact: true }), `"${gone}" in the menu`).toHaveCount(0);
+        const about = nav.getByRole('link', { name: 'About', exact: true });
+        await expect.soft(about, 'the About link').toBeVisible();
+        if (p === '/about/') await expect.soft(about, 'About marked as the current page').toHaveAttribute('aria-current', 'page');
+        else await expect.soft(about, `About not marked as the current page on ${p}`).not.toHaveAttribute('aria-current', 'page');
+        if (isPhone(testInfo)) {
+            const box = await about.boundingBox();
+            expect.soft(box?.width ?? 0, 'phone: About tap area width').toBeGreaterThanOrEqual(44);
+            expect.soft(box?.height ?? 0, 'phone: About tap area height').toBeGreaterThanOrEqual(44);
+        }
+        for (const gone of ['Contact', 'Apps', 'Menu']) {
+            await expect.soft(page.locator('header').getByText(gone, { exact: true }), `"${gone}" in the header`).toHaveCount(0);
         }
     });
 }

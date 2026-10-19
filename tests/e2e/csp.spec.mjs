@@ -54,7 +54,8 @@ test.describe('Content-Security-Policy', () => {
 
     test('every page carries a policy that allows no inline script or eval (and the recorder can see a violation)', async ({ page, siteGuards }) => {
         await recordViolations(page);
-        for (const p of PAGES) {
+        // The 404 page too: an unknown address gets out/404.html, which carries its own policy.
+        for (const p of [...PAGES, '/no-such-page/']) {
             await page.goto(p);
             await settle(page);
             const policy = await page.locator('head meta[http-equiv="Content-Security-Policy"]').evaluateAll((els) => els.map((e) => e.getAttribute('content')));

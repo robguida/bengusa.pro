@@ -7,23 +7,30 @@ import {
     CLOSE_GRACE_MS, OPEN_DELAY_MS, TIP, TRIGGER, centre, expectClosed, expectOpen, expectStillOpen, freeze, isShowing, middle,
     offGridSection, popupsLive, press, pressAt, softTipOf, tipOf, tipWords,
 } from '../support/offgrid.mjs';
+import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 import { APPS, WORDS, connectsLabel } from '../support/words.mjs';
 
 // Where every popup is, in page order, and what its link must be (17.c.ii,
 // 17.c.iv): the hero and heading words have no link, and neither has the
 // badge in Home's "Off-grid, explained" section (it names no single app);
 // every other badge links to its own app's box.
+// Release 1 (BUWEB-114): while content/site-settings.json hides the apps, the
+// grid heading, the cards and the app pages are not built. Home then has two
+// popups, the hero word and the section badge, and their entries switch
+// themselves back on with the apps.
 const WHERE = [
     {
         page: '/',
         popups: [
             { where: 'h1', link: null },
             { where: 'Off-grid section badge', link: null },
-            { where: 'h2#apps-title', link: null },
-            ...APPS.map((app) => ({ where: `card ${app.shortName}`, link: app })),
+            ...(SHOW.apps ? [
+                { where: 'h2#apps-title', link: null },
+                ...APPS.map((app) => ({ where: `card ${app.shortName}`, link: app })),
+            ] : []),
         ],
     },
-    ...APPS.map((app) => ({ page: app.page, popups: [{ where: 'intro badge', link: app }, { where: 'legend badge', link: app }] })),
+    ...(SHOW.apps ? APPS.map((app) => ({ page: app.page, popups: [{ where: 'intro badge', link: app }, { where: 'legend badge', link: app }] })) : []),
 ];
 
 // The trigger in the hero, the badge in Home's "Off-grid, explained" section
@@ -32,6 +39,16 @@ const heroTrigger = (page) => page.locator(`h1 ${TRIGGER}`);
 const sectionTrigger = (page) => offGridSection(page).locator(TRIGGER);
 const headingTrigger = (page) => page.locator(`h2#apps-title ${TRIGGER}`);
 const vaultCardTrigger = (page) => page.locator('#apps article').filter({ hasText: 'Vault' }).locator(TRIGGER);
+
+// The popups every behaviour test runs on. Release 1: the two live ones on
+// Home, the hero word and the section badge (the legend's). Neither has a
+// link. While the apps are shown, the Vault card's badge too: it is the one
+// whose box has a link.
+const liveTriggers = (page) => [
+    ['hero word', heroTrigger(page)],
+    ['section badge', sectionTrigger(page)],
+    ...(SHOW.apps ? [['Vault badge', vaultCardTrigger(page)]] : []),
+];
 
 test.describe('the Off-grid popup', () => {
     test('every popup shows the approved words exactly; a badge popup links to its own app\'s box', async ({ page }, testInfo) => {
@@ -70,9 +87,10 @@ test.describe('the Off-grid popup', () => {
         await popupsLive(page);
         await expect(heroTrigger(page)).toHaveCount(1);
         await expect(sectionTrigger(page), 'the badge in the "Off-grid, explained" section').toHaveCount(1);
-        await expect(headingTrigger(page)).toHaveCount(1);
+        // Release 1: no grid heading and no cards, so no popup of theirs.
+        await expect(headingTrigger(page)).toHaveCount(SHOW.apps ? 1 : 0);
         for (const app of APPS) {
-            await expect(page.locator('#apps article').filter({ hasText: app.shortName }).locator(TRIGGER), `${app.shortName} card badge`).toHaveCount(1);
+            await expect(page.locator('#apps article').filter({ hasText: app.shortName }).locator(TRIGGER), `${app.shortName} card badge`).toHaveCount(SHOW.apps ? 1 : 0);
         }
     });
 
@@ -80,7 +98,7 @@ test.describe('the Off-grid popup', () => {
         test.skip(isPhone(testInfo), 'phones have no hover; tap is tested below');
         await page.goto('/');
         await popupsLive(page);
-        for (const [name, trigger] of [['hero word', heroTrigger(page)], ['section badge', sectionTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
+        for (const [name, trigger] of liveTriggers(page)) {
             await centre(page, trigger);
             const tip = await tipOf(page, trigger);
             await expectClosed(trigger, tip, `${name} before hover`);
@@ -106,18 +124,26 @@ test.describe('the Off-grid popup', () => {
         }
         expect(reached, 'Tab reaches the hero word').toBe(true);
         await expectOpen(trigger, tip, 'hero word focused by Tab');
-        // Back to the header (not on to the next popup button: opening that
-        // popup would close this one anyway, so a broken blur would still pass).
+        // Back towards the top (not on to the next popup button: opening that
+        // popup would close this one anyway, so a broken blur would still
+        // pass). Chromium lands on the header's About link. WebKit's Tab
+        // skips links by default (Safari's setting), and Release 1's header
+        // has no button, so there focus leaves every control (the body).
         await page.keyboard.press('Shift+Tab');
         await expect(trigger).not.toBeFocused();
-        expect(await page.evaluate(() => !!document.activeElement.closest('header')), 'focus is back in the header').toBe(true);
+        const now = await page.evaluate(() => {
+            const el = document.activeElement;
+            return { inPopup: !!el?.closest('[data-offgrid]'), inHeader: !!el?.closest('header'), tag: el?.tagName.toLowerCase() ?? 'none' };
+        });
+        expect(now.inPopup, 'focus is on no other popup button or box').toBe(false);
+        expect(now.inHeader || now.tag === 'body', `focus is back in the header, or off every control (it is on <${now.tag}>)`).toBe(true);
         await expectClosed(trigger, tip, 'hero word after focus moved away');
     });
 
     test('a tap or click opens it; a second one closes it', async ({ page }, testInfo) => {
         await page.goto('/');
         await popupsLive(page);
-        for (const [name, trigger] of [['hero word', heroTrigger(page)], ['section badge', sectionTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
+        for (const [name, trigger] of liveTriggers(page)) {
             await centre(page, trigger);
             const tip = await tipOf(page, trigger);
             await press(trigger, testInfo);
@@ -127,24 +153,74 @@ test.describe('the Off-grid popup', () => {
         }
     });
 
+    // WCAG 2.5.5 (Target Size): each trigger's tap area is at least 44 x 44 px,
+    // though the badge is drawn about 24px tall (an invisible area around it,
+    // OffGridTip.module.css). Read from the page by hit-testing: the points
+    // through the trigger's middle that land on it, across and down. Then a
+    // press just outside the drawn word or badge, inside that area, opens it.
+    test('the tap area is at least 44 x 44 px, and a press just outside the drawn trigger opens it', async ({ page }, testInfo) => {
+        await page.goto('/');
+        await popupsLive(page);
+        for (const [name, trigger] of liveTriggers(page)) {
+            await centre(page, trigger);
+            const tip = await tipOf(page, trigger);
+            await expectClosed(trigger, tip, `${name} before the press`);
+            const area = await trigger.evaluate((el) => {
+                const r = el.getBoundingClientRect();
+                const cx = r.left + r.width / 2;
+                const cy = r.top + r.height / 2;
+                const on = (x, y) => document.elementFromPoint(x, y)?.closest('[data-offgrid="trigger"]') === el;
+                // The longest unbroken run of hits through the middle, 1px apart.
+                const run = (points) => {
+                    let best = 0;
+                    let now = 0;
+                    for (const [x, y] of points) {
+                        now = on(x, y) ? now + 1 : 0;
+                        best = Math.max(best, now);
+                    }
+                    return best;
+                };
+                const span = 80;
+                const down = [];
+                for (let d = -span; d <= span; d++) down.push([cx, cy + d]);
+                const across = [];
+                for (let d = -span - r.width / 2; d <= span + r.width / 2; d++) across.push([cx + d, cy]);
+                return { drawnW: r.width, drawnH: r.height, tall: run(down), wide: run(across), left: r.left, cy };
+            });
+            // A run of N hit points 1px apart covers at least N - 1 px.
+            expect.soft(area.tall - 1, `${name}: tap area height (drawn ${area.drawnH.toFixed(1)}px tall)`).toBeGreaterThanOrEqual(44 - 1);
+            expect.soft(area.wide - 1, `${name}: tap area width (drawn ${area.drawnW.toFixed(1)}px wide)`).toBeGreaterThanOrEqual(44 - 1);
+            // 4px left of the drawn trigger, level with its middle: inside the area, outside the drawing.
+            await pressAt(page, testInfo, area.left - 4, area.cy);
+            await expectOpen(trigger, tip, `${name} after a press 4px left of the drawn trigger`);
+            await press(trigger, testInfo);
+            await expectClosed(trigger, tip, `${name} closed again by a second press`);
+        }
+    });
+
     test('Esc closes it and puts focus back on its button', async ({ page }, testInfo) => {
         await page.goto('/');
         await popupsLive(page);
 
         // A badge popup with a link: move focus INTO the box first, so a
         // broken "focus goes back" cannot pass by focus never having left.
-        const badge = vaultCardTrigger(page);
-        await centre(page, badge);
-        const badgeTip = await tipOf(page, badge);
-        await press(badge, testInfo);
-        await expectOpen(badge, badgeTip, 'Vault badge');
-        const link = badgeTip.getByRole('link', { name: connectsLabel(APPS[2]) });
-        await link.focus();
-        await expect(link).toBeFocused();
-        await expectOpen(badge, badgeTip, 'Vault badge, focus on its link');
-        await page.keyboard.press('Escape');
-        await expectClosed(badge, badgeTip, 'Vault badge after Esc');
-        await expect(badge, 'focus back on the Vault badge').toBeFocused();
+        // Only the cards' badges have a link, so this part is parked with the
+        // apps; the hero word and the section badge below still move focus
+        // into their boxes first.
+        if (SHOW.apps) {
+            const badge = vaultCardTrigger(page);
+            await centre(page, badge);
+            const badgeTip = await tipOf(page, badge);
+            await press(badge, testInfo);
+            await expectOpen(badge, badgeTip, 'Vault badge');
+            const link = badgeTip.getByRole('link', { name: connectsLabel(APPS[2]) });
+            await link.focus();
+            await expect(link).toBeFocused();
+            await expectOpen(badge, badgeTip, 'Vault badge, focus on its link');
+            await page.keyboard.press('Escape');
+            await expectClosed(badge, badgeTip, 'Vault badge after Esc');
+            await expect(badge, 'focus back on the Vault badge').toBeFocused();
+        }
 
         // The hero popup has no link: focus the box itself.
         const hero = heroTrigger(page);
@@ -198,7 +274,7 @@ test.describe('the Off-grid popup', () => {
         await page.goto('/');
         await popupsLive(page);
         const subline = heroSubline(page);
-        for (const [name, trigger] of [['hero word', heroTrigger(page)], ['section badge', sectionTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
+        for (const [name, trigger] of liveTriggers(page)) {
             await centre(page, trigger);
             const tip = await tipOf(page, trigger);
             await press(trigger, testInfo);
@@ -223,12 +299,14 @@ test.describe('the Off-grid popup', () => {
     });
 
     test('opening it moves nothing on the page, and the box stays inside the screen', async ({ page }, testInfo) => {
-        for (const p of ['/', APPS[2].page]) {
+        // Release 1: Home only (Vault's page is parked with the apps). Every
+        // popup on the page is opened, so Home's two live ones both are.
+        for (const p of ['/', ...(SHOW.apps ? [APPS[2].page] : [])]) {
             await page.goto(p);
             await popupsLive(page);
             const triggers = page.locator(TRIGGER);
             const count = await triggers.count();
-            expect(count).toBeGreaterThan(0);
+            expect(count, `${p}: popups to open`).toBeGreaterThanOrEqual(p === '/' ? 2 : 1);
             for (let i = 0; i < count; i++) {
                 const trigger = triggers.nth(i);
                 const label = `${p} popup ${i + 1}`;
@@ -258,15 +336,17 @@ test.describe('the Off-grid popup', () => {
         await page.goto('/');
         await popupsLive(page);
         const hero = heroTrigger(page);
-        const heading = headingTrigger(page);
+        // The grid heading's word while the apps are shown; Release 1: the
+        // section badge, the only other popup on Home.
+        const [otherName, other] = SHOW.apps ? ['heading word', headingTrigger(page)] : ['section badge', sectionTrigger(page)];
         const heroTip = await tipOf(page, hero);
-        const headingTip = await tipOf(page, heading);
-        await centre(page, heading);
+        const otherTip = await tipOf(page, other);
+        await centre(page, other);
         await press(hero, testInfo);
         await expectOpen(hero, heroTip, 'hero word');
-        await press(heading, testInfo);
-        await expectOpen(heading, headingTip, 'heading word');
-        await expectClosed(hero, heroTip, 'hero word once the heading popup opened');
+        await press(other, testInfo);
+        await expectOpen(other, otherTip, otherName);
+        await expectClosed(hero, heroTip, `hero word once the ${otherName} popup opened`);
         await expect(page.locator(`${TIP}[data-state="open"]`)).toHaveCount(1);
     });
 
@@ -308,19 +388,24 @@ test.describe('the Off-grid popup and the mouse, on a fake clock', () => {
         await popupsLive(page);
     });
 
-    // Opens the popup by hover alone, on a frozen clock.
+    // Opens the popup by hover alone, on a frozen clock. It must wait out its
+    // 150 ms delay (17.c.v): still closed 50 ms short of it, open just after.
     async function openByHover(page, trigger, tip, name) {
         await centre(page, trigger); // needs running time: before freeze()
         await expectClosed(trigger, tip, `${name} before hover`);
         await freeze(page);
         const at = await middle(trigger);
         await page.mouse.move(at.x, at.y);
-        await page.clock.runFor(OPEN_DELAY_MS + 50);
+        await page.clock.runFor(OPEN_DELAY_MS - 50);
+        expect(await isShowing(tip), `${name}: still closed ${OPEN_DELAY_MS - 50} ms after the mouse arrived (the delay is ${OPEN_DELAY_MS} ms)`).toBe(false);
+        await page.clock.runFor(100);
         await expectOpen(trigger, tip, `${name} opened by hover`);
     }
 
     test('the mouse can move from the trigger into its box, and the box stays open past the 300 ms grace', async ({ page }) => {
-        for (const [name, trigger] of [['hero word', heroTrigger(page)], ['section badge', sectionTrigger(page)], ['Vault badge', vaultCardTrigger(page)]]) {
+        // The "mouse on the box's link" part below runs only on a box with a
+        // link: the Vault card's, parked with the apps in Release 1.
+        for (const [name, trigger] of liveTriggers(page)) {
             const tip = await tipOf(page, trigger);
             await openByHover(page, trigger, tip, name);
             // Into the box, in small steps, so the pointer crosses the gap
@@ -366,14 +451,16 @@ test.describe('the Off-grid popup and the mouse, on a fake clock', () => {
         await page.clock.resume();
 
         // A click inside the box (on its words, not its link) keeps it open too.
-        const badge = vaultCardTrigger(page);
+        // On the Vault card's badge while the apps are shown; Release 1: on
+        // the section badge, the live badge.
+        const [badgeName, badge] = SHOW.apps ? ['Vault badge', vaultCardTrigger(page)] : ['section badge', sectionTrigger(page)];
         const badgeTip = await tipOf(page, badge);
-        await openByHover(page, badge, badgeTip, 'Vault badge');
+        await openByHover(page, badge, badgeTip, badgeName);
         const inBox = await middle(badgeTip.locator('b'));
         await page.mouse.move(inBox.x, inBox.y, { steps: 8 });
         await page.mouse.click(inBox.x, inBox.y);
         await page.clock.runFor(CLOSE_GRACE_MS + 100);
-        await expectStillOpen(badge, badgeTip, 'Vault badge, clicked inside its box, past the grace');
+        await expectStillOpen(badge, badgeTip, `${badgeName}, clicked inside its box, past the grace`);
         await expect(page, 'a click on the box\'s words goes nowhere').toHaveURL((url) => url.pathname === '/');
     });
 });
@@ -420,6 +507,8 @@ test.describe('the Off-grid popup with scripts off', () => {
 });
 
 test('a badge popup\'s link goes to that app\'s box, below the header', async ({ page }, testInfo) => {
+    // Only the cards' badges have a link, and their target is an app page.
+    test.skip(!SHOW.apps, APPS_PARKED);
     test.skip(isReducedMotion(testInfo), 'navigation does not change with motion; the normal pass covers it');
     const vault = APPS[2];
     await page.goto('/');
@@ -449,7 +538,9 @@ test('a badge popup\'s link goes to that app\'s box, below the header', async ({
 test('every badge keeps its words beside it: the short form, or the full legend in an "Off-grid, explained" section', async ({ page }, testInfo) => {
     test.skip(isReducedMotion(testInfo), 'words do not change with motion; the normal pass covers them');
     const misses = [];
-    for (const p of ['/', ...APPS.map((a) => a.page)]) {
+    // Release 1: Home only, where the section badge is the only badge (no
+    // cards). The app pages come back with the apps.
+    for (const p of ['/', ...(SHOW.apps ? APPS.map((a) => a.page) : [])]) {
         await page.goto(p);
         await popupsLive(page);
         const legend = p === '/' ? WORDS.legendOnHome : WORDS.legendOnAppPage;
@@ -484,13 +575,15 @@ test('every badge keeps its words beside it: the short form, or the full legend 
         // the one by its intro.
         const inSection = found.badges.filter((b) => b.inExplained).length;
         const outside = found.badges.length - inSection;
-        const wantOutside = p === '/' ? APPS.length : 1;
+        const wantOutside = p === '/' ? (SHOW.apps ? APPS.length : 0) : 1;
         if (inSection !== 1) misses.push(`${p}: ${inSection} badges in an "Off-grid, explained" section, want 1`);
         if (outside !== wantOutside) misses.push(`${p}: ${outside} badges outside it, want ${wantOutside}`);
         for (const b of found.badges) {
             if (b.inExplained) {
                 if (!b.beside.includes(legend)) misses.push(`${p} ${b.where} (in the section): the full legend is not beside it: "${b.beside.slice(0, 90)}"`);
-                if (b.beside.includes(WORDS.shortForm)) misses.push(`${p} ${b.where} (in the section): has the short form instead of only the legend`);
+                // Release 1 (19.d.i): the Home legend itself starts with the
+                // short form, so look for a short-form line OUTSIDE the legend.
+                if (b.beside.replace(legend, '').includes(WORDS.shortForm)) misses.push(`${p} ${b.where} (in the section): has a short-form line as well as the legend`);
             } else if (!b.beside.includes(WORDS.shortForm)) {
                 misses.push(`${p} ${b.where}: the short form is not beside it: "${b.beside.slice(0, 90)}"`);
             }
