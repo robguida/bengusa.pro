@@ -4,10 +4,13 @@
 import { test, expect, isReducedMotion, settle } from '../support/site.mjs';
 import { TRIGGER } from '../support/offgrid.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
+import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 
 const clean = (s) => s.replace(/\s+/g, ' ').trim();
 
 test.describe('app pages', () => {
+    // PARKED while the apps are hidden (BUWEB-114): the app pages are not built.
+    test.skip(!SHOW.apps, APPS_PARKED);
     test.beforeEach(async ({}, testInfo) => {
         test.skip(isReducedMotion(testInfo), 'words and order do not change with motion; the normal pass covers them');
     });

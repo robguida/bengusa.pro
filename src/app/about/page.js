@@ -1,11 +1,12 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import PageIntro from '../components/PageIntro';
-import { getPublicApps } from '@/lib/apps';
+import { getShownApps } from '@/lib/apps';
+import { SHOW_CONTACT } from '@/lib/site';
 import words from '../../../content/about-words.json';
 
 export const metadata = {
     title: 'About',
+    description: words.top.description,
 };
 
 const HEADING_CLASS = 'm-0 mb-3 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]';
@@ -17,8 +18,11 @@ function Heading({ offset = 0, children, ...props }) {
     return <Tag {...props}>{children}</Tag>;
 }
 
+// While content/site-settings.json hides the apps, "What we're making" is left
+// out; while it hides Contact, so is the Contact line. Their words stay in
+// content/about-words.json for when they come back.
 export default function AboutPage() {
-    const apps = getPublicApps();
+    const apps = getShownApps();
     const { top, story, people, making, contact } = words;
 
     return (
@@ -35,11 +39,17 @@ export default function AboutPage() {
                 <ul className="m-0 grid list-none gap-10 p-0 md:grid-cols-2 md:gap-12">
                     {people.list.map((person) => (
                         <li key={person.id} className="min-w-0">
-                            <Image
+                            {/* A plain <img>, not next/image: next/image adds style="color:transparent",
+                                and the page's security policy allows no inline styles. The photos are
+                                served as they are (unoptimized), so nothing else changes. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                                 src={person.photo}
                                 alt={person.alt}
                                 width={240}
                                 height={300}
+                                loading="lazy"
+                                decoding="async"
                                 className="mb-5 h-auto w-[200px] rounded-xl border border-line md:w-[240px]"
                             />
                             <Heading offset={1} className="m-0 text-xl font-semibold leading-tight">{person.name}</Heading>
@@ -50,27 +60,31 @@ export default function AboutPage() {
                 </ul>
             </section>
 
-            <section className="pb-8" aria-labelledby={`${making.id}-title`}>
-                <Heading id={`${making.id}-title`} className={HEADING_CLASS}>{making.heading}</Heading>
-                <ul className="m-0 grid list-none gap-2 p-0">
-                    {apps.map((app) => (
-                        <li key={app.id}>
-                            <Link href={app.href} className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
-                                {app.name}
-                            </Link>
-                            {' '}{making.lines[app.id]}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+            {apps.length > 0 && (
+                <section className="pb-8" aria-labelledby={`${making.id}-title`}>
+                    <Heading id={`${making.id}-title`} className={HEADING_CLASS}>{making.heading}</Heading>
+                    <ul className="m-0 grid list-none gap-2 p-0">
+                        {apps.map((app) => (
+                            <li key={app.id}>
+                                <Link href={app.href} className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
+                                    {app.name}
+                                </Link>
+                                {' '}{making.lines[app.id]}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
-            <p className="m-0">
-                {contact.before}
-                <Link href="/contact/" className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
-                    {contact.linkText}
-                </Link>
-                {contact.after}
-            </p>
+            {SHOW_CONTACT && (
+                <p className="m-0">
+                    {contact.before}
+                    <Link href="/contact/" className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
+                        {contact.linkText}
+                    </Link>
+                    {contact.after}
+                </p>
+            )}
         </div>
     );
 }

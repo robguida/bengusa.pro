@@ -1,9 +1,13 @@
 // Home: the hero, the "Off-grid, explained" section, the app-grid heading and
-// the cards (spec 17.a, 17.b, 13.a; acceptance checks 3, 25.a and 25.b). The
+// the cards (spec 17.a, 17.b, 13.a; acceptance checks 3, 25.a and 25.b).
+// Release 1 (BUWEB-114) hides the whole apps section (content/site-settings.json):
+// the grid and card tests are PARKED while it is hidden, and Home ends with the
+// "Off-grid, explained" section. The
 // words come from support/words.mjs (copied from the spec), never from content/.
 import { test, expect, heroSubline, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, offGridSection, popupsLive } from '../support/offgrid.mjs';
 import { APPS, COLOUR, WORDS } from '../support/words.mjs';
+import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 
 // The words a person sees. The heading test below also checks textContent
 // (what a crawler reads), now that each popup box sits after its heading.
@@ -21,7 +25,7 @@ test.describe('Home', () => {
         await popupsLive(page);
     });
 
-    test('hero: "Makers of Off-grid apps." with a green "Off-grid" on one line, then the navy subline, then the "Off-grid, explained" section, then the app grid', async ({ page }, testInfo) => {
+    test('hero: "Makers of Off-grid apps." with a green "Off-grid" on one line, then the navy subline, then the "Off-grid, explained" section (then the app grid, while the apps are shown)', async ({ page }, testInfo) => {
         const h1 = page.locator('h1');
         await expect(h1).toHaveCount(1);
         expect.soft(await text(h1), 'hero words').toBe(WORDS.hero);
@@ -88,7 +92,8 @@ test.describe('Home', () => {
             const legend = offGrid?.querySelector(':scope > p');
             const appsHeading = grid?.querySelector(':scope > h2');
             const top = (el) => (el ? el.getBoundingClientRect().top + window.scrollY : NaN);
-            const tops = [document.querySelector('h1'), p, heading, legend, appsHeading].map(top);
+            // The grid heading only exists while the apps are shown.
+            const tops = [document.querySelector('h1'), p, heading, legend, appsHeading].filter(Boolean).map(top);
             return {
                 lastInHero: hero.lastElementChild === p,
                 afterHero: offGrid ? name(offGrid) : 'nothing',
@@ -105,8 +110,9 @@ test.describe('Home', () => {
         expect.soft(order.heading, 'that section\'s heading').toBe(WORDS.explainedHeading);
         expect.soft(order.offGridChildren, 'the Off-grid section: its heading, then the legend').toEqual(['h2#home-off-grid-title', 'p']);
         expect.soft(order.legendChildren, 'the legend: the badge, its popup box, then the words').toEqual(['badge', 'popup box', 'span']);
-        expect.soft(order.afterOffGrid, 'right after the Off-grid section').toBe('section#apps');
-        expect.soft(order.gridChildren, 'the grid section: its heading, its popup box, then the cards').toEqual(['h2#apps-title', 'popup box', 'ul']);
+        // Release 1: nothing after the Off-grid section (the apps section is hidden, heading included).
+        expect.soft(order.afterOffGrid, 'right after the Off-grid section').toBe(SHOW.apps ? 'section#apps' : 'nothing');
+        if (SHOW.apps) expect.soft(order.gridChildren, 'the grid section: its heading, its popup box, then the cards').toEqual(['h2#apps-title', 'popup box', 'ul']);
         expect.soft(order.onScreen, 'on screen, top to bottom: hero, subline, "Off-grid, explained", the legend, the grid heading').toBe(true);
     });
 
@@ -122,13 +128,17 @@ test.describe('Home', () => {
         expect.soft(await allText(h2), 'heading holds none of the popup\'s words').not.toContain(WORDS.popup.replace(/^Off-grid: /, ''));
         expect.soft(await h2.evaluate((el, tip) => !!el.nextElementSibling?.matches(tip), TIP), 'no popup box right after the heading').toBe(false);
 
-        // One badge, and the Home legend beside it, word for word, "Each
-        // app's page lists what it connects to." included (13.a.ii, 25.a).
+        // One badge, and the Home legend beside it, word for word (13.a.ii,
+        // 25.a). Release 1: "Each app's page lists what it connects to." and
+        // "If you buy it, all we keep is your purchase record." are cut.
         const badge = section.locator(TRIGGER);
         await expect.soft(badge, 'one badge in the section').toHaveCount(1);
         await expect.soft(badge, 'badge words').toHaveText(WORDS.offGridWord);
         const legend = await badge.evaluate((el) => el.closest('p').innerText.replace(/\s+/g, ' ').trim().replace(/^Off-grid\s*/, ''));
         expect.soft(legend, 'the Home legend, word for word').toBe(WORDS.legendOnHome);
+        for (const cut of ['Each app', 'purchase record', 'If you buy it', 'the app keeps']) {
+            expect.soft(legend, `the Home legend no longer says "${cut}"`).not.toContain(cut);
+        }
 
         // "Cloud-killers" once on Home, in this section, never in the hero
         // (13.d.i). Every spelling is counted, shown or hidden: the page as
@@ -152,7 +162,7 @@ test.describe('Home', () => {
     test('the hero and grid headings hold only their own words: each popup box sits right after its heading, never inside', async ({ page }) => {
         const headings = [
             { name: 'hero', locator: page.locator('h1'), words: WORDS.hero },
-            { name: 'grid heading', locator: page.locator('h2#apps-title'), words: WORDS.appsHeading },
+            ...(SHOW.apps ? [{ name: 'grid heading', locator: page.locator('h2#apps-title'), words: WORDS.appsHeading }] : []),
         ];
         for (const h of headings) {
             // textContent: every word in the heading's markup, hidden or not.
@@ -169,7 +179,28 @@ test.describe('Home', () => {
         expect.soft(inside, 'headings with a popup box inside them').toEqual([]);
     });
 
+    test('the hero word is a popup trigger with a dotted green underline', async ({ page }) => {
+        // The hero word is a trigger too, with the same dotted green underline (17.c.vi).
+        expect.soft(await style(page.locator(`h1 ${TRIGGER}`), ['textDecorationStyle', 'textDecorationColor']), 'hero word underline').toEqual({
+            textDecorationStyle: 'dotted', textDecorationColor: COLOUR.green,
+        });
+    });
+
+    test('Release 1: Home has no apps section, no cards, no "More in the works" tile and no grid heading', async ({ page }) => {
+        test.skip(SHOW.apps, 'the apps are shown: the grid tests cover this page');
+        await expect.soft(page.locator('#apps'), 'the apps section').toHaveCount(0);
+        await expect.soft(page.locator('article'), 'app cards').toHaveCount(0);
+        const text = (await page.locator('main').evaluate((el) => el.textContent)).replace(/\s+/g, ' ');
+        for (const gone of ['More in the works', 'More apps are in the queue', 'Meet our', ...APPS.flatMap((a) => [a.shortName, a.name])]) {
+            expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
+        }
+        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(0);
+        // Hero, then one section: nothing else in Home's main area.
+        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => e.tagName.toLowerCase())), 'Home headings').toEqual(['h1', 'h2']);
+    });
+
     test('heading: "Meet our Off-grid apps" with "Off-grid" as a popup word; the "More in the works" tile never says Off-grid', async ({ page }) => {
+        test.skip(!SHOW.apps, APPS_PARKED);
         const h2 = page.locator('h2#apps-title');
         expect.soft(await text(h2), 'heading words').toBe(WORDS.appsHeading);
         const word = h2.locator(TRIGGER);
@@ -177,10 +208,6 @@ test.describe('Home', () => {
         // 17.c.vi: the trigger carries a dotted green underline; 6.f: the word is navy here.
         expect.soft(await style(word, ['color', 'textDecorationLine', 'textDecorationStyle', 'textDecorationColor']), 'heading word look').toEqual({
             color: COLOUR.navy, textDecorationLine: 'underline', textDecorationStyle: 'dotted', textDecorationColor: COLOUR.green,
-        });
-        // The hero word is a trigger too, with the same dotted green underline.
-        expect.soft(await style(page.locator(`h1 ${TRIGGER}`), ['textDecorationStyle', 'textDecorationColor']), 'hero word underline').toEqual({
-            textDecorationStyle: 'dotted', textDecorationColor: COLOUR.green,
         });
 
         const tile = page.locator('#apps li').last();
@@ -192,6 +219,7 @@ test.describe('Home', () => {
     });
 
     test('Catche, TimeTracker and Vault each wear the badge, with the short form on the card; Vault\'s old card note is gone', async ({ page }) => {
+        test.skip(!SHOW.apps, APPS_PARKED);
         const cards = page.locator('#apps article');
         await expect(cards).toHaveCount(APPS.length);
         for (const [i, app] of APPS.entries()) {

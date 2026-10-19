@@ -1,13 +1,15 @@
 import AppCard from './components/AppCard';
-import DraftLabel from './components/DraftLabel';
 import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
 import OffGridLegend from './components/OffGridLegend';
-import { getPublicApps } from '@/lib/apps';
+import { getShownApps } from '@/lib/apps';
 import siteWords from '../../content/site-words.json';
 
 export default function Home() {
-    const apps = getPublicApps();
+    // None while content/site-settings.json hides the apps. Then the whole apps
+    // section (its heading, the cards and "More in the works") is left out, and
+    // the hero is followed directly by "Off-grid, explained".
+    const apps = getShownApps();
     const { home, moreInTheWorks, offGrid } = siteWords;
     // "Meet our Off-grid apps" is true only while every card in the grid wears
     // the badge, open and showcase alike. Otherwise "Meet our apps" (17.b.i).
@@ -22,7 +24,6 @@ export default function Home() {
     return (
         <div className="home-top mx-auto max-w-[1088px] px-4 pb-16 md:px-6">
             <section className="grid justify-items-start gap-[18px] pb-16" aria-labelledby="home-title">
-                <DraftLabel />
                 {/* The popup box for "Off-grid" sits right after the heading (OffGridHeading). */}
                 <OffGridHeading
                     as="h1"
@@ -47,28 +48,30 @@ export default function Home() {
                 <OffGridLegend text={offGrid.legendOnHome} />
             </section>
 
-            <section id="apps" className="py-10" aria-labelledby="apps-title">
-                <OffGridHeading
-                    as="h2"
-                    id="apps-title"
-                    className="m-0 mb-[22px] text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]"
-                    text={appsTitle}
-                />
-                <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 md:grid-cols-2 lg:grid-cols-3">
-                    {apps.map((app) => (
-                        <li key={app.id} className="flex">
-                            <AppCard app={app} />
+            {apps.length > 0 && (
+                <section id="apps" className="py-10" aria-labelledby="apps-title">
+                    <OffGridHeading
+                        as="h2"
+                        id="apps-title"
+                        className="m-0 mb-[22px] text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]"
+                        text={appsTitle}
+                    />
+                    <ul className="m-0 grid list-none grid-cols-1 gap-5 p-0 md:grid-cols-2 lg:grid-cols-3">
+                        {apps.map((app) => (
+                            <li key={app.id} className="flex">
+                                <AppCard app={app} />
+                            </li>
+                        ))}
+                        <li className="flex">
+                            {/* Placeholder: its link to the signup's news box comes with the signup form. */}
+                            <div className="flex w-full flex-col gap-3 rounded-xl border-[1.5px] border-dashed border-ink-soft px-[22px] pt-[22px] pb-5">
+                                <h3 className="m-0 text-[1.7rem] leading-[1.1]">{moreInTheWorks.heading}</h3>
+                                <p className="m-0 text-ink-soft">{moreInTheWorks.text}</p>
+                            </div>
                         </li>
-                    ))}
-                    <li className="flex">
-                        {/* Placeholder: its link to the signup's news box comes with the signup form. */}
-                        <div className="flex w-full flex-col gap-3 rounded-xl border-[1.5px] border-dashed border-ink-soft px-[22px] pt-[22px] pb-5">
-                            <h3 className="m-0 text-[1.7rem] leading-[1.1]">{moreInTheWorks.heading}</h3>
-                            <p className="m-0 text-ink-soft">{moreInTheWorks.text}</p>
-                        </div>
-                    </li>
-                </ul>
-            </section>
+                    </ul>
+                </section>
+            )}
         </div>
     );
 }

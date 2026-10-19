@@ -129,9 +129,19 @@ function current(pathname, href) {
     return pathname === href || `${pathname}/` === href ? 'page' : undefined;
 }
 
-export default function SiteHeader({ apps }) {
+// apps: the menu items of the shown apps ({ id, name, href }), [] while they
+// are hidden. links: the plain links ({ key, href, label }), About first.
+// Both come from the server (src/lib/site.js), never from this file, so a
+// hidden page's link is never in the browser's code.
+//
+// With apps: an "Apps" menu on a computer, and a menu button on a phone.
+// Without: no Apps menu and no menu button. The plain links show on a phone
+// too, each with a tap area of at least 44 x 44 px. The menu button comes back
+// with the apps.
+export default function SiteHeader({ apps, links }) {
     const pathname = usePathname();
     const isHome = pathname === '/';
+    const hasApps = apps.length > 0;
 
     const headerRef = useRef(null);
     const probeRef = useRef(null);
@@ -158,7 +168,7 @@ export default function SiteHeader({ apps }) {
     const phoneAppsId = useId();
 
     return (
-        <header ref={headerRef} className={`${styles.header} ${isHome ? styles.big : ''}`}>
+        <header ref={headerRef} className={[styles.header, isHome && styles.big, !hasApps && styles.plain].filter(Boolean).join(' ')}>
             <div className={styles.inner}>
                 <div className={styles.shape} aria-hidden="true">
                     <div className={styles.bar} />
@@ -175,90 +185,88 @@ export default function SiteHeader({ apps }) {
 
                 <nav className={styles.desk} aria-label="Main">
                     <ul className={styles.deskList}>
-                        <li ref={appsItemRef} className={styles.appsItem}>
-                            <button
-                                ref={appsButtonRef}
-                                type="button"
-                                className={styles.deskLink}
-                                aria-expanded={appsOpen}
-                                aria-controls={appsMenuId}
-                                onClick={() => setAppsOpenOn(appsOpen ? null : pathname)}
-                            >
-                                Apps
-                                <ChevronDownIcon className={styles.chevron} />
-                            </button>
-                            <ul id={appsMenuId} className={styles.submenu} hidden={!appsOpen}>
+                        {hasApps && (
+                            <li ref={appsItemRef} className={styles.appsItem}>
+                                <button
+                                    ref={appsButtonRef}
+                                    type="button"
+                                    className={styles.deskLink}
+                                    aria-expanded={appsOpen}
+                                    aria-controls={appsMenuId}
+                                    onClick={() => setAppsOpenOn(appsOpen ? null : pathname)}
+                                >
+                                    Apps
+                                    <ChevronDownIcon className={styles.chevron} />
+                                </button>
+                                <ul id={appsMenuId} className={styles.submenu} hidden={!appsOpen}>
+                                    {apps.map((app) => (
+                                        <li key={app.id}>
+                                            <Link
+                                                href={app.href}
+                                                className={styles.menuLink}
+                                                aria-current={current(pathname, app.href)}
+                                                onClick={closeApps}
+                                            >
+                                                {app.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </li>
+                        )}
+                        {links.map((link) => (
+                            <li key={link.key}>
+                                <Link href={link.href} className={styles.deskLink} aria-current={current(pathname, link.href)}>
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+
+                {hasApps && (
+                    <nav ref={phoneNavRef} className={styles.phone} aria-label="Main">
+                        <button
+                            ref={menuButtonRef}
+                            type="button"
+                            className={styles.menuButton}
+                            aria-expanded={menuOpen}
+                            aria-controls={phoneMenuId}
+                            onClick={() => setMenuOpenOn(menuOpen ? null : pathname)}
+                        >
+                            {menuOpen
+                                ? <XMarkIcon className={styles.menuIcon} />
+                                : <Bars3Icon className={styles.menuIcon} />}
+                            <span className="sr-only">{menuOpen ? 'Close menu' : 'Menu'}</span>
+                        </button>
+                        <div id={phoneMenuId} className={styles.menuPanel} hidden={!menuOpen}>
+                            <p id={phoneAppsId} className={styles.menuGroup}>Apps</p>
+                            <ul className={styles.menuList} aria-labelledby={phoneAppsId}>
                                 {apps.map((app) => (
                                     <li key={app.id}>
                                         <Link
                                             href={app.href}
                                             className={styles.menuLink}
                                             aria-current={current(pathname, app.href)}
-                                            onClick={closeApps}
+                                            onClick={closeMenu}
                                         >
                                             {app.name}
                                         </Link>
                                     </li>
                                 ))}
                             </ul>
-                        </li>
-                        <li>
-                            <Link href="/about/" className={styles.deskLink} aria-current={current(pathname, '/about/')}>
-                                About
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/contact/" className={styles.deskLink} aria-current={current(pathname, '/contact/')}>
-                                Contact
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
-
-                <nav ref={phoneNavRef} className={styles.phone} aria-label="Main">
-                    <button
-                        ref={menuButtonRef}
-                        type="button"
-                        className={styles.menuButton}
-                        aria-expanded={menuOpen}
-                        aria-controls={phoneMenuId}
-                        onClick={() => setMenuOpenOn(menuOpen ? null : pathname)}
-                    >
-                        {menuOpen
-                            ? <XMarkIcon className={styles.menuIcon} />
-                            : <Bars3Icon className={styles.menuIcon} />}
-                        <span className="sr-only">{menuOpen ? 'Close menu' : 'Menu'}</span>
-                    </button>
-                    <div id={phoneMenuId} className={styles.menuPanel} hidden={!menuOpen}>
-                        <p id={phoneAppsId} className={styles.menuGroup}>Apps</p>
-                        <ul className={styles.menuList} aria-labelledby={phoneAppsId}>
-                            {apps.map((app) => (
-                                <li key={app.id}>
-                                    <Link
-                                        href={app.href}
-                                        className={styles.menuLink}
-                                        aria-current={current(pathname, app.href)}
-                                        onClick={closeMenu}
-                                    >
-                                        {app.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                        <ul className={styles.menuList}>
-                            <li>
-                                <Link href="/about/" className={styles.menuLink} aria-current={current(pathname, '/about/')} onClick={closeMenu}>
-                                    About
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact/" className={styles.menuLink} aria-current={current(pathname, '/contact/')} onClick={closeMenu}>
-                                    Contact
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
+                            <ul className={styles.menuList}>
+                                {links.map((link) => (
+                                    <li key={link.key}>
+                                        <Link href={link.href} className={styles.menuLink} aria-current={current(pathname, link.href)} onClick={closeMenu}>
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </nav>
+                )}
 
                 <span ref={probeRef} className={styles.probe} aria-hidden="true" />
             </div>

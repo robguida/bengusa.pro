@@ -1,10 +1,9 @@
 import { notFound } from 'next/navigation';
-import DraftLabel from '../../components/DraftLabel';
-import KeepWhole from '../../components/KeepWhole';
-import OffGridBadge from '../../components/OffGridBadge';
-import OffGridLegend from '../../components/OffGridLegend';
+import KeepWhole from '@/app/components/KeepWhole';
+import OffGridBadge from '@/app/components/OffGridBadge';
+import OffGridLegend from '@/app/components/OffGridLegend';
 import { getPublicApp, getPublicApps } from '@/lib/apps';
-import siteWords from '../../../../content/site-words.json';
+import { siteWords } from '@/lib/content';
 
 // One template for every app page, built from the app list. Pages exist only
 // under /apps/<slug>/, and only for the slugs in the list.
@@ -30,7 +29,6 @@ export default async function AppPage({ params }) {
     return (
         <div className="mx-auto max-w-[1088px] px-4 pb-16 md:px-6">
             <div className="grid justify-items-start gap-[18px] pb-10">
-                <DraftLabel />
                 <p className="m-0 text-[13px] font-medium tracking-[0.12em] text-ink-soft uppercase">{app.name}</p>
                 <h1 className="m-0 max-w-[18ch] text-[clamp(2.4rem,7vw,4rem)] leading-[1.04]"><KeepWhole text={app.tagline} /></h1>
                 <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft"><KeepWhole text={app.intro} /></p>

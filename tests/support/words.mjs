@@ -4,6 +4,7 @@
 // words change, change them here in the same commit.
 import path from 'node:path';
 import { ROOT, readJson } from '../../scripts/lib/export-checks.mjs';
+import { SHOW } from './settings.mjs';
 
 // The three apps the spec names (acceptance check 3). The IDs are the fixed
 // tag IDs (13.e.i, LR-29); each app page's connects box has the id
@@ -22,13 +23,18 @@ export const WORDS = {
     appsHeading: 'Meet our Off-grid apps', // 17.b
     appsHeadingFallback: 'Meet our apps', // 17.b.i (the guard)
     offGridWord: 'Off-grid',
-    // 17.c.iii: the popup, word for word.
-    popup: 'Off-grid: your data lives on your device, not in our cloud. If you buy it, all we keep is your purchase record.',
+    // 17.c.iii: the popup, word for word. Release 1 (BUWEB-114, the legal
+    // reviewer's ruling 1.2): the popup is the short form. "If you buy it, all
+    // we keep is your purchase record." is cut (nothing is for sale); the
+    // legal reviewer re-reads this when the apps come back.
+    popup: 'Off-grid: your data lives on your device, not in our cloud.',
     // 13.a.i: the short form beside every badge.
     shortForm: 'Off-grid: your data lives on your device, not in our cloud.',
-    // 13.a.ii on Home: the full legend, every sentence kept, in its own
-    // section between the hero and the app grid (17.a.v).
-    legendOnHome: 'Off-grid: the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. Each app\'s page lists what it connects to. We call Off-grid apps Cloud-killers.',
+    // 13.a.ii on Home: the legend, in its own section right after the hero.
+    // Release 1 (BUWEB-114, the legal reviewer's ruling 1.1): "Each app's page
+    // lists what it connects to." and "If you buy it, all we keep is your
+    // purchase record." are cut, and "the app keeps" is the short form.
+    legendOnHome: 'Off-grid: your data lives on your device, not in our cloud. We call Off-grid apps Cloud-killers.',
     // 13.a.ii on an app's own page: the full legend without "Each app's page
     // lists what it connects to." (the connects box sits right below instead).
     legendOnAppPage: 'Off-grid: the app keeps your data on your device, not in our cloud. If you buy it, all we keep is your purchase record. We call Off-grid apps Cloud-killers.',
@@ -67,15 +73,14 @@ export const COLOUR = {
 // photo files and IDs use the full name too (fojle-rabbi-saikat).
 export const ABOUT = {
     path: '/about/',
-    // The site's draft label, which sits above the heading on every page whose
-    // words are still drafts (DraftLabel). It is not About's own words; it is
-    // listed so the exact-text check knows it. When it comes off About, drop
-    // it from aboutMainText() below.
-    draftLabel: 'Draft words. Not final.',
+    // The site's draft label. BUWEB-114 took it off every page; DRAFT_LABEL
+    // (below) is kept only so the tests can prove it is gone.
     title: 'Hi. We\'re bengUSA.pro.',
     line: 'We build apps that mind their own business.',
     storyHeading: 'Our story',
-    story: 'We build software for a living. Rob made TimeTracker to turn his own hours into invoices. He\'s building Vault (working name) to sort his own server keys. Now we\'re making them for you.',
+    // Release 1's stopgap story (the legal reviewer, 2026-10-18, ruling 1.4).
+    // No app is named. BUWEB-115 replaces it.
+    story: 'We build software for a living. Now we\'re making apps for you.',
     peopleHeading: 'Who we are',
     people: [
         {
@@ -93,12 +98,14 @@ export const ABOUT = {
             photo: '/images/about/fojle-rabbi-saikat.webp',
         },
     ],
+    // PARKED with the apps (on the page only while showApps is on).
     makingHeading: 'What we\'re making',
     making: {
         catche: 'finds your photos.',
         timetracker: 'turns your hours into invoices.',
         vault: 'sorts your dev secrets.',
     },
+    // PARKED with Contact (on the page only while showContact is on).
     contactBefore: 'Want to say hi? Use the ',
     contactLink: 'Contact page',
     contactAfter: '.',
@@ -109,21 +116,70 @@ export const ABOUT = {
     shown: { desktop: { width: 240, height: 300 }, phone: { width: 200, height: 250 } },
 };
 
+// The draft label that was on every page until BUWEB-114. It must not appear
+// anywhere in the build (checks/release1.spec.mjs).
+export const DRAFT_LABEL = 'Draft words. Not final.';
+
 // Every line of About's main text, in order, and nothing else (acceptance
 // check 26: only the approved words). One entry per block on the page: an
 // extra paragraph anywhere, even one with approved words, makes the list
-// differ.
+// differ. "What we're making" and the Contact line are in the list only while
+// the apps and Contact are shown.
 export function aboutMainText() {
     return [
-        ABOUT.draftLabel,
         ABOUT.title,
         ABOUT.line,
         ABOUT.storyHeading,
         ABOUT.story,
         ABOUT.peopleHeading,
         ...ABOUT.people.flatMap((p) => [p.name, p.title, p.bio]),
-        ABOUT.makingHeading,
-        ...APPS.map((app) => `${app.name} ${ABOUT.making[app.id]}`),
-        `${ABOUT.contactBefore}${ABOUT.contactLink}${ABOUT.contactAfter}`,
+        ...(SHOW.apps ? [ABOUT.makingHeading, ...APPS.map((app) => `${app.name} ${ABOUT.making[app.id]}`)] : []),
+        ...(SHOW.contact ? [`${ABOUT.contactBefore}${ABOUT.contactLink}${ABOUT.contactAfter}`] : []),
+    ];
+}
+
+// The Privacy page, word for word (the legal reviewer, 2026-10-18,
+// icabod-r1-rulings.md section 2: 146 words, final, plain ASCII). The labels
+// (H1, intro, H2, P) are not site words. The last line is
+// "Last updated: <the day the Privacy words last changed>", in the form
+// PRIVACY.updated (the legal reviewer's date ruling, 2026-10-19). It does not
+// move for a build, a merge or a deploy; when a Privacy word changes, it
+// changes in the same commit, here, in content/ and in spec 19.f.
+export const PRIVACY = {
+    path: '/privacy/',
+    title: 'Privacy',
+    intro: 'This page covers the website at bengusa.pro.',
+    sections: [
+        {
+            heading: 'What our server keeps',
+            paragraphs: ['Our server keeps a short visitor log for 14 days: the date and time, your IP address, the pages and files your browser asks for, and the browser and device type it reports. Backup copies of the log are gone within about 3 weeks. We use it to keep the site running and safe, and to count visits. We don\'t sell it or use it for ads.'],
+        },
+        {
+            heading: 'What the site doesn\'t do',
+            paragraphs: ['The site has no forms, no cookies, no ads, and no analytics or tracking scripts. It doesn\'t follow you to other sites. Every file, fonts included, comes from our server, which runs on Amazon Web Services in the US.'],
+        },
+        {
+            heading: 'Changes',
+            paragraphs: ['If the site starts collecting anything else, or keeps it longer, this page will say so first.'],
+        },
+    ],
+    // The last line, exact as the spec has it (decision 19.f). If the build is
+    // made on another day, the spec and this line change together.
+    updated: 'Last updated: October 19, 2026.',
+    // The page descriptions the legal reviewer pre-cleared (his "page descriptions" list).
+    descriptions: {
+        '/': 'Makers of Off-grid apps. Off-grid: your data lives on your device, not in our cloud.',
+        '/about/': 'Who\'s behind bengUSA.pro, and why we build apps that mind their own business.',
+        '/privacy/': 'What the bengusa.pro website keeps, and for how long.',
+    },
+};
+
+// Every line of the Privacy page's main text, in order, up to the date line
+// (which is checked against PRIVACY.updated).
+export function privacyMainText() {
+    return [
+        PRIVACY.title,
+        PRIVACY.intro,
+        ...PRIVACY.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
     ];
 }
