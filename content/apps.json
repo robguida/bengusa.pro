@@ -1,0 +1,32 @@
+[
+  {
+    "id": "catche",
+    "status": "open",
+    "sold": true,
+    "freeBeta": true,
+    "name": "Catche (working name)",
+    "shortName": "Catche",
+    "offGrid": true,
+    "slug": "photo-search"
+  },
+  {
+    "id": "timetracker",
+    "status": "open",
+    "sold": true,
+    "freeBeta": true,
+    "name": "TimeTracker",
+    "shortName": "TimeTracker",
+    "offGrid": true,
+    "slug": "time-tracking"
+  },
+  {
+    "id": "vault",
+    "status": "open",
+    "sold": true,
+    "freeBeta": true,
+    "name": "Vault (working name)",
+    "shortName": "Vault",
+    "offGrid": true,
+    "slug": "password-manager"
+  }
+]
