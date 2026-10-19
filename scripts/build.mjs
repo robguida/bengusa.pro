@@ -1,6 +1,7 @@
 // `npm run build`: runs `next build`, saves its output, then checks out/.
 // The build fails (exit 1) if:
-//   - content/site-settings.json and the page folders disagree (a hidden
+//   - content/site-settings.json is missing, isn't JSON, or a switch in it is
+//     missing or not true/false; or it and the page folders disagree (a hidden
 //     page's folder must sit in src/app/_parked/, a shown page's must not);
 //   - public/ holds a file that tests/fixtures/public-allowlist.txt does not
 //     name, tracked or not (every file there is served), or misses one it names;
@@ -9,7 +10,10 @@
 //   - a list-only field or a retired app ID reaches out/ (§6.1 item 11);
 //   - anything of a hidden page reaches out/: its files, or its names, words,
 //     links or menu in any text file; or the old draft label appears anywhere;
-//   - a page's security policy can't be written, or doesn't match the page.
+//     or a hidden app's ID, name, short name or slug is too short to scan for;
+//   - a page's security policy can't be written, or doesn't match the page;
+//   - a file in out/ that a check must read can't be read (it is listed, and
+//     the check goes on to the next file).
 // After `next build` it writes each page's Content-Security-Policy meta tag
 // (scripts/lib/csp.mjs), then saves the build log, so the log is newer than
 // every file in out/ (scripts/release/package.mjs refuses anything newer).

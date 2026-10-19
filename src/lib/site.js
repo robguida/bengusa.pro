@@ -1,5 +1,6 @@
 import 'server-only';
 import settings from '../../content/site-settings.json';
+import { checkSiteSettings } from './site-settings.mjs';
 
 // What the live site shows: one committed switch, content/site-settings.json
 // (BUWEB-114). Release 1 hides the apps and Contact, and keeps their code:
@@ -10,20 +11,18 @@ import settings from '../../content/site-settings.json';
 //     reaches out/ (scripts/build.mjs checks every file in it).
 // To show one again: set its switch to true AND move its folder back out of
 // src/app/_parked/. The build fails if the switch and the folders disagree.
-
-const SWITCHES = ['showApps', 'showContact'];
+// What the file means (each switch true or false, nothing missing) is one rule
+// in src/lib/site-settings.mjs, shared with the build checks and the tests.
 
 // One build lists every bad switch, then fails once.
-const problems = SWITCHES
-    .filter((key) => typeof settings[key] !== 'boolean')
-    .map((key) => `content/site-settings.json: "${key}" must be true or false.`);
+const { showApps, showContact, problems } = checkSiteSettings(settings);
 if (problems.length > 0) {
     throw new Error(`The site settings check found ${problems.length} problem${problems.length === 1 ? '' : 's'}:\n`
         + problems.map((p) => `  - ${p}`).join('\n'));
 }
 
-export const SHOW_APPS = settings.showApps;
-export const SHOW_CONTACT = settings.showContact;
+export const SHOW_APPS = showApps;
+export const SHOW_CONTACT = showContact;
 
 // The plain links in the header, on a computer and on a phone, in order.
 export function headerLinks() {

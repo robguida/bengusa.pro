@@ -13,9 +13,16 @@
 // plugin, no <base>, no form.
 //
 // A meta policy can't set frame-ancestors, report-uri or sandbox. The web
-// server sends one fixed header for those (Otto's nginx). That header must NOT
-// set script-src or default-src: the browser applies both policies, and a
-// fixed one would block these pages' own inline scripts.
+// server (Otto's nginx) also sends one fixed policy header on every reply. The
+// browser applies both policies, and a load must pass both. The rule both
+// sides keep (Stanley's ruling, BUWEB-114):
+//   - The header's script-src and style-src stay 'self' 'unsafe-inline' only.
+//     They never gain a hash, a nonce or 'strict-dynamic': any one of those
+//     makes the browser ignore 'unsafe-inline' in the header, which then blocks
+//     every page's own inline scripts (their hashes change with every build).
+//   - The header is a strict superset of every page's meta: each directive
+//     allows at least what the meta allows, so the meta's hashes decide.
+//   - frame-ancestors lives only in the header.
 //
 // The Windows export fix (scripts/release/fix-windows-export.mjs) only renames
 // page-data .txt files, so it never changes a page or its hashes.
@@ -23,7 +30,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { OUT_DIR, rel, walk } from './export-checks.mjs';
+import { OUT_DIR, readForScan, rel, walk } from './export-checks.mjs';
 
 export const CSP_DIRECTIVES = [
     ['default-src', ["'self'"]],
@@ -90,24 +97,33 @@ export function injectCsp(outDir = OUT_DIR) {
     return { ok: problems.length === 0, pages, problems };
 }
 
-// Every page: exactly one policy, first in <head> after the charset, that is
-// exactly the site policy with exactly this page's inline-script hashes; and
-// nothing on the page that the policy would block (inline styles, inline event
-// handlers, javascript: links). Lists every problem on every page.
+// Every page: exactly one policy, first in <head> (the <head> tag, the
+// charset, then the policy, nothing between), that is exactly the site policy
+// with exactly this page's inline-script hashes; and nothing on the page that
+// the policy would block (inline styles, inline event handlers, javascript:
+// links). Lists every problem on every page; a page that can't be read is
+// listed too, and the check goes on to the next page.
+const HEAD_RE = /<head\b[^>]*>$/i; // <head> or <head ...>, never <header>
+const EARLY_TAGS = ['<script', '<link', '<style'];
+
 export function checkCsp(outDir = OUT_DIR) {
     const problems = [];
     const files = htmlFiles(outDir);
     for (const file of files) {
         const name = rel(outDir, file);
-        const html = fs.readFileSync(file, 'utf8');
+        const html = readForScan(outDir, file, problems);
+        if (html === null) continue;
         const metas = [...html.matchAll(META_RE)];
         if (metas.length !== 1) {
             problems.push(`${name}: ${metas.length} Content-Security-Policy meta tags (want exactly 1)`);
         } else {
             const at = metas[0].index;
-            if (html.slice(at - CHARSET.length, at) !== CHARSET) problems.push(`${name}: the policy is not right after ${CHARSET}`);
-            for (const tag of ['<script', '<link', '<style']) {
-                const first = html.indexOf(tag);
+            const charsetAt = at - CHARSET.length;
+            if (html.slice(charsetAt, at) !== CHARSET) problems.push(`${name}: the policy is not right after ${CHARSET}`);
+            else if (!HEAD_RE.test(html.slice(0, charsetAt))) problems.push(`${name}: ${CHARSET} is not right after <head>, so something comes before the policy`);
+            // Tags are case-insensitive in HTML, so <SCRIPT> counts as <script>.
+            for (const tag of EARLY_TAGS) {
+                const first = html.search(new RegExp(tag, 'i'));
                 if (first > -1 && first < at) problems.push(`${name}: a ${tag}> comes before the policy, so the policy does not cover it`);
             }
             const want = policyFor(pageHashes(html));
