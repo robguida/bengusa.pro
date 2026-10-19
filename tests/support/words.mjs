@@ -140,8 +140,11 @@ export function aboutMainText() {
 
 // The Privacy page, word for word (the legal reviewer, 2026-10-18,
 // icabod-r1-rulings.md section 2: 146 words, final, plain ASCII). The labels
-// (H1, intro, H2, P) are not site words. Only the last line differs by build:
-// "Last updated: <the day the build was made>", in the form PRIVACY.updated.
+// (H1, intro, H2, P) are not site words. The last line is
+// "Last updated: <the day the Privacy words last changed>", in the form
+// PRIVACY.updated (the legal reviewer's date ruling, 2026-10-19). It does not
+// move for a build, a merge or a deploy; when a Privacy word changes, it
+// changes in the same commit, here, in content/ and in spec 19.f.
 export const PRIVACY = {
     path: '/privacy/',
     title: 'Privacy',

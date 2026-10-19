@@ -9,7 +9,7 @@
 // "never on light blue" check below green.
 import { test, expect, PAGES, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, expectOpen, popupsLive, press, tipOf } from '../support/offgrid.mjs';
-import { SHOW } from '../support/settings.mjs';
+import { SHOW, noteParked } from '../support/settings.mjs';
 import { COLOUR, WORDS } from '../support/words.mjs';
 
 const LOGO = '[data-logo]';
@@ -112,6 +112,7 @@ test.describe('colour rules (6.f)', () => {
             { sel: `${HOME_SECTION} ${TRIGGER}`, link: null },
             ...(SHOW.apps ? [{ sel: `#apps article ${TRIGGER}`, link: COLOUR.white }] : []),
         ];
+        if (!SHOW.apps) noteParked("the link is white in an open popup (a card's popup)");
         for (const { sel, link } of popups) {
             const trigger = page.locator(sel).first();
             const tip = await tipOf(page, trigger);

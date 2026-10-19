@@ -7,7 +7,7 @@ import {
     CLOSE_GRACE_MS, OPEN_DELAY_MS, TIP, TRIGGER, centre, expectClosed, expectOpen, expectStillOpen, freeze, isShowing, middle,
     offGridSection, popupsLive, press, pressAt, softTipOf, tipOf, tipWords,
 } from '../support/offgrid.mjs';
-import { APPS_PARKED, SHOW } from '../support/settings.mjs';
+import { APPS_PARKED, SHOW, noteParked } from '../support/settings.mjs';
 import { APPS, WORDS, connectsLabel } from '../support/words.mjs';
 
 // Where every popup is, in page order, and what its link must be (17.c.ii,
@@ -44,17 +44,21 @@ const vaultCardTrigger = (page) => page.locator('#apps article').filter({ hasTex
 // Home, the hero word and the section badge (the legend's). Neither has a
 // link. While the apps are shown, the Vault card's badge too: it is the one
 // whose box has a link.
-const liveTriggers = (page) => [
-    ['hero word', heroTrigger(page)],
-    ['section badge', sectionTrigger(page)],
-    ...(SHOW.apps ? [['Vault badge', vaultCardTrigger(page)]] : []),
-];
+const liveTriggers = (page) => {
+    if (!SHOW.apps) noteParked("the Vault card's badge as one more popup for this behaviour");
+    return [
+        ['hero word', heroTrigger(page)],
+        ['section badge', sectionTrigger(page)],
+        ...(SHOW.apps ? [['Vault badge', vaultCardTrigger(page)]] : []),
+    ];
+};
 
 test.describe('the Off-grid popup', () => {
     test('every popup shows the approved words exactly; a badge popup links to its own app\'s box', async ({ page }, testInfo) => {
         test.skip(isReducedMotion(testInfo), 'words do not change with motion; the normal pass covers them');
         // Soft checks all the way down: one bad popup is reported, and every
         // other popup on every page is still checked.
+        if (!SHOW.apps) noteParked('words, bold lead, link count, label and target of the grid heading word, the 3 card badges and the 6 app-page badges');
         for (const { page: p, popups } of WHERE) {
             await page.goto(p);
             await popupsLive(page);
@@ -110,7 +114,7 @@ test.describe('the Off-grid popup', () => {
         }
     });
 
-    test('keyboard focus opens it; moving focus away closes it', async ({ page }) => {
+    test('keyboard focus opens it; moving focus away closes it', async ({ page, browserName }) => {
         await page.goto('/');
         await popupsLive(page);
         const trigger = heroTrigger(page);
@@ -129,6 +133,8 @@ test.describe('the Off-grid popup', () => {
         // pass). Chromium lands on the header's About link. WebKit's Tab
         // skips links by default (Safari's setting), and Release 1's header
         // has no button, so there focus leaves every control (the body).
+        // Only WebKit may land on the body; every other browser must be back
+        // in the header.
         await page.keyboard.press('Shift+Tab');
         await expect(trigger).not.toBeFocused();
         const now = await page.evaluate(() => {
@@ -136,7 +142,11 @@ test.describe('the Off-grid popup', () => {
             return { inPopup: !!el?.closest('[data-offgrid]'), inHeader: !!el?.closest('header'), tag: el?.tagName.toLowerCase() ?? 'none' };
         });
         expect(now.inPopup, 'focus is on no other popup button or box').toBe(false);
-        expect(now.inHeader || now.tag === 'body', `focus is back in the header, or off every control (it is on <${now.tag}>)`).toBe(true);
+        if (browserName === 'webkit') {
+            expect(now.inHeader || now.tag === 'body', `WebKit: focus is back in the header, or off every control (it is on <${now.tag}>)`).toBe(true);
+        } else {
+            expect(now.inHeader, `${browserName}: focus is back in the header (it is on <${now.tag}>)`).toBe(true);
+        }
         await expectClosed(trigger, tip, 'hero word after focus moved away');
     });
 
@@ -156,9 +166,11 @@ test.describe('the Off-grid popup', () => {
     // WCAG 2.5.5 (Target Size): each trigger's tap area is at least 44 x 44 px,
     // though the badge is drawn about 24px tall (an invisible area around it,
     // OffGridTip.module.css). Read from the page by hit-testing: the points
-    // through the trigger's middle that land on it, across and down. Then a
-    // press just outside the drawn word or badge, inside that area, opens it.
-    test('the tap area is at least 44 x 44 px, and a press just outside the drawn trigger opens it', async ({ page }, testInfo) => {
+    // through the trigger's middle that land on it, across and down, 1px
+    // apart. N hits in a row prove at least N - 1 px, so this proves 44 px to
+    // within 1 px (a 43.x px area can pass). Then a press just outside the
+    // drawn word or badge, inside that area, opens it.
+    test('the tap area is at least 44 x 44 px (within 1 px), and a press just outside the drawn trigger opens it', async ({ page }, testInfo) => {
         await page.goto('/');
         await popupsLive(page);
         for (const [name, trigger] of liveTriggers(page)) {
@@ -188,8 +200,8 @@ test.describe('the Off-grid popup', () => {
                 return { drawnW: r.width, drawnH: r.height, tall: run(down), wide: run(across), left: r.left, cy };
             });
             // A run of N hit points 1px apart covers at least N - 1 px.
-            expect.soft(area.tall - 1, `${name}: tap area height (drawn ${area.drawnH.toFixed(1)}px tall)`).toBeGreaterThanOrEqual(44 - 1);
-            expect.soft(area.wide - 1, `${name}: tap area width (drawn ${area.drawnW.toFixed(1)}px wide)`).toBeGreaterThanOrEqual(44 - 1);
+            expect.soft(area.tall - 1, `${name}: tap area height, 44px within 1px (drawn ${area.drawnH.toFixed(1)}px tall)`).toBeGreaterThanOrEqual(44 - 1);
+            expect.soft(area.wide - 1, `${name}: tap area width, 44px within 1px (drawn ${area.drawnW.toFixed(1)}px wide)`).toBeGreaterThanOrEqual(44 - 1);
             // 4px left of the drawn trigger, level with its middle: inside the area, outside the drawing.
             await pressAt(page, testInfo, area.left - 4, area.cy);
             await expectOpen(trigger, tip, `${name} after a press 4px left of the drawn trigger`);
@@ -220,6 +232,8 @@ test.describe('the Off-grid popup', () => {
             await page.keyboard.press('Escape');
             await expectClosed(badge, badgeTip, 'Vault badge after Esc');
             await expect(badge, 'focus back on the Vault badge').toBeFocused();
+        } else {
+            noteParked('Esc with focus on a link inside the box');
         }
 
         // The hero popup has no link: focus the box itself.
@@ -301,6 +315,7 @@ test.describe('the Off-grid popup', () => {
     test('opening it moves nothing on the page, and the box stays inside the screen', async ({ page }, testInfo) => {
         // Release 1: Home only (Vault's page is parked with the apps). Every
         // popup on the page is opened, so Home's two live ones both are.
+        if (!SHOW.apps) noteParked("no layout jump and the box on screen for the grid heading word, the 3 card popups and Vault's 2 popups");
         for (const p of ['/', ...(SHOW.apps ? [APPS[2].page] : [])]) {
             await page.goto(p);
             await popupsLive(page);
@@ -421,6 +436,8 @@ test.describe('the Off-grid popup and the mouse, on a fake clock', () => {
                 await page.mouse.move(onLink.x, onLink.y, { steps: 4 });
                 await page.clock.runFor(CLOSE_GRACE_MS + 100);
                 await expectStillOpen(trigger, tip, `${name}: mouse on the box's link, past the grace`);
+            } else if (!SHOW.apps) {
+                noteParked("the mouse resting on the box's link past the 300 ms grace");
             }
             // The control: leaving both closes it, but only once the grace is
             // over. Seen open with no time gone, then closed after it.
@@ -471,6 +488,7 @@ test.describe('the Off-grid popup with scripts off', () => {
     test('its words are in the page, and the browser\'s own popover opens and closes it', async ({ page }, testInfo) => {
         test.skip(isReducedMotion(testInfo), 'no script runs, so motion changes nothing here; the normal pass covers it');
         // Soft checks: one bad popup is reported, and the rest are still checked.
+        if (!SHOW.apps) noteParked('scripts-off words and popovertarget of the grid heading word, the 3 card badges and the 6 app-page badges');
         for (const { page: p, popups } of WHERE) {
             await page.goto(p);
             const triggers = page.locator(TRIGGER);
@@ -540,6 +558,7 @@ test('every badge keeps its words beside it: the short form, or the full legend 
     const misses = [];
     // Release 1: Home only, where the section badge is the only badge (no
     // cards). The app pages come back with the apps.
+    if (!SHOW.apps) noteParked('check 25.c for the card badges and the app pages (the short form beside each, the legend beside the section badge, one plain heading)');
     for (const p of ['/', ...(SHOW.apps ? APPS.map((a) => a.page) : [])]) {
         await page.goto(p);
         await popupsLive(page);

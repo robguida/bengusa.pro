@@ -7,19 +7,31 @@
 // setting turns showApps on (the apps-return ticket re-enables them and fixes
 // whatever has drifted; Quinn's ruling 2 on BUWEB-114: no "apps shown" build).
 //
-// If the file is missing, everything counts as shown (the build before
-// BUWEB-114), so the test that checks the file itself is the one that fails.
-import fs from 'node:fs';
-import path from 'node:path';
-import { ROOT } from '../../scripts/lib/export-checks.mjs';
+// The file is read by readSiteSettings(), the same reader the build checks and
+// the packager use (one rule, src/lib/site-settings.mjs), so the tests can't
+// drift from the build. Only true shows a page. A missing or broken file, a
+// missing switch or a value that isn't true/false is a PROBLEM, and everything
+// it touches counts as hidden: release1.spec.mjs fails on any problem.
+import { test } from '@playwright/test';
+import { readSiteSettings } from '../../scripts/lib/export-checks.mjs';
+import { SITE_SETTINGS_FILE } from '../../src/lib/site-settings.mjs';
 
-export const SETTINGS_FILE = path.join(ROOT, 'content', 'site-settings.json');
-export const SETTINGS_PRESENT = fs.existsSync(SETTINGS_FILE);
-export const SETTINGS = SETTINGS_PRESENT
-    ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))
-    : { showApps: true, showContact: true };
+const settings = readSiteSettings();
 
-export const SHOW = { apps: SETTINGS.showApps === true, contact: SETTINGS.showContact === true };
+export const SETTINGS_FILE = SITE_SETTINGS_FILE;
+export const SETTINGS_PROBLEMS = settings.problems;
+export const SHOW = { apps: settings.showApps, contact: settings.showContact };
 
 export const APPS_PARKED = 'apps hidden by site-settings; re-enable when the tiles return';
 export const CONTACT_PARKED = 'Contact hidden by site-settings; re-enable when Contact returns';
+
+// For a PART of a live test that waits for the apps (an `if (SHOW.apps)`
+// branch): it adds a "parked" note to the test's report, so what is not
+// checked today shows up there, not only in tests/README.md. Once per part.
+export function noteParked(part) {
+    const { annotations } = test.info();
+    const description = `${part}: ${APPS_PARKED}`;
+    if (!annotations.some((a) => a.type === 'parked' && a.description === description)) {
+        annotations.push({ type: 'parked', description });
+    }
+}

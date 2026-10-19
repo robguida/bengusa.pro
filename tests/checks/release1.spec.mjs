@@ -14,7 +14,7 @@ import { BUILD_LOG, OUT_DIR, ROOT, checkRouteTable, expectedRoutes, rel, walk } 
 import {
     CONTACT_TERMS, DRAFT_TERMS, INLINE_TERMS, OUTSIDE_HOSTS, appTerms, asLinks, badCssUrls, badHrefs, bareNames, hiddenFileHits, outTexts, termHits,
 } from '../support/release1-scan.mjs';
-import { SETTINGS, SETTINGS_FILE, SETTINGS_PRESENT, SHOW } from '../support/settings.mjs';
+import { SETTINGS_FILE, SETTINGS_PROBLEMS, SHOW } from '../support/settings.mjs';
 import { APPS } from '../support/words.mjs';
 
 const HIDDEN = 'the apps and Contact are shown: Release 1\'s hidden-page checks do not apply';
@@ -23,13 +23,12 @@ const SLUGS = APPS.map((a) => a.page.replace(/^\/apps\//, '').replace(/\/$/, '')
 const scanAll = (files, terms) => files.flatMap((f) => termHits(f.file, f.text, terms));
 
 test.describe('Release 1: the settings and the parked code', () => {
-    test('content/site-settings.json exists and hides the apps and Contact', () => {
-        expect.soft(SETTINGS_PRESENT, `${SETTINGS_FILE} exists`).toBe(true);
-        expect.soft(typeof SETTINGS.showApps, 'showApps is true or false').toBe('boolean');
-        expect.soft(typeof SETTINGS.showContact, 'showContact is true or false').toBe('boolean');
+    test('content/site-settings.json reads with no problem and hides the apps and Contact', () => {
+        // readSiteSettings() lists a missing file, bad JSON, a missing switch or a non-true/false value.
+        expect.soft(SETTINGS_PROBLEMS, `${SETTINGS_FILE}: problems found by readSiteSettings()`).toEqual([]);
         // Release 1 ships with both hidden. When the apps-return ticket turns them on, it changes this line.
-        expect.soft(SETTINGS.showApps, 'Release 1: showApps is false').toBe(false);
-        expect.soft(SETTINGS.showContact, 'Release 1: showContact is false').toBe(false);
+        expect.soft(SHOW.apps, 'Release 1: showApps is false').toBe(false);
+        expect.soft(SHOW.contact, 'Release 1: showContact is false').toBe(false);
     });
 
     // A new page or a new file route is a reviewed change: it fails here until
