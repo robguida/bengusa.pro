@@ -1,33 +1,120 @@
 {
   "top": {
-    "title": "Hi. We're bengUSA.pro.",
+    "title": "About Us",
     "line": "We build apps that mind their own business.",
     "description": "Who's behind bengUSA.pro, and why we build apps that mind their own business."
   },
   "story": {
     "id": "about-story",
-    "heading": "Our story",
-    "text": "We build software for a living. Now we're making apps for you."
+    "heading": "Two developers. Two countries. One team.",
+    "paragraphs": [
+      "We're Rob and Rabbi, two software developers from opposite sides of the world who met while working on a client project a few years ago.",
+      "What started as a working relationship turned into a friendship. We discovered that we enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems.",
+      "We still work that way today. Each of us takes the lead on different apps, but we regularly review each other's work, exchange ideas, and keep each other honest. We're friends first, but we're also two developers who care about getting things right."
+    ],
+    "sections": [
+      {
+        "heading": "So, what's with the name?",
+        "paragraphs": [
+          "bengUSA brings together Bangladesh and the United States, the two countries we're from. The \"Beng\" comes from Bengali.",
+          "Originally, we planned to provide programmers and designers to other companies. Then we decided we'd rather build apps ourselves.",
+          "Our plans changed. The name stuck. We liked it, so we kept it."
+        ]
+      },
+      {
+        "heading": "Why build apps ourselves?",
+        "paragraphs": [
+          "After years of building software for other people, we wanted the freedom to pursue our own ideas.",
+          "We both have plenty of them. Probably more than we'll ever have time to build.",
+          "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use. We choose what matters, take responsibility for the results, and build things we're proud to put our names on."
+        ]
+      },
+      {
+        "heading": "Why Off-grid?",
+        "paragraphs": [
+          "We believe your personal information should belong to you.",
+          "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data.",
+          "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud.",
+          "We're not interested in collecting your personal information just because we can."
+        ],
+        "emphasis": "Your data, your call."
+      }
+    ]
   },
   "people": {
     "id": "about-people",
-    "heading": "Who we are",
+    "heading": "Meet the Founders",
     "list": [
       {
         "id": "rob-guida",
         "name": "Rob Guida",
         "title": "Co-founder & CEO",
-        "bio": "He has built software and led development teams for more than 30 years. He designs systems, rescues stuck projects and helps teams choose what to build and what to buy. His tools: AWS, SQL, Node.js, GraphQL, React, Python, Rust and PHP.",
+        "bio": [
+          "Rob has spent more than 30 years building software, designing systems, and leading development teams. He's worked on everything from individual applications to large enterprise platforms.",
+          "He enjoys solving complicated problems, especially when the result makes someone's work or life a little easier.",
+          "His technical background includes AWS, SQL, Node.js, GraphQL, React, Python, Rust, and PHP."
+        ],
         "photo": "/images/about/rob-guida.webp",
-        "alt": "Rob Guida, in glasses, a gray jacket and a light-blue shirt, against a dark blue background."
+        "alt": "Rob Guida, in glasses, a gray jacket and a light-blue shirt, against a dark blue background.",
+        "personalPhoto": "/images/about/rob-guida-personal.webp",
+        "personalAlt": "Rob Guida in a night selfie, in a black beanie, with a frosted gray knit scarf pulled up over his mouth and frost on his eyelid.",
+        "ownWordsLabel": "In Rob's own words",
+        "ownWords": [
+          {
+            "label": "Something I'm proud of",
+            "text": "Years ago, I built a government budget and project-planning system that let people browse departments, offices, budgets, and projects using a familiar folder structure instead of searching for codes and names. It seems simple today, but it was a different way of doing things at the time. When several offices consolidated their systems, mine was the one they kept. That still makes me smile."
+          },
+          {
+            "label": "When I'm not working",
+            "text": "I love cooking, eating, walking, exploring new places, and writing. My Christian faith is an important part of my life, especially my journey from atheism to Christianity."
+          },
+          {
+            "label": "Life on the road",
+            "text": "My wife and I love slow travel. We like staying somewhere long enough to experience everyday life rather than just checking attractions off a list. And no, we're not RV or tent people. Give us a comfortable apartment or a nice hotel."
+          },
+          {
+            "label": "A trip I'll never forget",
+            "text": "My wife and I once saw Switzerland's Maloja Pass on a computer screensaver and decided we had to drive it. So we did. We even stayed in a grand old hotel along the way. Beautiful, a little eerie, and almost like something out of *The Shining*. What an experience."
+          },
+          {
+            "label": "Something that surprises people",
+            "text": "I can still sprint up a pretty steep hill. I'm not saying I look graceful doing it, and the recovery isn't what it used to be, but I can do it."
+          }
+        ]
       },
       {
         "id": "fojle-rabbi-saikat",
         "name": "Fojle Rabbi Saikat",
         "title": "Co-founder & CTO",
-        "bio": "He has been a software engineer since 2015 and has shipped more than 30 Android apps on Google Play. He designs system architecture, leads teams and builds with Java, Kotlin, Spring Boot, Laravel, Node.js, Vue.js, PostgreSQL and MySQL. He also built the original code for this site.",
+        "bio": [
+          "He has been developing software since 2015, starting with Android applications. He's released more than 30 Android apps on Google Play and has worked across nearly every part of software development.",
+          "From mobile apps and user interfaces to backend systems, databases, automation, and system architecture, he enjoys the technical challenges that come with turning ideas into working applications.",
+          "He also developed the original code for the bengUSA website.",
+          "His technical background includes Java, Kotlin, Spring Boot, Laravel, PHP, Node.js, Vue.js, JavaScript, PostgreSQL, MySQL, CI/CD, Docker, Redis, and AWS."
+        ],
         "photo": "/images/about/fojle-rabbi-saikat.webp",
-        "alt": "Fojle Rabbi Saikat, in glasses and a navy kurta, sitting on a black scooter outdoors."
+        "alt": "Fojle Rabbi Saikat, in glasses and a navy kurta, outdoors with greenery behind him.",
+        "personalPhoto": "/images/about/fojle-rabbi-saikat-personal.webp",
+        "personalAlt": "Fojle Rabbi Saikat, in glasses and a navy kurta, sitting on a black scooter outdoors.",
+        "ownWordsLabel": "In his own words",
+        "ownWords": [
+          {
+            "label": "How Rob and I met",
+            "text": "A colleague introduced us. He and Rob were already working together for a mutual client, and they needed another developer. I joined the team, and our work together began there."
+          },
+          {
+            "label": "Why I build apps with Rob",
+            "text": "Rob quickly became more of a friend than a colleague. He's a helpful problem solver and a great mentor. Over the years we've tackled countless technical challenges together and delivered projects we're proud of. Our visions line up, and we know how to execute and deliver as a team. So we decided to build apps together."
+          },
+          {
+            "label": "What I enjoy most",
+            "text": "Building an app is a digital form of problem-solving. Every app has its own story and the chance to solve a real human problem. It's architectural engineering for your daily life. What I love most is designing the blueprint. Knowing a system I designed can make someone's life a little easier is what makes me most proud. It's not just about making a living. It's about putting something useful out into the world. Software is my passion, and after all these years, I still love what I do."
+          },
+          {
+            "label": "Where I'm based",
+            "text": "I'm based in Dhaka, Bangladesh. Rob and I are on opposite sides of the world, and it has never stopped us from building software together. Bringing our two countries together is what inspired the name bengUSA."
+          }
+        ]
       }
     ]
   },

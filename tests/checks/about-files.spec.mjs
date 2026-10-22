@@ -12,15 +12,16 @@
 // reference: a banned pattern that named one would itself leak it.
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { test, expect } from '@playwright/test';
 import { ROOT, OUT_DIR, rel, walk } from '../../scripts/lib/export-checks.mjs';
 import { readFixtureList } from '../support/fixtures.mjs';
-import { ABOUT } from '../support/words.mjs';
+import { ABOUT, RABBI_ALONE_LINE, RABBI_ALONE_VARIANTS } from '../support/words.mjs';
 import { PHONE_SHAPES, findPhones } from '../support/content-scan.mjs';
 
 const DIR = path.join(ROOT, 'public', 'images', 'about');
-const FILES = ABOUT.people.map((p) => ({ name: p.name, rel: p.photo.replace(/^\//, ''), file: path.join(ROOT, 'public', p.photo.replace(/^\//, '')) }));
+const FILES = ABOUT.people.flatMap((p) => [p.headshot, p.personal].map((src) => ({ name: p.name, rel: src.replace(/^\//, ''), file: path.join(ROOT, 'public', src.replace(/^\//, '')) })));
 
 // Words that must not be anywhere in the bytes of a photo (the camera's and
 // the phone's own marks, location, and the metadata containers).
@@ -39,7 +40,8 @@ const NAME_PARTS = [/rabbi/gi, /fojle/gi];
 function bareNameParts(text, where) {
     let rest = text;
     // Blanked out at the same length, so each hit's position is unchanged.
-    for (const form of FULL_NAME_FORMS) rest = rest.split(form).join(' '.repeat(form.length));
+    // The one allowed bare "Rabbi": the About intro line (BUWEB-115, spec 18.c.iii).
+    for (const form of [...RABBI_ALONE_VARIANTS, ...FULL_NAME_FORMS]) rest = rest.split(form).join(' '.repeat(form.length));
     const hits = [];
     for (const re of NAME_PARTS) {
         for (const m of rest.matchAll(re)) {
@@ -65,7 +67,7 @@ function chunks(buf) {
 }
 
 test.describe('About photos (committed files)', () => {
-    test('public/images/about/ holds exactly the two photos, and the allow-list names exactly those', () => {
+    test('public/images/about/ holds exactly the four photos, and the allow-list names exactly those', () => {
         expect.soft(fs.readdirSync(DIR).sort(), 'files in public/images/about/').toEqual(FILES.map((f) => path.basename(f.file)).sort());
         const allowed = readFixtureList('public-allowlist.txt').filter((p) => p.startsWith('images/about/'));
         expect.soft(allowed.sort(), 'About lines in fixtures/public-allowlist.txt').toEqual(FILES.map((f) => f.rel).sort());
@@ -139,9 +141,9 @@ test.describe('the full name only (spec 18.c.iii)', () => {
     });
 
     test('the name check catches a bare "Rabbi" or "Fojle", in any case (made-up lines)', () => {
-        const caught = ['Rabbi built it', 'by rabbi', '/images/about/rabbi.webp', '"id":"RABBI"', 'Fojle said hi', 'fojle-saikat.webp', 'Fojle-Rabbi-Saikat.webp'];
+        const caught = ['Rabbi built it', 'by rabbi', '/images/about/rabbi.webp', '"id":"RABBI"', 'Fojle said hi', 'fojle-saikat.webp', 'Fojle-Rabbi-Saikat.webp', `${RABBI_ALONE_LINE} Rabbi said hi`, "We're Rob and Rabbi, two developers"];
         for (const s of caught) expect.soft(bareNameParts(s, 'test').length, s).toBeGreaterThan(0);
-        const fine = ['Fojle Rabbi Saikat, in glasses', '/images/about/fojle-rabbi-saikat.webp', '["$","li","fojle-rabbi-saikat"'];
+        const fine = ['Fojle Rabbi Saikat, in glasses', '/images/about/fojle-rabbi-saikat.webp', '["$","li","fojle-rabbi-saikat"', RABBI_ALONE_LINE];
         for (const s of fine) expect.soft(bareNameParts(s, 'test'), s).toEqual([]);
     });
 });
@@ -168,5 +170,24 @@ test.describe('phone-number shapes', () => {
         expect.soft(findPhones(visible), 'out/about/index.html (text)').toEqual([]);
         const alts = [...html.matchAll(/\balt="([^"]*)"/g)].map((m) => m[1]).join('\n');
         expect.soft(findPhones(alts), 'out/about/index.html (alt text)').toEqual([]);
+    });
+});
+
+test.describe('raw photo source name', () => {
+    test('"rob-finland-raw" is nowhere in the repo or in a file name', () => {
+        const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report']);
+        const self = fileURLToPath(import.meta.url);
+        const hits = [];
+        const scan = (dir) => {
+            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+                if (skip.has(e.name)) continue;
+                const full = path.join(dir, e.name);
+                if (/rob-finland-raw/i.test(e.name)) hits.push(`file name: ${rel(ROOT, full)}`);
+                if (e.isDirectory()) scan(full);
+                else if (full !== self && fs.statSync(full).size < 5_000_000 && fs.readFileSync(full).toString('latin1').toLowerCase().includes('rob-finland-raw')) hits.push(`text: ${rel(ROOT, full)}`);
+            }
+        };
+        scan(ROOT);
+        expect.soft(hits, 'the raw source name "rob-finland-raw"').toEqual([]);
     });
 });

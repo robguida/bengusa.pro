@@ -8,3 +8,5 @@ images/svg/bengusaicon_text.svg
 images/svg/bengusaicon_ver.svg
 images/about/rob-guida.webp
 images/about/fojle-rabbi-saikat.webp
+images/about/fojle-rabbi-saikat-personal.webp
+images/about/rob-guida-personal.webp

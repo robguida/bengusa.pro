@@ -92,7 +92,8 @@ test.describe('the content check in the build', () => {
                 expect(apps.find((a) => a.id === 'vault').offGrid, 'real list: Vault is Off-grid').toBe(true);
                 expect(words.timetracker.connects && words.vault.connects, 'real words: both have a connects line').toBeTruthy();
                 expect(about.making.lines.catche && about.making.lines.vault, 'real About words: Catche and Vault have a line').toBeTruthy();
-                expect(typeof about.people.list[1].bio, 'real About words: the co-founder\'s bio is text').toBe('string');
+                const bio = about.people.list[1].bio;
+                expect(Array.isArray(bio) && bio.length > 0 && bio.every((p) => typeof p === 'string' && p.trim() !== ''), 'real About words: the co-founder\'s bio is text paragraphs').toBe(true);
                 c.change(apps, words, about);
                 writeJson(appsFile, apps);
                 writeJson(wordsFile, words);
