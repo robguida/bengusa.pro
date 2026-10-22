@@ -8,6 +8,7 @@
 // others).
 import fs from 'node:fs';
 import path from 'node:path';
+import { RABBI_ALONE_VARIANTS } from './words.mjs';
 import { OUT_DIR, ROOT, readJson, rel, retiredIds, textFiles, walk } from '../../scripts/lib/export-checks.mjs';
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\x5c]/g, (c) => String.fromCharCode(92) + c);
@@ -141,7 +142,9 @@ export function badCssUrls(file, css, outDir = OUT_DIR) {
 export const FULL_NAME_FORMS = ['Fojle Rabbi Saikat', 'fojle-rabbi-saikat'];
 
 export function bareNames(where, text) {
+    // The one allowed bare "Rabbi": the About intro line (BUWEB-115, spec 18.c.iii).
     let rest = text;
+    for (const v of RABBI_ALONE_VARIANTS) rest = rest.split(v).join(' '.repeat(v.length));
     // Blanked out at the same length, so each hit's position is unchanged.
     for (const form of FULL_NAME_FORMS) rest = rest.split(form).join(' '.repeat(form.length));
     const hits = [];
