@@ -67,76 +67,111 @@ export const COLOUR = {
     white: 'rgb(255, 255, 255)',
 };
 
-// The About page, word for word (spec decision 18; the words as passed by the
-// legal reviewer on 2026-10-15, story lines 2 and 3 as he reworded them).
-// "Rabbi" is never used alone on the site: only inside the full name. The
-// photo files and IDs use the full name too (fojle-rabbi-saikat).
+// The About page, word for word (BUWEB-115: "Two developers. Two countries.
+// One team."; the final words, cleared by the legal reviewer 2026-10-22).
+// ABOUT_BLOCKS is every block of the page in order: [kind, text]. Kinds:
+// h1, h2, h3 (headings), b (a bold line or label), p (a paragraph). The
+// markdown marks (**, *) are not part of the words. A "b" label that sits
+// inside a person's block is a bold label, not a heading.
+export const ABOUT_BLOCKS = [
+    ["h1", "About Us"],
+    ["h2", "Two developers. Two countries. One team."],
+    ["p", "We're Rob and Rabbi, two software developers from opposite sides of the world who met while working on a client project a few years ago."],
+    ["p", "What started as a working relationship turned into a friendship. We discovered that we enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems."],
+    ["p", "We still work that way today. Each of us takes the lead on different apps, but we regularly review each other's work, exchange ideas, and keep each other honest. We're friends first, but we're also two developers who care about getting things right."],
+    ["h3", "So, what's with the name?"],
+    ["p", "bengUSA brings together Bangladesh and the United States, the two countries we're from. The \"Beng\" comes from Bengali."],
+    ["p", "Originally, we planned to provide programmers and designers to other companies. Then we decided we'd rather build apps ourselves."],
+    ["p", "Our plans changed. The name stuck. We liked it, so we kept it."],
+    ["h3", "Why build apps ourselves?"],
+    ["p", "After years of building software for other people, we wanted the freedom to pursue our own ideas."],
+    ["p", "We both have plenty of them. Probably more than we'll ever have time to build."],
+    ["p", "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use. We choose what matters, take responsibility for the results, and build things we're proud to put our names on."],
+    ["h3", "Why Off-grid?"],
+    ["p", "We believe your personal information should belong to you."],
+    ["p", "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data."],
+    ["p", "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud."],
+    ["p", "We're not interested in collecting your personal information just because we can."],
+    ["b", "Your data, your call."],
+    ["h2", "Meet the Founders"],
+    ["h3", "Rob Guida"],
+    ["b", "Co-founder & CEO"],
+    ["p", "Rob has spent more than 30 years building software, designing systems, and leading development teams. He's worked on everything from individual applications to large enterprise platforms."],
+    ["p", "He enjoys solving complicated problems, especially when the result makes someone's work or life a little easier."],
+    ["p", "His technical background includes AWS, SQL, Node.js, GraphQL, React, Python, Rust, and PHP."],
+    ["b", "In Rob's own words"],
+    ["b", "Something I'm proud of"],
+    ["p", "Years ago, I built a government budget and project-planning system that let people browse departments, offices, budgets, and projects using a familiar folder structure instead of searching for codes and names. It seems simple today, but it was a different way of doing things at the time. When several offices consolidated their systems, mine was the one they kept. That still makes me smile."],
+    ["b", "When I'm not working"],
+    ["p", "I love cooking, eating, walking, exploring new places, and writing. My Christian faith is an important part of my life, especially my journey from atheism to Christianity."],
+    ["b", "Life on the road"],
+    ["p", "My wife and I love slow travel. We like staying somewhere long enough to experience everyday life rather than just checking attractions off a list. And no, we're not RV or tent people. Give us a comfortable apartment or a nice hotel."],
+    ["b", "A trip I'll never forget"],
+    ["p", "My wife and I once saw Switzerland's Maloja Pass on a computer screensaver and decided we had to drive it. So we did. We even stayed in a grand old hotel along the way. Beautiful, a little eerie, and almost like something out of The Shining. What an experience."],
+    ["b", "Something that surprises people"],
+    ["p", "I can still sprint up a pretty steep hill. I'm not saying I look graceful doing it, and the recovery isn't what it used to be, but I can do it."],
+    ["h3", "Fojle Rabbi Saikat"],
+    ["b", "Co-founder & CTO"],
+    ["p", "He has been developing software since 2015, starting with Android applications. He's released more than 30 Android apps on Google Play and has worked across nearly every part of software development."],
+    ["p", "From mobile apps and user interfaces to backend systems, databases, automation, and system architecture, he enjoys the technical challenges that come with turning ideas into working applications."],
+    ["p", "He also developed the original code for the bengUSA website."],
+    ["p", "His technical background includes Java, Kotlin, Spring Boot, Laravel, PHP, Node.js, Vue.js, JavaScript, PostgreSQL, MySQL, CI/CD, Docker, Redis, and AWS."],
+    ["b", "In his own words"],
+    ["b", "How Rob and I met"],
+    ["p", "A colleague introduced us. He and Rob were already working together for a mutual client, and they needed another developer. I joined the team, and our work together began there."],
+    ["b", "Why I build apps with Rob"],
+    ["p", "Rob quickly became more of a friend than a colleague. He's a helpful problem solver and a great mentor. Over the years we've tackled countless technical challenges together and delivered projects we're proud of. Our visions line up, and we know how to execute and deliver as a team. So we decided to build apps together."],
+    ["b", "What I enjoy most"],
+    ["p", "Building an app is a digital form of problem-solving. Every app has its own story and the chance to solve a real human problem. It's architectural engineering for your daily life. What I love most is designing the blueprint. Knowing a system I designed can make someone's life a little easier is what makes me most proud. It's not just about making a living. It's about putting something useful out into the world. Software is my passion, and after all these years, I still love what I do."],
+    ["b", "Where I'm based"],
+    ["p", "I'm based in Dhaka, Bangladesh. Rob and I are on opposite sides of the world, and it has never stopped us from building software together. Bringing our two countries together is what inspired the name bengUSA."],
+];
+
+// "Rabbi" alone is allowed ONLY in this line (spec 18.c.iii, changed for BUWEB-115).
+export const RABBI_ALONE_LINE = ABOUT_BLOCKS[2][1];
+
+// Phrases that must never be on the About page (any case). "sensitive" and
+// "HIPAA" stay banned. Allowed, and must not trip the check: client,
+// Bangladesh, USA, AI, Off-grid, privacy, wife.
+export const ABOUT_BANNED = [
+    'our own app', 'apps are ours', 'We are sovereign', 'split the apps', 'divide up the apps',
+    'our partnership', 'still run well', 'sensitive', 'HIPAA',
+];
+
+// The four photos (each 480 x 600, no metadata): headshot first, then personal.
+const rob = { name: 'Rob Guida', headshot: '/images/about/rob-guida.webp', personal: '/images/about/rob-guida-personal.webp' };
+const co = { name: 'Fojle Rabbi Saikat', headshot: '/images/about/fojle-rabbi-saikat.webp', personal: '/images/about/fojle-rabbi-saikat-personal.webp' };
 export const ABOUT = {
     path: '/about/',
-    // The site's draft label. BUWEB-114 took it off every page; DRAFT_LABEL
-    // (below) is kept only so the tests can prove it is gone.
-    title: 'Hi. We\'re bengUSA.pro.',
-    line: 'We build apps that mind their own business.',
-    storyHeading: 'Our story',
-    // Release 1's stopgap story (the legal reviewer, 2026-10-18, ruling 1.4).
-    // No app is named. BUWEB-115 replaces it.
-    story: 'We build software for a living. Now we\'re making apps for you.',
-    peopleHeading: 'Who we are',
-    people: [
-        {
-            name: 'Rob Guida',
-            title: 'Co-founder & CEO',
-            bio: 'He has built software and led development teams for more than 30 years. He designs systems, rescues stuck projects and helps teams choose what to build and what to buy. His tools: AWS, SQL, Node.js, GraphQL, React, Python, Rust and PHP.',
-            alt: 'Rob Guida, in glasses, a gray jacket and a light-blue shirt, against a dark blue background.',
-            photo: '/images/about/rob-guida.webp',
-        },
-        {
-            name: 'Fojle Rabbi Saikat',
-            title: 'Co-founder & CTO',
-            bio: 'He has been a software engineer since 2015 and has shipped more than 30 Android apps on Google Play. He designs system architecture, leads teams and builds with Java, Kotlin, Spring Boot, Laravel, Node.js, Vue.js, PostgreSQL and MySQL. He also built the original code for this site.',
-            alt: 'Fojle Rabbi Saikat, in glasses and a navy kurta, sitting on a black scooter outdoors.',
-            photo: '/images/about/fojle-rabbi-saikat.webp',
-        },
-    ],
-    // PARKED with the apps (on the page only while showApps is on).
-    makingHeading: 'What we\'re making',
-    making: {
-        catche: 'finds your photos.',
-        timetracker: 'turns your hours into invoices.',
-        vault: 'sorts your dev secrets.',
-    },
-    // PARKED with Contact (on the page only while showContact is on).
-    contactBefore: 'Want to say hi? Use the ',
+    title: 'About Us',
+    makingHeading: "What we're making",
     contactLink: 'Contact page',
+    contactBefore: 'Want to say hi? Use the ',
     contactAfter: '.',
-    // The old placeholder that must be gone.
     gone: 'Coming in a later draft.',
-    // The photos: 480 x 600 files, shown at 240 x 300 (computer) / 200 x 250 (phone).
+    people: [
+        { ...rob, headshotAlt: 'Rob Guida, in glasses, a gray jacket and a light-blue shirt, against a dark blue background.',
+            personalAlt: 'Rob Guida in a night selfie, in a black beanie, with a frosted gray knit scarf pulled up over his mouth and frost on his eyelid.' },
+        { ...co, headshotAlt: 'Fojle Rabbi Saikat, in glasses and a navy kurta, outdoors with greenery behind him.',
+            personalAlt: 'Fojle Rabbi Saikat, in glasses and a navy kurta, sitting on a black scooter outdoors.' },
+    ],
     photoFile: { width: 480, height: 600, maxBytes: 100 * 1024 },
-    shown: { desktop: { width: 240, height: 300 }, phone: { width: 200, height: 250 } },
 };
+
+// Every line of About's main text, in order, and nothing else.
+export function aboutMainText() {
+    return ABOUT_BLOCKS.map(([, text]) => text);
+}
+
+// The one pre-existing line kept under the About h1, before "Two developers.
+// Two countries. One team." It is not in Rob's words of record; the BUWEB-115
+// coordinator decision (2026-10-22) keeps it as the current build has it until
+// Rob sees the page and decides. Only this exact line is allowed as extra text.
+export const ABOUT_KEPT_TOP_LINE = 'We build apps that mind their own business.';
 
 // The draft label that was on every page until BUWEB-114. It must not appear
 // anywhere in the build (checks/release1.spec.mjs).
 export const DRAFT_LABEL = 'Draft words. Not final.';
-
-// Every line of About's main text, in order, and nothing else (acceptance
-// check 26: only the approved words). One entry per block on the page: an
-// extra paragraph anywhere, even one with approved words, makes the list
-// differ. "What we're making" and the Contact line are in the list only while
-// the apps and Contact are shown.
-export function aboutMainText() {
-    return [
-        ABOUT.title,
-        ABOUT.line,
-        ABOUT.storyHeading,
-        ABOUT.story,
-        ABOUT.peopleHeading,
-        ...ABOUT.people.flatMap((p) => [p.name, p.title, p.bio]),
-        ...(SHOW.apps ? [ABOUT.makingHeading, ...APPS.map((app) => `${app.name} ${ABOUT.making[app.id]}`)] : []),
-        ...(SHOW.contact ? [`${ABOUT.contactBefore}${ABOUT.contactLink}${ABOUT.contactAfter}`] : []),
-    ];
-}
 
 // The Privacy page, word for word (the legal reviewer, 2026-10-18,
 // icabod-r1-rulings.md section 2: 146 words, final, plain ASCII). The labels
@@ -183,3 +218,6 @@ export function privacyMainText() {
         ...PRIVACY.sections.flatMap((s) => [s.heading, ...s.paragraphs]),
     ];
 }
+
+// The intro line as it can appear in out/: typed, curly, or HTML/JSON-escaped apostrophe.
+export const RABBI_ALONE_VARIANTS = ["'", '’', '&#x27;', '&#39;', '&apos;', '\u0027'].map((a) => RABBI_ALONE_LINE.replace("'", a));
