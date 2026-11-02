@@ -164,7 +164,8 @@ export function checkPublicAllowlist(root = ROOT) {
 // hidden: routes that must not be built (content/site-settings.json). A hidden
 // route that still builds would pass every "static" check, so it is named.
 export function checkRouteTable(logText, wanted = expectedRoutes(), hidden = hiddenRoutes()) {
-    const lines = logText.split(/\r?\n/);
+    // Colour codes (ESC [ ... m) are dropped first: a log saved with colour on would hide the table.
+    const lines = logText.replace(/\x1b\[[0-9;]*m/g, '').split(/\r?\n/);
     const start = lines.findIndex((l) => /^Route \(app\)/.test(l));
     if (start < 0) {
         return { ok: false, rows: [], problems: ['no "Route (app)" table in the build log'] };
