@@ -142,6 +142,7 @@ export default function SiteHeader({ apps, links }) {
     const pathname = usePathname();
     const isHome = pathname === '/';
     const hasApps = apps.length > 0;
+    const hasLinks = links.length > 0;
 
     const headerRef = useRef(null);
     const probeRef = useRef(null);
@@ -183,7 +184,7 @@ export default function SiteHeader({ apps, links }) {
                     <span className={styles.word} data-logo="word"><Wordmark /></span>
                 </Link>
 
-                <nav className={styles.desk} aria-label="Main">
+                {(hasApps || hasLinks) && <nav className={styles.desk} aria-label="Main">
                     <ul className={styles.deskList}>
                         {hasApps && (
                             <li ref={appsItemRef} className={styles.appsItem}>
@@ -222,7 +223,7 @@ export default function SiteHeader({ apps, links }) {
                             </li>
                         ))}
                     </ul>
-                </nav>
+                </nav>}
 
                 {hasApps && (
                     <nav ref={phoneNavRef} className={styles.phone} aria-label="Main">

@@ -1,6 +1,6 @@
-// Playwright runs against the PRODUCTION static build (out/), served by
-// scripts/serve-out.mjs. Never the dev server. Build first: `npm run build`
-// (or run everything with `npm test`). See tests/README.md.
+// Playwright runs against the PRODUCTION static build (src/out/), served by
+// scripts/serve-out.mjs. Never the dev server. Build first (`npm run build`
+// in src/), or run everything with `npm test` here in tests/. See README.md.
 import { defineConfig, devices } from '@playwright/test';
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
@@ -19,7 +19,7 @@ const browsers = [
 ];
 
 export default defineConfig({
-    testDir: './tests',
+    testDir: './',
     outputDir: './test-results',
     fullyParallel: true,
     // Capped locally: with 4, connections to the local test server stalled
@@ -31,7 +31,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['list'], ['github'], ['html', { open: 'never' }]] : [['list']],
     use: { baseURL, trace: 'retain-on-failure' },
     webServer: {
-        command: `node scripts/serve-out.mjs --port ${PORT}`,
+        command: `node ../scripts/serve-out.mjs --port ${PORT}`,
         url: `${baseURL}/`,
         reuseExistingServer: false,
         timeout: 15_000,

@@ -1,6 +1,6 @@
 import KeepWhole from './KeepWhole';
 import OffGridBadge from './OffGridBadge';
-import siteWords from '../../../content/site-words.json';
+import siteWords from '../../content/site-words.json';
 
 // The Off-grid legend (spec 13.a.ii): the green badge, then "Off-grid:" in
 // bold and the legend's words, with each brand term kept whole. It sits

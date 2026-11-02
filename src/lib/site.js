@@ -1,5 +1,5 @@
 import 'server-only';
-import settings from '../../content/site-settings.json';
+import settings from '../content/site-settings.json';
 import { checkSiteSettings } from './site-settings.mjs';
 
 // What the live site shows: one committed switch, content/site-settings.json
@@ -23,10 +23,18 @@ if (problems.length > 0) {
 
 export const SHOW_APPS = showApps;
 export const SHOW_CONTACT = showContact;
+// One-page site (2026-11-02): the About and Privacy pages are parked in
+// src/app/_parked/ (About's words stand on Home). Their links stay in the lists
+// below behind these two constants. To bring a page back: set its constant to
+// true AND move its folder back out of src/app/_parked/ (the build's route
+// table fails if the two disagree).
+export const SHOW_ABOUT = false;
+export const SHOW_PRIVACY = false;
 
 // The plain links in the header, on a computer and on a phone, in order.
 export function headerLinks() {
-    const links = [{ key: 'about', href: '/about/', label: 'About' }];
+    const links = [];
+    if (SHOW_ABOUT) links.push({ key: 'about', href: '/about/', label: 'About' });
     if (SHOW_CONTACT) links.push({ key: 'contact', href: '/contact/', label: 'Contact' });
     return links;
 }
@@ -37,6 +45,6 @@ export function footerLinks(apps) {
     return [
         ...apps.map((app) => ({ key: app.id, href: app.href, label: app.name })),
         ...headerLinks(),
-        { key: 'privacy', href: '/privacy/', label: 'Privacy' },
+        ...(SHOW_PRIVACY ? [{ key: 'privacy', href: '/privacy/', label: 'Privacy' }] : []),
     ];
 }

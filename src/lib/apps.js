@@ -1,7 +1,7 @@
 import 'server-only';
-import apps from '../../content/apps.json';
-import appWords from '../../content/app-words.json';
-import aboutWords from '../../content/about-words.json';
+import apps from '../content/apps.json';
+import appWords from '../content/app-words.json';
+import aboutWords from '../content/about-words.json';
 import { SHOW_APPS } from './site';
 
 // The one app list. Cards, app pages, the header and phone menus and the footer
@@ -95,7 +95,7 @@ function aboutProblems(shown) {
             value.forEach((item, i) => walk(item, `${path}[${i}]`));
         } else if (value !== null && typeof value === 'object') {
             for (const [key, item] of Object.entries(value)) walk(item, path ? `${path}.${key}` : key);
-        } else if (path !== 'headingLevel' && typeof value !== 'string') {
+        } else if (path !== 'headingLevel' && typeof value !== 'string' && !(path === 'showOwnWords' && typeof value === 'boolean')) {
             found.push(`content/about-words.json: "${path}" must be text.`);
         }
     };

@@ -1,18 +1,20 @@
 # Tests
 
-The tests check the **real production build** (the static files in `out/`), served on this PC only. They never use the dev server.
+The tests check the **real production build** (the static files in `src/out/`), served on this PC only. They never use the dev server.
+
+Paths to the site's own files (`app/`, `lib/`, `content/`, `public/`, `out/`) are inside `src/`. Other paths here are inside `tests/`.
 
 ## Run them
 
-Node must be on the PATH for the window (see `dev.cmd` for how).
+Run these from `tests/`, after `npm ci` in both `src/` and `tests/`. Node must be on the PATH for the window (`scripts/release/gate.cmd` shows how).
 
 | Command | What it does |
 |---|---|
 | `npm test` | Everything, in order: the settings test, a fresh build, then the browser tests. |
 | `npm run test:env` | Settings test only. It does its own build with fake values, then **deletes** that `out/`. Run it before `npm run build`. |
-| `npm run build` | Builds `out/`. Fails if a page is not static, if a list-only field or a retired app ID reaches `out/`, or if the app list fails the content check (every problem is listed at once). |
+| `npm run build` (in `src/`) | Builds `out/`. Fails if a page is not static, if a list-only field or a retired app ID reaches `out/`, or if the app list fails the content check (every problem is listed at once). |
 | `npm run test:e2e` | Browser tests against the current `out/`. Build first. |
-| `npm start` | Serves `out/` at http://127.0.0.1:3000/ to look at the build by hand. If `dev.cmd` is running, use another port: `npm start -- --port 3001`. |
+| `npm start` (in `src/`) | Serves `out/` at http://127.0.0.1:3000/ to look at the build by hand. If the dev server is running, use another port: `npm start -- --port 3001`. |
 
 First time on a machine, install the test browsers once (they go outside the project): `npx playwright install chromium webkit`. On Linux CI add `--with-deps`.
 
@@ -28,7 +30,7 @@ Each page load has its own 15 s limit (set in `support/site.mjs`), shorter than 
 
 To prove a change keeps it that way, run with the page's start-up slowed down. It must stay green:
 
-`E2E_SLOW_START_MS=150 npx playwright test tests/e2e --repeat-each=5`
+`E2E_SLOW_START_MS=150 npx playwright test e2e --repeat-each=5`
 
 ## Release 1: apps and Contact hidden (BUWEB-114)
 
@@ -69,16 +71,16 @@ To prove a change keeps it that way, run with the page's start-up slowed down. I
     - The footer is checked one page per test, waiting only for the page's HTML, so a stalled file costs one page and the report names it.
     - No 404s while browsing.
 - **About files** (`checks/about-files.spec.mjs`, no browser): the two committed photos in `public/images/about/` have no exif, xmp, iptc or icc (chunk list, decoder report and a byte search for "Exif", "GPS", "xmpmeta", "Apple", "iPhone"), report the sRGB colour space with no colour profile, are 480x600 and at most 100 KB each; the folder and `fixtures/public-allowlist.txt` hold exactly those two paths; "Rabbi" and "Fojle" (any case) appear only inside "Fojle Rabbi Saikat" or "fojle-rabbi-saikat" in every file under `out/about/` (the page and its data files) and in every file name in `public/` and `out/` (spec 18.c.iii); no phone-number shape (`findPhones` in `support/content-scan.mjs`) in the About words or the built About page. Both patterns are tested on made-up lines only. One test per photo, and every check is soft, so a bad photo never hides the other and a wrong size never hides a metadata result. Never put a real employer, client, school, city, phone number or reference in this repo, not even as a banned pattern.
-- **Heading guard** (`checks/heading-guard.spec.mjs`, spec 17.b.i): a test-only build where one card has no badge shows "Meet our apps". It copies the site into `test-results/` (`support/fixture-site.mjs`), takes the badge off one card in the copy's app list (an open card, then a showcase card), builds the copy with the same build script and opens it in a browser on its own port. `src/` and `content/` are never touched. Adds about 10 seconds per case.
+- **Heading guard** (`checks/heading-guard.spec.mjs`, spec 17.b.i): a test-only build where one card has no badge shows "Meet our apps". It copies the site into `src/.fixture-sites/` (`support/fixture-site.mjs`, git-ignored), takes the badge off one card in the copy's app list (an open card, then a showcase card), builds the copy with the same build script and opens it in a browser on its own port. `app/`, `lib/` and `content/` are never touched. Adds about 10 seconds per case.
 - **Content check** (`checks/content-check.spec.mjs`): the build's check of the app list (`src/lib/apps.js`). A test-only build with two bad apps fails once, and its one report names both. A test-only build where an Off-grid app has no connects line fails, for that reason. The same check covers the About words: a test-only build with an empty app line, a missing app line and a non-text bio in `content/about-words.json` fails once, and its one report names all three. Same copy-and-build method as the heading guard; no browser.
-- **Settings** (`env/env.test.mjs`): no `NEXT_PUBLIC_*` in the source, no `process.env` in `src/` or `content/`, and a build with fake values bakes none of them into `out/`.
+- **Settings** (`env/env.test.mjs`): no `NEXT_PUBLIC_*` in the source, no `process.env` in `app/`, `lib/` or `content/`, and a build with fake values bakes none of them into `out/`.
 - **The build's own guards can fail** (`checks/build-guards.spec.mjs`, no browser, no build): each check `scripts/build.mjs` and the packager rely on is called on a throwaway folder with a planted bad input and must answer `ok: false` with the hit named: the site switch reader (a missing switch, a non-true/false value, a missing or broken file), `checkSettingsMatchFolders`, `checkPublicAllowlist`, the hidden rows of `checkRouteTable`, `checkHiddenContent` (a hit seen only with the tags and one seen only without them are both listed; an app name under 4 letters is a problem), `checkGuardedFields`, and `injectCsp` / `checkCsp` (an upper-case `<SCRIPT>` before the policy, no `<head>` right before the charset). Two bad inputs give two hits, and a file that can't be read (a deny-read rule on Windows, `chmod 000` elsewhere; skipped when running as root) is listed while the scan goes on to the next file. The made-up app is not the site's; the real `content/`, `public/` and `out/` are never touched.
 
 ## The box run (release day, Stanley's ruling 2.a)
 
-`tests/box/` holds a separate Playwright config for one browser walk against the staged build on the box's bare IP, after checklist step 33 and before Rob's go. The normal suite never runs it.
+`box/` holds a separate Playwright config for one browser walk against the staged build on the box's bare IP, after checklist step 33 and before Rob's go. The normal suite never runs it.
 
-`E2E_BASE_URL=http://STATIC-IP/ npx playwright test -c tests/box/box.config.mjs`
+`E2E_BASE_URL=http://STATIC-IP/ npx playwright test -c box/box.config.mjs`
 
 - **With `E2E_BASE_URL`:** it is the address, and no local server starts. First it prints the `build=` line from `http://STATIC-IP/version.txt`; the last line is `BOX TEST PASS for build=<id>` only when every test passed and the box still serves that same build. Compare that ID with the "staged" line in Rob's step-32 screenshot.
 - **Without it:** nothing changes from a local run: the walk runs against `out/` on the local server (port 4310), with no build ID and no header check.

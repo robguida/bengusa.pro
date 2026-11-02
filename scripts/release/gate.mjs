@@ -10,7 +10,7 @@
 // The audits and the signature check run right after npm ci, before any
 // package code runs.
 //
-//   node scripts/release/gate.mjs [--commit <rev>] [--keep] [--no-package]
+//   node scripts/release/gate.mjs [--commit <rev>] [--keep] [--no-package]   (from the repo top)
 //   (or double-click scripts/release/gate.cmd)
 //
 // It tests a COMMIT, never unsaved work: it clones the repo into a temp
@@ -26,7 +26,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { IS_WIN, MIN_NODE, ROOT, bundlesDir, capture, git, run, runNpm, versionAtLeast } from './lib.mjs';
+import { IS_WIN, MIN_NODE, REPO_ROOT, ROOT, bundlesDir, capture, git, run, runNpm, versionAtLeast } from './lib.mjs';
 
 process.env.NEXT_TELEMETRY_DISABLED = '1';
 
@@ -66,29 +66,36 @@ if (local) {
 }
 
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'bengusa-gate-'));
+// The clone holds the whole repo. Two installs, as in CI: the site (src/)
+// and the test suite (tests/). Scripts run from the repo top (work).
+const site = path.join(work, 'src');
+const tests = path.join(work, 'tests');
 console.log(`Gate for commit ${commit} (${branch}), tree ${tree}`);
 console.log(`Node ${process.version} on ${process.platform}. Work folder: ${work}`);
 
 // --- Steps (same order as CI) ---------------------------------------------
 const steps = [
     ['Copy the commit into a clean folder', async () => {
-        const c = await run('git', ['clone', '--quiet', '--no-hardlinks', '--no-checkout', ROOT, work], { cwd: os.tmpdir() });
+        const c = await run('git', ['clone', '--quiet', '--no-hardlinks', '--no-checkout', REPO_ROOT, work], { cwd: os.tmpdir() });
         if (c.code !== 0) return c;
         return run('git', ['-c', 'advice.detachedHead=false', 'checkout', '--quiet', '--detach', commit], { cwd: work });
     }],
     ['No TLS-check bypass in the code or templates', () => run(process.execPath, ['scripts/release/check-no-tls-bypass.mjs'], { cwd: work })],
-    ['Install (npm ci, lockfile only, no install scripts)', () => runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: work })],
+    ['Install the site (src: npm ci, lockfile only, no install scripts)', () => runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: site })],
     // The audits run no package code, so they go before anything that does.
-    ['Audit production deps (fails on high or critical)', () => runNpm(['audit', '--omit=dev', '--audit-level=high'], { cwd: work })],
-    ['Audit all deps (fails on critical)', () => runNpm(['audit', '--audit-level=critical'], { cwd: work })],
-    ['Verify registry signatures', () => runNpm(['audit', 'signatures'], { cwd: work })],
+    ['Audit the site\'s production deps (fails on high or critical)', () => runNpm(['audit', '--omit=dev', '--audit-level=high'], { cwd: site })],
+    ['Audit all the site\'s deps (fails on critical)', () => runNpm(['audit', '--audit-level=critical'], { cwd: site })],
+    ['Verify the site\'s registry signatures', () => runNpm(['audit', 'signatures'], { cwd: site })],
+    ['Install the tests (tests: npm ci, lockfile only, no install scripts)', () => runNpm(['ci', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: tests })],
+    ['Audit the tests\' deps (fails on critical)', () => runNpm(['audit', '--audit-level=critical'], { cwd: tests })],
+    ['Verify the tests\' registry signatures', () => runNpm(['audit', 'signatures'], { cwd: tests })],
     // CI adds --with-deps (Linux system packages, needs root); the laptop has them.
-    ['Install test browsers', () => run(process.execPath, ['node_modules/@playwright/test/cli.js', 'install', 'chromium', 'webkit'], { cwd: work })],
-    ['Lint', () => runNpm(['run', 'lint'], { cwd: work })],
-    ['Settings test (before the build; it deletes out/)', () => runNpm(['run', 'test:env'], { cwd: work })],
-    ['Build (guarded wrapper)', () => runNpm(['run', 'build'], { cwd: work })],
+    ['Install test browsers', () => run(process.execPath, ['node_modules/@playwright/test/cli.js', 'install', 'chromium', 'webkit'], { cwd: tests })],
+    ['Lint', () => runNpm(['run', 'lint'], { cwd: site })],
+    ['Settings test (before the build; it deletes out/)', () => runNpm(['run', 'test:env'], { cwd: tests })],
+    ['Build (guarded wrapper)', () => runNpm(['run', 'build'], { cwd: site })],
     ...(IS_WIN ? [['Fix the Windows export file names', () => run(process.execPath, ['scripts/release/fix-windows-export.mjs'], { cwd: work })]] : []),
-    ['Browser and build-output tests (strict: no 404s)', () => runNpm(['run', 'test:e2e', '--', '--forbid-only'], { cwd: work, env: { E2E_STRICT_404: '1' } })],
+    ['Browser and build-output tests (strict: no 404s)', () => runNpm(['run', 'test:e2e', '--', '--forbid-only'], { cwd: tests, env: { E2E_STRICT_404: '1' } })],
     ['Deploy script self-test (no server)', () => run(process.execPath, ['scripts/deploy/deploy.mjs', 'selftest'], { cwd: work })],
     ...(flag('no-package') ? [] : [['Package the build (version.txt + MANIFEST.sha256)', () => run(process.execPath,
         ['scripts/release/package.mjs', '--out', bundlesDir(), '--source', IS_WIN ? 'gate-win32-renamed' : `gate-${process.platform}`], { cwd: work })]]),
@@ -116,7 +123,7 @@ const mins = ((Date.now() - started) / 60000).toFixed(1);
 if (failed) {
     console.log(`\nGATE FAILED at "${failed}" for commit ${commit} after ${mins} min.`);
     console.log(`The work folder is kept for a look: ${work}`);
-    if (fs.existsSync(path.join(work, 'playwright-report'))) console.log(`Test report: ${path.join(work, 'playwright-report', 'index.html')}`);
+    if (fs.existsSync(path.join(tests, 'playwright-report'))) console.log(`Test report: ${path.join(tests, 'playwright-report', 'index.html')}`);
     process.exit(1);
 }
 console.log(`\nGATE PASSED for commit ${commit} (tree ${tree}) on ${new Date().toISOString()}, ${mins} min, Node ${process.version}, ${process.platform}.`);

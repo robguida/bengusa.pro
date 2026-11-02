@@ -6,7 +6,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE_SETTINGS_FILE, SITE_SWITCH_KEYS, checkSiteSettings } from '../../src/lib/site-settings.mjs';
 
-export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+// The site: src/, beside scripts/ at the repo top.
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 export const OUT_DIR = path.join(ROOT, 'out');
 // scripts/build.mjs saves the full `next build` output here.
 export const BUILD_LOG = path.join(ROOT, '.next', 'bengusa-build.log');
@@ -64,6 +65,11 @@ export const SWITCHES = [
     { key: 'showContact', what: 'Contact is', folder: 'contact', route: '/contact' },
 ];
 
+// Parked for the one-page site (2026-11-02), with no switch file: their code sits
+// in src/app/_parked/ and the lists in src/lib/site.js leave their links out.
+// Their address, page data and links must not be in out/.
+const PARKED_PAGES = [{ folder: 'about', route: '/about' }, { folder: 'privacy', route: '/privacy' }];
+
 // The one reader of content/site-settings.json in Node. Returns
 // { showApps, showContact, problems }. Each switch must be true or false: a
 // missing switch, any other value, a missing file or a file that isn't JSON is
@@ -92,14 +98,14 @@ export function expectedRoutes(root = ROOT) {
     const appRoutes = showApps
         ? apps.filter((app) => app.status === 'open' || app.status === 'showcase').map((app) => `/apps/${app.slug}`)
         : [];
-    return ['/', '/about', ...(showContact ? ['/contact'] : []), '/privacy', ...appRoutes];
+    return ['/', ...(showContact ? ['/contact'] : []), ...appRoutes];
 }
 
 // The addresses that must NOT be built: each hidden switch's route, and
 // everything under it.
 export function hiddenRoutes(root = ROOT) {
     const settings = readSiteSettings(root);
-    return SWITCHES.filter((s) => !settings[s.key]).map((s) => s.route);
+    return [...SWITCHES.filter((s) => !settings[s.key]).map((s) => s.route), ...PARKED_PAGES.map((p) => p.route)];
 }
 
 const underRoute = (route, base) => route === base || route.startsWith(`${base}/`);
@@ -111,8 +117,8 @@ export function checkSettingsMatchFolders(root = ROOT) {
     const settings = readSiteSettings(root);
     const problems = [...settings.problems];
     for (const { key, what, folder } of SWITCHES) {
-        const live = fs.existsSync(path.join(root, 'src', 'app', folder));
-        const parked = fs.existsSync(path.join(root, 'src', 'app', '_parked', folder));
+        const live = fs.existsSync(path.join(root, 'app', folder));
+        const parked = fs.existsSync(path.join(root, 'app', '_parked', folder));
         const where = `(${SETTINGS_FILE} has "${key}": ${settings[key]})`;
         if (settings[key]) {
             if (!live) problems.push(`${what} shown, but src/app/${folder}/ is missing ${where}: move it back from src/app/_parked/`);
@@ -132,10 +138,11 @@ export function checkSettingsMatchFolders(root = ROOT) {
 // folder itself, so untracked and git-ignored files are caught too. An
 // allow-listed file that is missing is reported as well.
 // ---------------------------------------------------------------------------
+// The list's path from the repo top; root is src/, one level below it.
 export const PUBLIC_ALLOWLIST = 'tests/fixtures/public-allowlist.txt';
 
 export function checkPublicAllowlist(root = ROOT) {
-    const listFile = path.join(root, PUBLIC_ALLOWLIST);
+    const listFile = path.join(root, '..', PUBLIC_ALLOWLIST);
     if (!fs.existsSync(listFile)) return { ok: false, problems: [`${PUBLIC_ALLOWLIST} is missing`], strays: [], missing: [] };
     const allowed = fs.readFileSync(listFile, 'utf8')
         .split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
@@ -162,7 +169,8 @@ export function checkPublicAllowlist(root = ROOT) {
 // hidden: routes that must not be built (content/site-settings.json). A hidden
 // route that still builds would pass every "static" check, so it is named.
 export function checkRouteTable(logText, wanted = expectedRoutes(), hidden = hiddenRoutes()) {
-    const lines = logText.split(/\r?\n/);
+    // Colour codes (ESC [ ... m) are dropped first: a log saved with colour on would hide the table.
+    const lines = logText.replace(/\x1b\[[0-9;]*m/g, '').split(/\r?\n/);
     const start = lines.findIndex((l) => /^Route \(app\)/.test(l));
     if (start < 0) {
         return { ok: false, rows: [], problems: ['no "Route (app)" table in the build log'] };
@@ -320,7 +328,7 @@ export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
     // A link (href, or a page-data address) to the route or anything under it.
     const link = (group, route) => patterns.push({
         name: `${group}: a link to ${route}/`,
-        re: new RegExp(escapeRe(route) + String.raw`(?=[/"'?#\s\\]|$)`, 'g'),
+        re: new RegExp(String.raw`(?<![\w.-])` + escapeRe(route) + String.raw`(?=[/"'?#\s\\]|$)`, 'g'),
     });
     // A rendered menu label or link text: >Apps< in a page, "children":"Apps" in page data.
     const label = (group, word) => patterns.push({
@@ -360,6 +368,8 @@ export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
         link(group, '/contact');
         label(group, 'Contact');
     }
+    // The About words now stand on Home, so only the links are guarded.
+    for (const p of PARKED_PAGES) link(`parked ${p.folder} page`, p.route);
     DRAFT_LABEL_WORDS.forEach((s) => phrase('draft label', s));
     return { patterns, problems };
 }
@@ -410,10 +420,11 @@ export function checkHiddenContent(outDir = OUT_DIR, root = ROOT) {
     const all = walk(outDir);
 
     // No file of a hidden page at all: its page, or its page data.
-    const hiddenFolders = SWITCHES.filter((s) => !settings[s.key]).map((s) => s.folder);
+    const hiddenFolders = [...SWITCHES.filter((s) => !settings[s.key]).map((s) => s.folder), ...PARKED_PAGES.map((p) => p.folder)];
     for (const file of all) {
         const name = rel(outDir, file);
-        const folder = hiddenFolders.find((f) => name.split(/[/.]/).includes(f));
+        // The photos' folder public/images/about/ is not the About page: the founders' photos stand on Home.
+        const folder = name.startsWith('images/') ? undefined : hiddenFolders.find((f) => name.split(/[/.]/).includes(f));
         if (folder) hits.push(`hidden page file in out/: ${name}`);
     }
 

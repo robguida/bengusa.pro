@@ -7,7 +7,10 @@ import {
     CLOSE_GRACE_MS, OPEN_DELAY_MS, TIP, TRIGGER, centre, expectClosed, expectOpen, expectStillOpen, freeze, isShowing, middle,
     offGridSection, popupsLive, press, pressAt, softTipOf, tipOf, tipWords,
 } from '../support/offgrid.mjs';
-import { APPS_PARKED, SHOW, noteParked } from '../support/settings.mjs';
+import { APPS_PARKED, EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED, noteParked } from '../support/settings.mjs';
+
+// These tests were written around Home's "Off-grid, explained" section, which is hidden now.
+test.beforeEach(() => { test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED); });
 import { APPS, WORDS, connectsLabel } from '../support/words.mjs';
 
 // Where every popup is, in page order, and what its link must be (17.c.ii,

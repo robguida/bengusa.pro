@@ -14,9 +14,13 @@
 #   - Windows only: the gate renames the misnamed export files before the tests;
 #   - the gate passes --forbid-only and --no-fund itself (CI gets them from env);
 #   - the gate packages on every pass; CI packages and uploads on push runs only.
-# The audits and the signature check run right after npm ci, before any
+# The audits and the signature checks run right after each npm ci, before any
 # package code runs. Every action is pinned to a full commit SHA; the version
 # tag is in the comment beside it.
+#
+# Two installs, each with its own lock file: the site (src/) and the test
+# suite (tests/). scripts/ uses Node built-ins only. Each step names the
+# folder it runs in; steps with none run from the repo top.
 #
 # GitHub Free cannot make this a required check (branch protection is a paid
 # feature on private repos), so a red run is a hard stop by team rule.
@@ -24,8 +28,9 @@ name: CI
 
 on:
   pull_request:
+    branches: [develop, main]
   push:
-    branches: [develop, main, 'BUWEB-*']
+    branches: [develop, main]
 
 permissions:
   contents: read
@@ -52,41 +57,62 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Node (version from .nvmrc)
+      - name: Set up Node (version from src/.nvmrc)
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version-file: .nvmrc
+          node-version-file: src/.nvmrc
           package-manager-cache: false
 
       - name: No TLS-check bypass in the code or templates
         run: node scripts/release/check-no-tls-bypass.mjs
 
-      - name: Install (npm ci, lockfile only, no install scripts)
+      - name: Install the site (src, npm ci, lockfile only, no install scripts)
+        working-directory: src
         run: npm ci --ignore-scripts --no-audit
 
       # The audits run no package code, so they go before anything that does.
-      - name: Audit production deps (fails on high or critical)
+      - name: Audit the site's production deps (fails on high or critical)
+        working-directory: src
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Audit all deps (fails on critical)
+      - name: Audit all the site's deps (fails on critical)
+        working-directory: src
         run: npm audit --audit-level=critical
 
-      - name: Verify registry signatures
+      - name: Verify the site's registry signatures
+        working-directory: src
+        run: npm audit signatures
+
+      - name: Install the tests (tests, npm ci, lockfile only, no install scripts)
+        working-directory: tests
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Audit the tests' deps (fails on critical)
+        working-directory: tests
+        run: npm audit --audit-level=critical
+
+      - name: Verify the tests' registry signatures
+        working-directory: tests
         run: npm audit signatures
 
       - name: Install test browsers
+        working-directory: tests
         run: npx --no-install playwright install --with-deps chromium webkit
 
       - name: Lint
+        working-directory: src
         run: npm run lint
 
       - name: Settings test (before the build; it deletes out/)
+        working-directory: tests
         run: npm run test:env
 
       - name: Build (guarded wrapper; never call next build directly)
+        working-directory: src
         run: npm run build
 
       - name: Browser and build-output tests
+        working-directory: tests
         run: npm run test:e2e
 
       - name: Deploy script self-test (real symlinks, no server)
@@ -114,7 +140,7 @@ jobs:
         with:
           name: test-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            playwright-report/
-            test-results/
+            tests/playwright-report/
+            tests/test-results/
           if-no-files-found: ignore
           retention-days: 7

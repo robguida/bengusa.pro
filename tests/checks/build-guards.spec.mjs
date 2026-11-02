@@ -59,8 +59,8 @@ function siteRoot({ settings = HIDDEN, noSettings = false, apps = [{ id: 'quillm
     put(root, 'content/app-words.json', json({}));
     put(root, 'content/about-words.json', json({}));
     put(root, 'content/site-words.json', json({}));
-    put(root, 'src/app/_parked/apps/page.js', '// parked\n');
-    put(root, 'src/app/_parked/contact/page.js', '// parked\n');
+    put(root, 'app/_parked/apps/page.js', '// parked\n');
+    put(root, 'app/_parked/contact/page.js', '// parked\n');
     return root;
 }
 
@@ -168,7 +168,7 @@ test.describe('checkSettingsMatchFolders', () => {
 
     test('fails when a hidden page\'s folder is back in routing (Next would build it)', () => {
         const root = siteRoot();
-        put(root, 'src/app/apps/page.js', '// live\n');
+        put(root, 'app/apps/page.js', '// live\n');
         const r = checkSettingsMatchFolders(root);
         expect(r.ok).toBe(false);
         expect(r.problems).toEqual([expect.stringContaining('the apps are hidden, but src/app/apps/ exists, so Next would build it')]);
@@ -176,8 +176,8 @@ test.describe('checkSettingsMatchFolders', () => {
 
     test('two bad inputs give two problems: a hidden folder in routing, and hidden code that was not kept', () => {
         const root = siteRoot();
-        put(root, 'src/app/apps/page.js', '// live\n');
-        fs.rmSync(path.join(root, 'src', 'app', '_parked', 'contact'), { recursive: true });
+        put(root, 'app/apps/page.js', '// live\n');
+        fs.rmSync(path.join(root, 'app', '_parked', 'contact'), { recursive: true });
         const r = checkSettingsMatchFolders(root);
         expect(r.ok).toBe(false);
         expect(r.problems).toEqual([
@@ -203,10 +203,13 @@ test.describe('checkSettingsMatchFolders', () => {
 
 // --- public/ allow-list -------------------------------------------------------
 test.describe('checkPublicAllowlist', () => {
+    // The list's path from the repo top. A throwaway folder has the repo's
+    // shape: the list under tests/, public/ under src/ (the root the check gets).
     const LIST = 'tests/fixtures/public-allowlist.txt';
     const withPublic = (list, files) => {
-        const root = tempDir('public');
-        put(root, LIST, list);
+        const repo = tempDir('public');
+        put(repo, LIST, list);
+        const root = path.join(repo, 'src');
         for (const f of files) put(root, `public/${f}`, 'x');
         return root;
     };
@@ -232,7 +235,7 @@ test.describe('checkPublicAllowlist', () => {
     });
 
     test('fails when the list itself is missing', () => {
-        const root = tempDir('public');
+        const root = path.join(tempDir('public'), 'src');
         put(root, 'public/a.txt', 'x');
         expect(checkPublicAllowlist(root).problems).toEqual([`${LIST} is missing`]);
     });
@@ -319,22 +322,22 @@ test.describe('checkHiddenContent', () => {
 
     test('two bad inputs in two files give two hits (a page, and page data)', () => {
         const r = checkHiddenContent(out({
-            'about/index.html': page({ body: '<p>Not final.</p>' }),
-            'index.txt': '1:["$","a",null,{"href":"/about/","children":"Contact"}]\n',
+            'notes/index.html': page({ body: '<p>Not final.</p>' }),
+            'index.txt': '1:["$","a",null,{"href":"/notes/","children":"Contact"}]\n',
         }), siteRoot());
         expect(r.ok).toBe(false);
         expect(r.hits).toHaveLength(2);
-        expect(r.hits.filter((h) => h.startsWith('draft label: "Not final" in about/index.html: '))).toHaveLength(1);
+        expect(r.hits.filter((h) => h.startsWith('draft label: "Not final" in notes/index.html: '))).toHaveLength(1);
         expect(r.hits.filter((h) => h.startsWith('hidden Contact: a "Contact" menu or link in index.txt: '))).toHaveLength(1);
     });
 
     test('a link to a hidden page is a hit, in a page and in page data', () => {
         const r = checkHiddenContent(out({
-            'about/index.html': page({ body: '<a href="/contact/">Hello</a>' }),
+            'notes/index.html': page({ body: '<a href="/contact/">Hello</a>' }),
             'index.txt': '1:["$","a",null,{"href":"/apps"}]\n',
         }), siteRoot());
         expect(r.hits).toHaveLength(2);
-        expect(r.hits.filter((h) => h.startsWith('hidden Contact: a link to /contact/ in about/index.html: '))).toHaveLength(1);
+        expect(r.hits.filter((h) => h.startsWith('hidden Contact: a link to /contact/ in notes/index.html: '))).toHaveLength(1);
         expect(r.hits.filter((h) => h.startsWith('hidden apps: a link to /apps/ in index.txt: '))).toHaveLength(1);
     });
 
@@ -418,7 +421,7 @@ test.describe('injectCsp and checkCsp', () => {
     const withMeta = (html) => html.replace('<meta charSet="utf-8"/>', (c) => `${c}${META(html)}`);
 
     test('injectCsp writes one policy right after the charset, and checkCsp passes it (the control)', () => {
-        const dir = outWith({ 'index.html': page(), 'about/index.html': page() });
+        const dir = outWith({ 'index.html': page(), 'notes/index.html': page() });
         expect(injectCsp(dir)).toEqual({ ok: true, pages: 2, problems: [] });
         const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
         expect(html).toContain(`<head><meta charSet="utf-8"/>${META(page())}<link`);

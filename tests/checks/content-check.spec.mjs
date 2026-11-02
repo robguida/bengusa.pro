@@ -6,9 +6,9 @@
 // "Off-grid, explained" section and its badges' popup link (must-have 6).
 //
 // The real app list is clean, so each case is a TEST-ONLY build: the site is
-// copied into test-results/ (support/fixture-site.mjs), the COPY's content is
+// copied into src/.fixture-sites/ (support/fixture-site.mjs), the COPY's content is
 // broken on purpose, and the copy is built with the same guarded build
-// script. src/ and content/ are never touched. About 10 to 20 seconds a case.
+// script. app/, lib/ and content/ are never touched. About 10 to 20 seconds a case.
 //   - two bad apps: TimeTracker with a bad slug, and Vault (Off-grid) with
 //     no connects line. The build fails once and its report names both.
 //   - an Off-grid app with no connects line, and nothing else wrong: the
@@ -19,8 +19,7 @@
 //     names all three.
 import path from 'node:path';
 import { test, expect } from '@playwright/test';
-import { ROOT } from '../../scripts/lib/export-checks.mjs';
-import { BUILD_TIMEOUT, buildCopy, copySite, readJson, removeCopy, writeJson } from '../support/fixture-site.mjs';
+import { BUILD_TIMEOUT, FIXTURE_SITES, buildCopy, copySite, readJson, removeCopy, siteOf, writeJson } from '../support/fixture-site.mjs';
 
 const CASES = [
     {
@@ -77,12 +76,12 @@ test.describe('the content check in the build', () => {
     for (const c of CASES) {
         test(c.title, async () => {
             test.setTimeout(BUILD_TIMEOUT);
-            const dir = path.join(ROOT, 'test-results', `content-check-${c.name}`);
+            const dir = path.join(FIXTURE_SITES, `content-check-${c.name}`);
             try {
                 copySite(dir);
-                const appsFile = path.join(dir, 'content', 'apps.json');
-                const wordsFile = path.join(dir, 'content', 'app-words.json');
-                const aboutFile = path.join(dir, 'content', 'about-words.json');
+                const appsFile = path.join(siteOf(dir), 'content', 'apps.json');
+                const wordsFile = path.join(siteOf(dir), 'content', 'app-words.json');
+                const aboutFile = path.join(siteOf(dir), 'content', 'about-words.json');
                 const apps = readJson(appsFile);
                 const words = readJson(wordsFile);
                 const about = readJson(aboutFile);

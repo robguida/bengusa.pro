@@ -46,6 +46,7 @@ test.describe('pages and old addresses', () => {
     });
 
     test('Privacy returns 200 with its heading, no placeholder and no form', async ({ request }) => {
+        test.skip(true, 'the Privacy page is parked (one-page site, 2026-11-02); re-enable when it returns');
         const res = await request.get('/privacy/', { maxRedirects: 0 });
         expect(res.status()).toBe(200);
         const html = await res.text();
@@ -99,7 +100,16 @@ test.describe('pages and old addresses', () => {
 });
 
 test.describe('the static server (npm start)', () => {
+    test('old addresses (/about/, /privacy/, any other) get the 404 page, which refreshes to Home', async ({ request }) => {
+        for (const p of ['/about/', '/privacy/', '/about', '/anything-else/']) {
+            const res = await request.get(p, { maxRedirects: 0 });
+            expect.soft(res.status(), `${p}: status stays 404`).toBe(404);
+            expect.soft(await res.text(), `${p}: refreshes to /`).toContain('http-equiv="refresh" content="0;url=/"');
+        }
+    });
+
     test('a page asked for without its slash redirects to the slash address', async ({ request }) => {
+        test.skip(true, 'no page but / is built (one-page site); re-enable when a page returns');
         const res = await request.get('/about', { maxRedirects: 0 });
         expect(res.status()).toBe(301);
         expect(res.headers().location).toBe('/about/');

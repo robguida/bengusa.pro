@@ -1,4 +1,4 @@
-// `npm start`: serves the static build in out/ on this PC only (127.0.0.1).
+// `npm start` (in src/): serves the static build in src/out/ on this PC only (127.0.0.1).
 // It replaces `next start`, which does not work with output: 'export'.
 // For local checks and the test suite only; the live site uses its own web server.
 //
@@ -12,7 +12,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// The site: src/, beside scripts/ at the repo top. --dir is read from here.
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src');
 
 function arg(name, fallback) {
     const i = process.argv.indexOf(`--${name}`);

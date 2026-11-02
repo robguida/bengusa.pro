@@ -1,5 +1,5 @@
 import OffGridTip from './OffGridTip';
-import siteWords from '../../../content/site-words.json';
+import siteWords from '../../content/site-words.json';
 
 // The green Off-grid badge. The small hexagon ties it to the logo's shape.
 // It is a button that opens the Off-grid popup (OffGridTip, spec 17.c); the

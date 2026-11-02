@@ -11,11 +11,15 @@
 // Nothing here names a real person's employer, client, school, city, phone or
 // reference: a banned pattern that named one would itself leak it.
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import sharp from 'sharp';
 import { test, expect } from '@playwright/test';
 import { ROOT, OUT_DIR, rel, walk } from '../../scripts/lib/export-checks.mjs';
+
+// sharp is the site's own image library (it comes with next), installed in
+// src/node_modules, not in the test suite's small install. Load it from there.
+const sharp = createRequire(path.join(ROOT, 'package.json'))('sharp');
 import { readFixtureList } from '../support/fixtures.mjs';
 import { ABOUT, RABBI_ALONE_LINE, RABBI_ALONE_VARIANTS } from '../support/words.mjs';
 import { PHONE_SHAPES, findPhones } from '../support/content-scan.mjs';
@@ -121,8 +125,9 @@ test.describe('About photos (committed files)', () => {
 
 test.describe('the full name only (spec 18.c.iii)', () => {
     test('every built About file (the page and its data files) holds "Rabbi" and "Fojle" only inside the full name', () => {
-        const dir = path.join(OUT_DIR, 'about');
-        const files = walk(dir).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
+        // The About body stands on Home now (the About page is parked): read Home's own files.
+        const dir = OUT_DIR;
+        const files = walk(dir).filter((full) => /^(index\.html|index\.txt|__next[^/]*)$/.test(rel(OUT_DIR, full))).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
         const names = files.map((f) => f.name);
         // The scan only means something if it reads the page AND its data files.
         expect.soft(names, 'out/about/ holds the page').toContain('index.html');
@@ -164,7 +169,7 @@ test.describe('phone-number shapes', () => {
     test('the About words and the built About page hold none', () => {
         const words = fs.readFileSync(path.join(ROOT, 'content', 'about-words.json'), 'utf8');
         expect.soft(findPhones(words), 'content/about-words.json').toEqual([]);
-        const html = fs.readFileSync(path.join(OUT_DIR, 'about', 'index.html'), 'utf8');
+        const html = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8');
         // Visible text and attributes only: no scripts or styles (they hold long digit runs).
         const visible = html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ');
         expect.soft(findPhones(visible), 'out/about/index.html (text)').toEqual([]);
@@ -175,19 +180,20 @@ test.describe('phone-number shapes', () => {
 
 test.describe('raw photo source name', () => {
     test('"rob-finland-raw" is nowhere in the repo or in a file name', () => {
-        const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report']);
+        const REPO = path.resolve(ROOT, '..'); // the whole repo (ROOT is src/)
+        const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report', '.fixture-sites']);
         const self = fileURLToPath(import.meta.url);
         const hits = [];
         const scan = (dir) => {
             for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
                 if (skip.has(e.name)) continue;
                 const full = path.join(dir, e.name);
-                if (/rob-finland-raw/i.test(e.name)) hits.push(`file name: ${rel(ROOT, full)}`);
+                if (/rob-finland-raw/i.test(e.name)) hits.push(`file name: ${rel(REPO, full)}`);
                 if (e.isDirectory()) scan(full);
-                else if (full !== self && fs.statSync(full).size < 5_000_000 && fs.readFileSync(full).toString('latin1').toLowerCase().includes('rob-finland-raw')) hits.push(`text: ${rel(ROOT, full)}`);
+                else if (full !== self && fs.statSync(full).size < 5_000_000 && fs.readFileSync(full).toString('latin1').toLowerCase().includes('rob-finland-raw')) hits.push(`text: ${rel(REPO, full)}`);
             }
         };
-        scan(ROOT);
+        scan(REPO);
         expect.soft(hits, 'the raw source name "rob-finland-raw"').toEqual([]);
     });
 });
