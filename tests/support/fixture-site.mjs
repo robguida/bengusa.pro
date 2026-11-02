@@ -1,16 +1,25 @@
 // TEST-ONLY copies of the site, for checks that need a build the real app
 // list can't give (the heading guard, the content check). The site is copied
-// into test-results/ (git-ignored), changed in the COPY only, and built with
+// into src/.fixture-sites/ (git-ignored), changed in the COPY only, and built with
 // the same guarded build script. app/, lib/ and content/ are never touched, and a
 // copy never gets a .env. Each spec deletes its copies when it is done.
+// A copy has the repo's shape (src/, scripts/, tests/fixtures/), so the copied
+// build script finds everything where it does in the repo.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../scripts/lib/export-checks.mjs';
 
 export const BUILD_TIMEOUT = 180_000;
-// Everything the build reads. Never .env: a fixture build gets no settings.
-const COPY = ['app', 'lib', 'content', 'public', 'scripts/build.mjs', 'scripts/lib', 'next.config.mjs', 'postcss.config.mjs', 'jsconfig.json', 'package.json'];
+// Inside src/, so a copy's build finds next in src/node_modules, further up.
+export const FIXTURE_SITES = path.join(ROOT, '.fixture-sites');
+const REPO_ROOT = path.resolve(ROOT, '..');
+// Everything the build reads, from the repo top. Never .env: a fixture build gets no settings.
+const COPY = ['src/app', 'src/lib', 'src/content', 'src/public', 'src/next.config.mjs', 'src/postcss.config.mjs', 'src/jsconfig.json',
+    'src/package.json', 'scripts/build.mjs', 'scripts/lib', 'tests/fixtures/public-allowlist.txt'];
+
+// A copy's site folder: its content/, public/ and out/ are in here.
+export const siteOf = (dir) => path.join(dir, 'src');
 
 export function run(args, cwd) {
     // Plain text output: Playwright's workers set FORCE_COLOR, and colour
@@ -26,16 +35,25 @@ export function run(args, cwd) {
     });
 }
 
-// Copies the site into dir (emptied first).
+// Copies the site into dir (emptied first). Every item is tried; any that
+// failed are listed together, then the copy fails once (Rob's loop rule).
 export function copySite(dir) {
     fs.rmSync(dir, { recursive: true, force: true });
-    for (const item of COPY) fs.cpSync(path.join(ROOT, item), path.join(dir, item), { recursive: true });
+    const failed = [];
+    for (const item of COPY) {
+        try {
+            fs.cpSync(path.join(REPO_ROOT, item), path.join(dir, item), { recursive: true });
+        } catch (err) {
+            failed.push(`${item}: ${err.message}`);
+        }
+    }
+    if (failed.length) throw new Error(`could not copy the site into ${dir}:\n  - ${failed.join('\n  - ')}`);
 }
 
-// The copy's own guarded build (scripts/build.mjs). It finds next in the
-// project's node_modules, further up. Resolves with { code, log }.
+// The copy's own guarded build (scripts/build.mjs), run from the copy's src/
+// as `npm run build` runs from src/. Resolves with { code, log }.
 export function buildCopy(dir) {
-    return run([path.join(dir, 'scripts', 'build.mjs')], dir);
+    return run([path.join(dir, 'scripts', 'build.mjs')], siteOf(dir));
 }
 
 export function removeCopy(dir) {

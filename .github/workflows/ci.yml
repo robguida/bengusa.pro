@@ -2,21 +2,25 @@
 # dependency audits. GitHub-hosted Linux runner only (free minutes).
 #
 # It NEVER deploys. The server's SSH port is open to one home IP only, so
-# deploys run from the laptop (src/scripts/deploy/deploy.mjs). On a push, CI
+# deploys run from the laptop (scripts/deploy/deploy.mjs). On a push, CI
 # uploads the tested build as a release bundle; the deploy script can fetch
 # it ("fetch-ci <run-id>"), so the Linux build that passed here is the one
 # that ships.
 #
-# The local gate (src/scripts/release/gate.mjs) runs the same checks in the same
+# The local gate (scripts/release/gate.mjs) runs the same checks in the same
 # order. Change both together. The only differences, all on purpose:
 #   - the gate first copies the commit into a clean temp folder (CI checks out);
 #   - the laptop installs browsers without --with-deps (that needs root);
 #   - Windows only: the gate renames the misnamed export files before the tests;
 #   - the gate passes --forbid-only and --no-fund itself (CI gets them from env);
 #   - the gate packages on every pass; CI packages and uploads on push runs only.
-# The audits and the signature check run right after npm ci, before any
+# The audits and the signature checks run right after each npm ci, before any
 # package code runs. Every action is pinned to a full commit SHA; the version
 # tag is in the comment beside it.
+#
+# Two installs, each with its own lock file: the site (src/) and the test
+# suite (tests/). scripts/ uses Node built-ins only. Each step names the
+# folder it runs in; steps with none run from the repo top.
 #
 # GitHub Free cannot make this a required check (branch protection is a paid
 # feature on private repos), so a red run is a hard stop by team rule.
@@ -42,12 +46,6 @@ env:
   npm_config_fund: false
   npm_config_update_notifier: false
 
-# The project root is src/: every "run" step starts there. "uses" steps and
-# artifact paths are not affected, so those name src/ themselves.
-defaults:
-  run:
-    working-directory: src
-
 jobs:
   gate:
     name: Lint, test, audit
@@ -68,32 +66,53 @@ jobs:
       - name: No TLS-check bypass in the code or templates
         run: node scripts/release/check-no-tls-bypass.mjs
 
-      - name: Install (npm ci, lockfile only, no install scripts)
+      - name: Install the site (src, npm ci, lockfile only, no install scripts)
+        working-directory: src
         run: npm ci --ignore-scripts --no-audit
 
       # The audits run no package code, so they go before anything that does.
-      - name: Audit production deps (fails on high or critical)
+      - name: Audit the site's production deps (fails on high or critical)
+        working-directory: src
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Audit all deps (fails on critical)
+      - name: Audit all the site's deps (fails on critical)
+        working-directory: src
         run: npm audit --audit-level=critical
 
-      - name: Verify registry signatures
+      - name: Verify the site's registry signatures
+        working-directory: src
+        run: npm audit signatures
+
+      - name: Install the tests (tests, npm ci, lockfile only, no install scripts)
+        working-directory: tests
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Audit the tests' deps (fails on critical)
+        working-directory: tests
+        run: npm audit --audit-level=critical
+
+      - name: Verify the tests' registry signatures
+        working-directory: tests
         run: npm audit signatures
 
       - name: Install test browsers
+        working-directory: tests
         run: npx --no-install playwright install --with-deps chromium webkit
 
       - name: Lint
+        working-directory: src
         run: npm run lint
 
       - name: Settings test (before the build; it deletes out/)
+        working-directory: tests
         run: npm run test:env
 
       - name: Build (guarded wrapper; never call next build directly)
+        working-directory: src
         run: npm run build
 
       - name: Browser and build-output tests
+        working-directory: tests
         run: npm run test:e2e
 
       - name: Deploy script self-test (real symlinks, no server)
@@ -121,7 +140,7 @@ jobs:
         with:
           name: test-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            src/playwright-report/
-            src/test-results/
+            tests/playwright-report/
+            tests/test-results/
           if-no-files-found: ignore
           retention-days: 7

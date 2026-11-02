@@ -11,11 +11,15 @@
 // Nothing here names a real person's employer, client, school, city, phone or
 // reference: a banned pattern that named one would itself leak it.
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import sharp from 'sharp';
 import { test, expect } from '@playwright/test';
 import { ROOT, OUT_DIR, rel, walk } from '../../scripts/lib/export-checks.mjs';
+
+// sharp is the site's own image library (it comes with next), installed in
+// src/node_modules, not in the test suite's small install. Load it from there.
+const sharp = createRequire(path.join(ROOT, 'package.json'))('sharp');
 import { readFixtureList } from '../support/fixtures.mjs';
 import { ABOUT, RABBI_ALONE_LINE, RABBI_ALONE_VARIANTS } from '../support/words.mjs';
 import { PHONE_SHAPES, findPhones } from '../support/content-scan.mjs';
@@ -176,7 +180,7 @@ test.describe('phone-number shapes', () => {
 test.describe('raw photo source name', () => {
     test('"rob-finland-raw" is nowhere in the repo or in a file name', () => {
         const REPO = path.resolve(ROOT, '..'); // the whole repo (ROOT is src/)
-        const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report']);
+        const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report', '.fixture-sites']);
         const self = fileURLToPath(import.meta.url);
         const hits = [];
         const scan = (dir) => {

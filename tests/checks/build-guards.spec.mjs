@@ -27,7 +27,7 @@ import {
     readSiteSettings, walk,
 } from '../../scripts/lib/export-checks.mjs';
 import { checkCsp, injectCsp, policyFor, scriptHash } from '../../scripts/lib/csp.mjs';
-import { checkSiteSettings } from '../../lib/site-settings.mjs';
+import { checkSiteSettings } from '../../src/lib/site-settings.mjs';
 
 const SETTINGS = 'content/site-settings.json';
 const HIDDEN = { showApps: false, showContact: false };
@@ -203,10 +203,13 @@ test.describe('checkSettingsMatchFolders', () => {
 
 // --- public/ allow-list -------------------------------------------------------
 test.describe('checkPublicAllowlist', () => {
+    // The list's path from the repo top. A throwaway folder has the repo's
+    // shape: the list under tests/, public/ under src/ (the root the check gets).
     const LIST = 'tests/fixtures/public-allowlist.txt';
     const withPublic = (list, files) => {
-        const root = tempDir('public');
-        put(root, LIST, list);
+        const repo = tempDir('public');
+        put(repo, LIST, list);
+        const root = path.join(repo, 'src');
         for (const f of files) put(root, `public/${f}`, 'x');
         return root;
     };
@@ -232,7 +235,7 @@ test.describe('checkPublicAllowlist', () => {
     });
 
     test('fails when the list itself is missing', () => {
-        const root = tempDir('public');
+        const root = path.join(tempDir('public'), 'src');
         put(root, 'public/a.txt', 'x');
         expect(checkPublicAllowlist(root).problems).toEqual([`${LIST} is missing`]);
     });
