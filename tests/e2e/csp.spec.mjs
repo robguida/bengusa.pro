@@ -31,7 +31,9 @@ test.describe('Content-Security-Policy', () => {
     test('no violation on any page, after scrolling and opening every popup', async ({ page, siteGuards }, testInfo) => {
         test.setTimeout(120_000);
         await recordViolations(page);
-        for (const p of [...PAGES, '/no-such-page/']) {
+        // (Not the 404 page: it sends the visitor to Home at once by a meta refresh, so a browser
+        // visit would be moved mid-test. The 404 page's policy is checked in the next test.)
+        for (const p of PAGES) {
             await page.goto(p);
             await settle(page);
             await scrollToY(page, 100000);
@@ -55,10 +57,23 @@ test.describe('Content-Security-Policy', () => {
     test('every page carries a policy that allows no inline script or eval (and the recorder can see a violation)', async ({ page, siteGuards }) => {
         await recordViolations(page);
         // The 404 page too: an unknown address gets out/404.html, which carries its own policy.
+        // It is read as plain HTML, not loaded in the browser: the page refreshes to Home at once
+        // (BUWEB-123), which would race the read ("Execution context was destroyed").
         for (const p of [...PAGES, '/no-such-page/']) {
-            await page.goto(p);
-            await settle(page);
-            const policy = await page.locator('head meta[http-equiv="Content-Security-Policy"]').evaluateAll((els) => els.map((e) => e.getAttribute('content')));
+            let policy;
+            if (p === '/no-such-page/') {
+                const res = await page.request.get(p);
+                expect.soft(res.status(), `${p}: serves the 404 page`).toBe(404);
+                const html = await res.text();
+                expect.soft(html, `${p}: is the site's 404 page`).toContain('This page could not be found.');
+                policy = [...html.matchAll(/<meta\b[^>]*http-equiv="Content-Security-Policy"[^>]*>/gi)]
+                    .map((m) => (m[0].match(/\bcontent="([^"]*)"/i) ?? [])[1])
+                    .map((c) => c?.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
+            } else {
+                await page.goto(p);
+                await settle(page);
+                policy = await page.locator('head meta[http-equiv="Content-Security-Policy"]').evaluateAll((els) => els.map((e) => e.getAttribute('content')));
+            }
             expect.soft(policy.length, `${p}: Content-Security-Policy meta tags (the build writes one per page)`).toBe(1);
             const script = (policy[0] ?? '').split(';').map((d) => d.trim()).find((d) => d.startsWith('script-src') || d.startsWith('default-src')) ?? '';
             expect.soft(script, `${p}: the script policy`).not.toBe('');
