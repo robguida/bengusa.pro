@@ -33,10 +33,14 @@ const require = createRequire(import.meta.url);
 const nextBin = require.resolve('next/dist/bin/next', { paths: [ROOT] });
 
 function runNextBuild() {
+    // Plain-text log: a console's FORCE_COLOR would put colour codes inside the
+    // "Route (app)" line and the route-table check would not find it.
+    const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1', NO_COLOR: '1' };
+    delete env.FORCE_COLOR;
     return new Promise((resolve) => {
         const child = spawn(process.execPath, [nextBin, 'build'], {
             cwd: ROOT,
-            env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
+            env,
             stdio: ['ignore', 'pipe', 'pipe'],
         });
         let log = '';
