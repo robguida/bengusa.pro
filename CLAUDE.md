@@ -13,6 +13,7 @@ The first code was built by an outside developer (Fojle Rabbi). It is being repl
 - **Hosting: AWS Lightsail.** Not EC2, ALB or Route53. Load balancer, DNS and certs live in the Lightsail console. The README's "Deploy on Vercel" section does not apply.
     - **One approved exception:** Amazon SES (standard AWS) sends the contact-form mail. Rob let this default stand on 2026-10-05 (spec decision 12.b.iii).
 - **Requirements change → the docs writer updates `docs/requirements.md`.**
+- **Team agent names are allowed in this repo** (Rob, 2026-11-02: *"it is OK to have the agent names in this repo"*). The usual no-names rule for project repos does not apply here. Commits, comments and docs may name agents.
 - **`./src` is the site. Only `./src` makes it to production** (its built pages, `src/out/`). It holds the site's `package.json`, lock file, `node_modules`, the site tools' settings files, `app/`, `lib/`, `content/`, `public/`, `dev.cmd` and `preview.cmd`.
     - **`tests/` and `scripts/` sit beside `src/` at the repo top, by Rob's word (2026-11-02):** they never go to production. `tests/` has its own small install (Playwright only, `tests/package.json`). `scripts/` uses Node built-ins only and has no install. There is no `package.json` or `node_modules` at the repo top.
     - The repo top also holds `.github/` (GitHub only reads it there), `docs/`, `README.md`, `CLAUDE.md` and `.gitignore`.
@@ -54,6 +55,8 @@ To look at the real build, **double-click `src\preview.cmd`** the same way.
 - `npm run build` — the guarded build (`../scripts/build.mjs`). Never run `next build` on its own; it skips the checks.
 - `npm start` — serves `src/out/` (`../scripts/serve-out.mjs`). Build first. `next start` does not work with a static export.
 - `npm run lint` — ESLint over `src/`, `scripts/` and `tests/`.
+
+**Easiest: double-click `tests\run-tests.cmd`.** It runs the full suite on the files as they are now, and installs what it needs on first run. `scripts\release\gate.cmd` is the stricter check of the last commit in a clean copy.
 
 **Test commands run from `tests/`** (in `tests/package.json`):
 
