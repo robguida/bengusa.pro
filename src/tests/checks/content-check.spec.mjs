@@ -8,7 +8,7 @@
 // The real app list is clean, so each case is a TEST-ONLY build: the site is
 // copied into test-results/ (support/fixture-site.mjs), the COPY's content is
 // broken on purpose, and the copy is built with the same guarded build
-// script. src/ and content/ are never touched. About 10 to 20 seconds a case.
+// script. app/, lib/ and content/ are never touched. About 10 to 20 seconds a case.
 //   - two bad apps: TimeTracker with a bad slug, and Vault (Off-grid) with
 //     no connects line. The build fails once and its report names both.
 //   - an Off-grid app with no connects line, and nothing else wrong: the

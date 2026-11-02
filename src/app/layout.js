@@ -3,7 +3,7 @@ import SiteHeader from "./components/header/SiteHeader";
 import SiteFooter from "./components/SiteFooter";
 import {getShownApps, toMenuItems} from "@/lib/apps";
 import {footerLinks, headerLinks} from "@/lib/site";
-import siteWords from "../../content/site-words.json";
+import siteWords from "../content/site-words.json";
 import "./globals.css";
 
 // The two brand fonts live in ./fonts (Latin, variable weight; licence texts

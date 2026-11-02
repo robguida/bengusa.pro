@@ -4,7 +4,7 @@
 // apps" instead.
 //
 // The real app list has every card badged, so this needs a TEST-ONLY build:
-// the site is copied into test-results/ (never touching src/ or content/),
+// the site is copied into test-results/ (never touching app/, lib/ or content/),
 // one card loses its badge in the COPY's app list, and the copy is built with
 // the same guarded build script, served on its own port and opened in a
 // browser. One fixture per case:

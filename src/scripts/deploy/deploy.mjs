@@ -38,7 +38,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-    BUILD_ID_RE, HASH_RE, IS_WIN, MANIFEST, PUBLIC, ROOT, bundlesDir, capture, deployHome, git, isInside,
+    BUILD_ID_RE, HASH_RE, IS_WIN, MANIFEST, PUBLIC, REPO_ROOT, ROOT, bundlesDir, capture, deployHome, git, isInside,
     isMain, listBundles, readBundleInfo, sha256, sha256File, verifyBundle, writeBundle,
 } from '../release/lib.mjs';
 
@@ -60,11 +60,11 @@ class Refused extends Error {}
 const checkoutScript = () => fs.readFileSync(path.join(ROOT, ...REMOTE_SH_PATH.split('/')), 'utf8').replace(/\r/g, '');
 function serverScript(target) {
     if (target !== 'live') return { text: checkoutScript(), from: `this checkout's ${REMOTE_SH_PATH}` };
-    const r = capture('git', ['show', `origin/main:${REMOTE_SH_PATH}`], { cwd: ROOT });
+    const r = capture('git', ['show', `origin/main:src/${REMOTE_SH_PATH}`], { cwd: ROOT });
     if (r.code !== 0 || !r.stdout.trim()) {
-        throw new Refused(`live sends the server script from origin/main, and origin/main has no ${REMOTE_SH_PATH} yet (${r.stderr.trim() || 'empty'})`);
+        throw new Refused(`live sends the server script from origin/main, and origin/main has no src/${REMOTE_SH_PATH} yet (${r.stderr.trim() || 'empty'})`);
     }
-    return { text: r.stdout.replace(/\r/g, ''), from: `origin/main:${REMOTE_SH_PATH}` };
+    return { text: r.stdout.replace(/\r/g, ''), from: `origin/main:src/${REMOTE_SH_PATH}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ export function loadTarget(target, configPath) {
     if (!fs.existsSync(file)) {
         return { file, problems: [`no settings for "${target}" at ${file} (the server ticket creates them; template: scripts/deploy/target.env.example)`] };
     }
-    if (isInside(file, ROOT)) problems.push(`settings file ${file} is inside the repo; keep it outside`);
+    if (isInside(file, REPO_ROOT)) problems.push(`settings file ${file} is inside the repo; keep it outside`);
     const known = ['DEPLOY_TARGET', 'DEPLOY_HOST', 'DEPLOY_USER', 'DEPLOY_KEY', 'DEPLOY_HOSTKEY', 'DEPLOY_SITE_ROOT', 'DEPLOY_URL', 'DEPLOY_SSH'];
     const v = {};
     for (const [i, raw] of fs.readFileSync(file, 'utf8').split(/\r?\n/).entries()) {
@@ -112,7 +112,7 @@ export function loadTarget(target, configPath) {
     need('DEPLOY_TARGET', (x) => x === target, `must be "${target}" (this file is for another target)`);
     need('DEPLOY_HOST', (x) => /^[A-Za-z0-9.-]{1,253}$/.test(x), 'must be a host name or IPv4 address');
     need('DEPLOY_USER', (x) => /^[a-z_][a-z0-9_-]{0,31}$/.test(x), 'must be a plain Unix user name');
-    need('DEPLOY_KEY', (x) => path.isAbsolute(x) && !isInside(x, ROOT), 'must be an absolute path outside the repo');
+    need('DEPLOY_KEY', (x) => path.isAbsolute(x) && !isInside(x, REPO_ROOT), 'must be an absolute path outside the repo');
     need('DEPLOY_HOSTKEY', (x) => /^ssh-ed25519 [A-Za-z0-9+/]{68}$/.test(x), 'must be the server\'s "ssh-ed25519 AAAA..." host key');
     need('DEPLOY_SITE_ROOT', (x) => ROOT_RE.test(x), 'must be /srv/sites/<name>');
     need('DEPLOY_URL', (x) => /^https:\/\/[a-z0-9.-]+$/.test(x), 'must be https://<host> with no path');

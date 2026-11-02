@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE_SETTINGS_FILE, SITE_SWITCH_KEYS, checkSiteSettings } from '../../src/lib/site-settings.mjs';
+import { SITE_SETTINGS_FILE, SITE_SWITCH_KEYS, checkSiteSettings } from '../../lib/site-settings.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const OUT_DIR = path.join(ROOT, 'out');
@@ -111,8 +111,8 @@ export function checkSettingsMatchFolders(root = ROOT) {
     const settings = readSiteSettings(root);
     const problems = [...settings.problems];
     for (const { key, what, folder } of SWITCHES) {
-        const live = fs.existsSync(path.join(root, 'src', 'app', folder));
-        const parked = fs.existsSync(path.join(root, 'src', 'app', '_parked', folder));
+        const live = fs.existsSync(path.join(root, 'app', folder));
+        const parked = fs.existsSync(path.join(root, 'app', '_parked', folder));
         const where = `(${SETTINGS_FILE} has "${key}": ${settings[key]})`;
         if (settings[key]) {
             if (!live) problems.push(`${what} shown, but src/app/${folder}/ is missing ${where}: move it back from src/app/_parked/`);
