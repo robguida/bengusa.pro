@@ -3,7 +3,7 @@ import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
 import OffGridLegend from './components/OffGridLegend';
 import { getShownApps } from '@/lib/apps';
-import siteWords from '../../content/site-words.json';
+import siteWords from '../content/site-words.json';
 
 export default function Home() {
     // None while content/site-settings.json hides the apps. Then the whole apps

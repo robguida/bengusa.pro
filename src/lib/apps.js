@@ -1,7 +1,7 @@
 import 'server-only';
-import apps from '../../content/apps.json';
-import appWords from '../../content/app-words.json';
-import aboutWords from '../../content/about-words.json';
+import apps from '../content/apps.json';
+import appWords from '../content/app-words.json';
+import aboutWords from '../content/about-words.json';
 import { SHOW_APPS } from './site';
 
 // The one app list. Cards, app pages, the header and phone menus and the footer

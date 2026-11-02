@@ -9,7 +9,7 @@
 // rule names in plain words for the same reason.
 //
 //   node scripts/release/check-no-tls-bypass.mjs
-import { ROOT, capture } from './lib.mjs';
+import { REPO_ROOT, capture } from './lib.mjs';
 
 const S = '[[:space:]]*';
 const SEP = `["']?${S}[=:[:space:]]${S}["']?`; // "=", ":" or a space, quotes allowed
@@ -35,7 +35,7 @@ const rules = [
 
 const hits = [];
 for (const [name, pattern] of rules) {
-    const r = capture('git', ['grep', '-n', '-I', '-i', '-E', '-e', pattern], { cwd: ROOT });
+    const r = capture('git', ['grep', '-n', '-I', '-i', '-E', '-e', pattern], { cwd: REPO_ROOT });
     if (r.code === 1) continue;
     if (r.code !== 0) {
         console.error(`TLS check could not run rule "${name}" (git grep exit ${r.code}): ${r.stderr.trim()}`);

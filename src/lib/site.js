@@ -1,5 +1,5 @@
 import 'server-only';
-import settings from '../../content/site-settings.json';
+import settings from '../content/site-settings.json';
 import { checkSiteSettings } from './site-settings.mjs';
 
 // What the live site shows: one committed switch, content/site-settings.json

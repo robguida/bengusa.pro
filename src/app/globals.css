@@ -1,6 +1,9 @@
-/* Scan src/ only for class names. Without source(), Tailwind also scans
-   untracked files in the project folder, so a local build differs from CI. */
-@import "tailwindcss" source("..");
+/* Scan app/ and lib/ only for class names (the project root is src/ now).
+   Without source(none), Tailwind also scans untracked files in the project
+   folder, so a local build differs from CI. */
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../lib";
 
 :root {
   /* Brand colours, kept from the old site with the same values.

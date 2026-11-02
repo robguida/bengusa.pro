@@ -16,9 +16,9 @@ import { BUILD_LOG, OUT_DIR, ROOT, rel, walk } from '../../scripts/lib/export-ch
 
 // Allow-lists. Adding a name or file here is a reviewed decision.
 const ALLOWED_PUBLIC_VARS = []; // NEXT_PUBLIC_* names the site may use
-const ALLOWED_PROCESS_ENV_FILES = []; // files under src/ or content/ that may read process.env
+const ALLOWED_PROCESS_ENV_FILES = []; // files under app/, lib/ or content/ that may read process.env
 
-const SOURCE_DIRS = ['src', 'content'];
+const SOURCE_DIRS = ['app', 'lib', 'content'];
 const ROOT_CONFIG = ['next.config.mjs', 'postcss.config.mjs', 'eslint.config.mjs', 'jsconfig.json'];
 const SOURCE_EXT = new Set(['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.json', '.css']);
 
@@ -28,7 +28,7 @@ function sourceFiles() {
     return [...files, ...ROOT_CONFIG.map((f) => path.join(ROOT, f)).filter((f) => fs.existsSync(f))];
 }
 
-test('the source uses no NEXT_PUBLIC_ setting and src/ + content/ never read process.env', () => {
+test('the source uses no NEXT_PUBLIC_ setting and app/, lib/ and content/ never read process.env', () => {
     const problems = [];
     for (const file of sourceFiles()) {
         const name = rel(ROOT, file);

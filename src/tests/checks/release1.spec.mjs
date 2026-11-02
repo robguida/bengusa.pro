@@ -43,7 +43,7 @@ test.describe('Release 1: the settings and the parked code', () => {
 
     test('the hidden code is kept: the app pages and Contact sit in src/app/_parked/, not in routing', () => {
         test.skip(SHOW.apps && SHOW.contact, HIDDEN);
-        const exists = (...p) => fs.existsSync(path.join(ROOT, 'src', 'app', ...p));
+        const exists = (...p) => fs.existsSync(path.join(ROOT, 'app', ...p));
         if (!SHOW.apps) {
             expect.soft(exists('_parked', 'apps'), 'src/app/_parked/apps kept').toBe(true);
             expect.soft(exists('apps'), 'src/app/apps is out of routing').toBe(false);

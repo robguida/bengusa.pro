@@ -2,7 +2,7 @@ import Link from 'next/link';
 import PageIntro from '../components/PageIntro';
 import { getShownApps } from '@/lib/apps';
 import { SHOW_CONTACT } from '@/lib/site';
-import words from '../../../content/about-words.json';
+import words from '../../content/about-words.json';
 
 export const metadata = {
     title: 'About',

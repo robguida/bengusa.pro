@@ -27,7 +27,7 @@ import {
     readSiteSettings, walk,
 } from '../../scripts/lib/export-checks.mjs';
 import { checkCsp, injectCsp, policyFor, scriptHash } from '../../scripts/lib/csp.mjs';
-import { checkSiteSettings } from '../../src/lib/site-settings.mjs';
+import { checkSiteSettings } from '../../lib/site-settings.mjs';
 
 const SETTINGS = 'content/site-settings.json';
 const HIDDEN = { showApps: false, showContact: false };
@@ -59,8 +59,8 @@ function siteRoot({ settings = HIDDEN, noSettings = false, apps = [{ id: 'quillm
     put(root, 'content/app-words.json', json({}));
     put(root, 'content/about-words.json', json({}));
     put(root, 'content/site-words.json', json({}));
-    put(root, 'src/app/_parked/apps/page.js', '// parked\n');
-    put(root, 'src/app/_parked/contact/page.js', '// parked\n');
+    put(root, 'app/_parked/apps/page.js', '// parked\n');
+    put(root, 'app/_parked/contact/page.js', '// parked\n');
     return root;
 }
 
@@ -168,7 +168,7 @@ test.describe('checkSettingsMatchFolders', () => {
 
     test('fails when a hidden page\'s folder is back in routing (Next would build it)', () => {
         const root = siteRoot();
-        put(root, 'src/app/apps/page.js', '// live\n');
+        put(root, 'app/apps/page.js', '// live\n');
         const r = checkSettingsMatchFolders(root);
         expect(r.ok).toBe(false);
         expect(r.problems).toEqual([expect.stringContaining('the apps are hidden, but src/app/apps/ exists, so Next would build it')]);
@@ -176,8 +176,8 @@ test.describe('checkSettingsMatchFolders', () => {
 
     test('two bad inputs give two problems: a hidden folder in routing, and hidden code that was not kept', () => {
         const root = siteRoot();
-        put(root, 'src/app/apps/page.js', '// live\n');
-        fs.rmSync(path.join(root, 'src', 'app', '_parked', 'contact'), { recursive: true });
+        put(root, 'app/apps/page.js', '// live\n');
+        fs.rmSync(path.join(root, 'app', '_parked', 'contact'), { recursive: true });
         const r = checkSettingsMatchFolders(root);
         expect(r.ok).toBe(false);
         expect(r.problems).toEqual([

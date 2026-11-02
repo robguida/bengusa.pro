@@ -1,7 +1,7 @@
 // TEST-ONLY copies of the site, for checks that need a build the real app
 // list can't give (the heading guard, the content check). The site is copied
 // into test-results/ (git-ignored), changed in the COPY only, and built with
-// the same guarded build script. src/ and content/ are never touched, and a
+// the same guarded build script. app/, lib/ and content/ are never touched, and a
 // copy never gets a .env. Each spec deletes its copies when it is done.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -10,7 +10,7 @@ import { ROOT } from '../../scripts/lib/export-checks.mjs';
 
 export const BUILD_TIMEOUT = 180_000;
 // Everything the build reads. Never .env: a fixture build gets no settings.
-const COPY = ['src', 'content', 'public', 'scripts/build.mjs', 'scripts/lib', 'next.config.mjs', 'postcss.config.mjs', 'jsconfig.json', 'package.json'];
+const COPY = ['app', 'lib', 'content', 'public', 'scripts/build.mjs', 'scripts/lib', 'next.config.mjs', 'postcss.config.mjs', 'jsconfig.json', 'package.json'];
 
 export function run(args, cwd) {
     // Plain text output: Playwright's workers set FORCE_COLOR, and colour

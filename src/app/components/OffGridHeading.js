@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { OffGridTipRoot, OffGridTrigger } from './OffGridTip';
-import siteWords from '../../../content/site-words.json';
+import siteWords from '../../content/site-words.json';
 
 const TOKEN = '{offGrid}';
 

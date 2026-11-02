@@ -175,6 +175,7 @@ test.describe('phone-number shapes', () => {
 
 test.describe('raw photo source name', () => {
     test('"rob-finland-raw" is nowhere in the repo or in a file name', () => {
+        const REPO = path.resolve(ROOT, '..'); // the whole repo (ROOT is src/)
         const skip = new Set(['node_modules', '.git', '.next', 'test-results', 'playwright-report']);
         const self = fileURLToPath(import.meta.url);
         const hits = [];
@@ -182,12 +183,12 @@ test.describe('raw photo source name', () => {
             for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
                 if (skip.has(e.name)) continue;
                 const full = path.join(dir, e.name);
-                if (/rob-finland-raw/i.test(e.name)) hits.push(`file name: ${rel(ROOT, full)}`);
+                if (/rob-finland-raw/i.test(e.name)) hits.push(`file name: ${rel(REPO, full)}`);
                 if (e.isDirectory()) scan(full);
-                else if (full !== self && fs.statSync(full).size < 5_000_000 && fs.readFileSync(full).toString('latin1').toLowerCase().includes('rob-finland-raw')) hits.push(`text: ${rel(ROOT, full)}`);
+                else if (full !== self && fs.statSync(full).size < 5_000_000 && fs.readFileSync(full).toString('latin1').toLowerCase().includes('rob-finland-raw')) hits.push(`text: ${rel(REPO, full)}`);
             }
         };
-        scan(ROOT);
+        scan(REPO);
         expect.soft(hits, 'the raw source name "rob-finland-raw"').toEqual([]);
     });
 });

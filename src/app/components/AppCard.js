@@ -2,7 +2,7 @@ import Link from 'next/link';
 import AppName from './AppName';
 import KeepWhole from './KeepWhole';
 import OffGridBadge from './OffGridBadge';
-import siteWords from '../../../content/site-words.json';
+import siteWords from '../../content/site-words.json';
 
 // One card in the Home grid. Everything on it comes from the app list.
 // A badged card shows the short Off-grid line, never only the popup (17.c.i).
