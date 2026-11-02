@@ -95,7 +95,7 @@ function aboutProblems(shown) {
             value.forEach((item, i) => walk(item, `${path}[${i}]`));
         } else if (value !== null && typeof value === 'object') {
             for (const [key, item] of Object.entries(value)) walk(item, path ? `${path}.${key}` : key);
-        } else if (path !== 'headingLevel' && typeof value !== 'string') {
+        } else if (path !== 'headingLevel' && typeof value !== 'string' && !(path === 'showOwnWords' && typeof value === 'boolean')) {
             found.push(`content/about-words.json: "${path}" must be text.`);
         }
     };

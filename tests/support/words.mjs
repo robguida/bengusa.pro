@@ -76,29 +76,37 @@ export const COLOUR = {
 export const ABOUT_BLOCKS = [
     ["h1", "About Us"],
     ["h2", "Two developers. Two countries. One team."],
-    ["p", "We're Rob and Rabbi, two software developers from opposite sides of the world who met while working on a client project a few years ago."],
-    ["p", "What started as a working relationship turned into a friendship. We discovered that we enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems."],
-    ["p", "We still work that way today. Each of us takes the lead on different apps, but we regularly review each other's work, exchange ideas, and keep each other honest. We're friends first, but we're also two developers who care about getting things right."],
-    ["h3", "So, what's with the name?"],
-    ["p", "bengUSA brings together Bangladesh and the United States, the two countries we're from. The \"Beng\" comes from Bengali."],
-    ["p", "Originally, we planned to provide programmers and designers to other companies. Then we decided we'd rather build apps ourselves."],
-    ["p", "Our plans changed. The name stuck. We liked it, so we kept it."],
-    ["h3", "Why build apps ourselves?"],
-    ["p", "After years of building software for other people, we wanted the freedom to pursue our own ideas."],
-    ["p", "We both have plenty of them. Probably more than we'll ever have time to build."],
-    ["p", "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use. We choose what matters, take responsibility for the results, and build things we're proud to put our names on."],
-    ["h3", "Why Off-grid?"],
-    ["p", "We believe your personal information should belong to you."],
-    ["p", "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data."],
-    ["p", "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud."],
-    ["p", "We're not interested in collecting your personal information just because we can."],
-    ["b", "Your data, your call."],
+    ["p", "From opposite sides of the world, Rob and Rabbi met a few years ago while working on a client project. They have been partners in business ever since. They enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems. That working relationship turned into a friendship."],
     ["h2", "Meet the Founders"],
     ["h3", "Rob Guida"],
     ["b", "Co-founder & CEO"],
     ["p", "Rob has spent more than 30 years building software, designing systems, and leading development teams. He's worked on everything from individual applications to large enterprise platforms."],
     ["p", "He enjoys solving complicated problems, especially when the result makes someone's work or life a little easier."],
+    ["p", "Lately Rob has been putting his experience to work with AI. He runs his own team of AI agents, set up like a small software company, with each one in a defined role and everything working to a written rulebook. He's passionate about AI-assisted development because it lets people with good ideas build better, and it helps most when they already know how to code, since they can tell good work from a draft that still needs fixing. The final call on every plan and every release is still his."],
     ["p", "His technical background includes AWS, SQL, Node.js, GraphQL, React, Python, Rust, and PHP."],
+    ["h3", "Fojle Rabbi Saikat"],
+    ["b", "Co-founder & CTO"],
+    ["p", "He has been developing software since 2015, starting with Android applications. He's released more than 30 Android apps on Google Play and has worked across nearly every part of software development."],
+    ["p", "From mobile apps and user interfaces to backend systems, databases, automation, and system architecture, he enjoys the technical challenges that come with turning ideas into working applications."],
+    ["p", "He also developed the original code for the bengUSA website."],
+    ["p", "His technical background includes Java, Kotlin, Spring Boot, Laravel, PHP, Node.js, Vue.js, JavaScript, PostgreSQL, MySQL, CI/CD, Docker, Redis, and AWS."],
+    ["h2", "So, what's with the name?"],
+    ["p", "bengUSA brings together Bangladesh and the United States, the two countries we're from. The “Beng” comes from Bengali, and “beng usa”, or “ben gusa”, sounds better than “bang usa”. Since the USA is still the melting pot of the world, it is best to be clear, Rob Guida is from the USA and Fojle Rabbi Saikat is from Bangladesh."],
+    ["h2", "Why build apps ourselves?"],
+    ["p", "After years of building software for other people, we wanted the freedom to pursue our own ideas."],
+    ["p", "We both have plenty of them. Probably more than we'll ever have time to build."],
+    ["p", "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use."],
+    ["h2", "What is “Off-grid”?"],
+    ["p", "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data."],
+    ["p", "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud."],
+    ["p", "We're not interested in collecting your personal information just because we can."],
+    ["b", "Your data, your call."],
+];
+
+// The founders' "own words" blocks. HIDDEN on the one-page site (2026-11-02,
+// "showOwnWords": false in content/about-words.json): their words stay, and
+// the tests that check them are parked. Not part of ABOUT_BLOCKS while hidden.
+export const OWN_WORDS_BLOCKS = [
     ["b", "In Rob's own words"],
     ["b", "Something I'm proud of"],
     ["p", "Years ago, I built a government budget and project-planning system that let people browse departments, offices, budgets, and projects using a familiar folder structure instead of searching for codes and names. It seems simple today, but it was a different way of doing things at the time. When several offices consolidated their systems, mine was the one they kept. That still makes me smile."],
@@ -110,12 +118,6 @@ export const ABOUT_BLOCKS = [
     ["p", "My wife and I once saw Switzerland's Maloja Pass on a computer screensaver and decided we had to drive it. So we did. We even stayed in a grand old hotel along the way. Beautiful, a little eerie, and almost like something out of The Shining. What an experience."],
     ["b", "Something that surprises people"],
     ["p", "I can still sprint up a pretty steep hill. I'm not saying I look graceful doing it, and the recovery isn't what it used to be, but I can do it."],
-    ["h3", "Fojle Rabbi Saikat"],
-    ["b", "Co-founder & CTO"],
-    ["p", "He has been developing software since 2015, starting with Android applications. He's released more than 30 Android apps on Google Play and has worked across nearly every part of software development."],
-    ["p", "From mobile apps and user interfaces to backend systems, databases, automation, and system architecture, he enjoys the technical challenges that come with turning ideas into working applications."],
-    ["p", "He also developed the original code for the bengUSA website."],
-    ["p", "His technical background includes Java, Kotlin, Spring Boot, Laravel, PHP, Node.js, Vue.js, JavaScript, PostgreSQL, MySQL, CI/CD, Docker, Redis, and AWS."],
     ["b", "In his own words"],
     ["b", "How Rob and I met"],
     ["p", "A colleague introduced us. He and Rob were already working together for a mutual client, and they needed another developer. I joined the team, and our work together began there."],
@@ -126,6 +128,7 @@ export const ABOUT_BLOCKS = [
     ["b", "Where I'm based"],
     ["p", "I'm based in Dhaka, Bangladesh. Rob and I are on opposite sides of the world, and it has never stopped us from building software together. Bringing our two countries together is what inspired the name bengUSA."],
 ];
+
 
 // "Rabbi" alone is allowed ONLY in this line (spec 18.c.iii, changed for BUWEB-115).
 export const RABBI_ALONE_LINE = ABOUT_BLOCKS[2][1];
@@ -142,7 +145,8 @@ export const ABOUT_BANNED = [
 const rob = { name: 'Rob Guida', headshot: '/images/about/rob-guida.webp', personal: '/images/about/rob-guida-personal.webp' };
 const co = { name: 'Fojle Rabbi Saikat', headshot: '/images/about/fojle-rabbi-saikat.webp', personal: '/images/about/fojle-rabbi-saikat-personal.webp' };
 export const ABOUT = {
-    path: '/about/',
+    path: '/', // the About body stands on Home (one-page site); /about/ is parked
+    parkedPath: '/about/',
     title: 'About Us',
     makingHeading: "What we're making",
     contactLink: 'Contact page',

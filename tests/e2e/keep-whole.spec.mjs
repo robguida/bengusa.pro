@@ -14,7 +14,7 @@
 // Closed popup boxes are not drawn, so they are left out.
 import { test, expect, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
-import { SHOW } from '../support/settings.mjs';
+import { EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED } from '../support/settings.mjs';
 
 const WIDTHS = { phone: [390, 320, 360, 375, 414, 430], desktop: [1280, 760, 1024, 1440] };
 const TERMS = 'off-grid|cloud-killers';
@@ -73,6 +73,7 @@ function expectPlaces(found, page) {
 }
 
 test('"Off-grid" and "Cloud-killers" never break at the hyphen: the legend, the short line and the sync line, at 1280px and 390px and the other widths', async ({ page }, testInfo) => {
+    test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED);
     test.skip(isReducedMotion(testInfo), 'line breaks do not change with motion; the normal pass covers them');
     const widths = isPhone(testInfo) ? WIDTHS.phone : WIDTHS.desktop;
     const height = page.viewportSize().height;

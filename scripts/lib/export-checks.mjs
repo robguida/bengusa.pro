@@ -65,6 +65,11 @@ export const SWITCHES = [
     { key: 'showContact', what: 'Contact is', folder: 'contact', route: '/contact' },
 ];
 
+// Parked for the one-page site (2026-11-02), with no switch file: their code sits
+// in src/app/_parked/ and the lists in src/lib/site.js leave their links out.
+// Their address, page data and links must not be in out/.
+const PARKED_PAGES = [{ folder: 'about', route: '/about' }, { folder: 'privacy', route: '/privacy' }];
+
 // The one reader of content/site-settings.json in Node. Returns
 // { showApps, showContact, problems }. Each switch must be true or false: a
 // missing switch, any other value, a missing file or a file that isn't JSON is
@@ -93,14 +98,14 @@ export function expectedRoutes(root = ROOT) {
     const appRoutes = showApps
         ? apps.filter((app) => app.status === 'open' || app.status === 'showcase').map((app) => `/apps/${app.slug}`)
         : [];
-    return ['/', '/about', ...(showContact ? ['/contact'] : []), '/privacy', ...appRoutes];
+    return ['/', ...(showContact ? ['/contact'] : []), ...appRoutes];
 }
 
 // The addresses that must NOT be built: each hidden switch's route, and
 // everything under it.
 export function hiddenRoutes(root = ROOT) {
     const settings = readSiteSettings(root);
-    return SWITCHES.filter((s) => !settings[s.key]).map((s) => s.route);
+    return [...SWITCHES.filter((s) => !settings[s.key]).map((s) => s.route), ...PARKED_PAGES.map((p) => p.route)];
 }
 
 const underRoute = (route, base) => route === base || route.startsWith(`${base}/`);
@@ -323,7 +328,7 @@ export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
     // A link (href, or a page-data address) to the route or anything under it.
     const link = (group, route) => patterns.push({
         name: `${group}: a link to ${route}/`,
-        re: new RegExp(escapeRe(route) + String.raw`(?=[/"'?#\s\\]|$)`, 'g'),
+        re: new RegExp(String.raw`(?<![\w.-])` + escapeRe(route) + String.raw`(?=[/"'?#\s\\]|$)`, 'g'),
     });
     // A rendered menu label or link text: >Apps< in a page, "children":"Apps" in page data.
     const label = (group, word) => patterns.push({
@@ -363,6 +368,8 @@ export function hiddenPatterns(root = ROOT, settings = readSiteSettings(root)) {
         link(group, '/contact');
         label(group, 'Contact');
     }
+    // The About words now stand on Home, so only the links are guarded.
+    for (const p of PARKED_PAGES) link(`parked ${p.folder} page`, p.route);
     DRAFT_LABEL_WORDS.forEach((s) => phrase('draft label', s));
     return { patterns, problems };
 }
@@ -413,10 +420,11 @@ export function checkHiddenContent(outDir = OUT_DIR, root = ROOT) {
     const all = walk(outDir);
 
     // No file of a hidden page at all: its page, or its page data.
-    const hiddenFolders = SWITCHES.filter((s) => !settings[s.key]).map((s) => s.folder);
+    const hiddenFolders = [...SWITCHES.filter((s) => !settings[s.key]).map((s) => s.folder), ...PARKED_PAGES.map((p) => p.folder)];
     for (const file of all) {
         const name = rel(outDir, file);
-        const folder = hiddenFolders.find((f) => name.split(/[/.]/).includes(f));
+        // The photos' folder public/images/about/ is not the About page: the founders' photos stand on Home.
+        const folder = name.startsWith('images/') ? undefined : hiddenFolders.find((f) => name.split(/[/.]/).includes(f));
         if (folder) hits.push(`hidden page file in out/: ${name}`);
     }
 

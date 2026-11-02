@@ -12,8 +12,10 @@
 // drift from the build. Only true shows a page. A missing or broken file, a
 // missing switch or a value that isn't true/false is a PROBLEM, and everything
 // it touches counts as hidden: release1.spec.mjs fails on any problem.
+import fs from 'node:fs';
+import path from 'node:path';
 import { test } from '@playwright/test';
-import { readSiteSettings } from '../../scripts/lib/export-checks.mjs';
+import { ROOT, readSiteSettings } from '../../scripts/lib/export-checks.mjs';
 import { SITE_SETTINGS_FILE } from '../../src/lib/site-settings.mjs';
 
 const settings = readSiteSettings();
@@ -21,6 +23,11 @@ const settings = readSiteSettings();
 export const SETTINGS_FILE = SITE_SETTINGS_FILE;
 export const SETTINGS_PROBLEMS = settings.problems;
 export const SHOW = { apps: settings.showApps, contact: settings.showContact };
+
+// Home's "Off-grid, explained" section is hidden by "showOffGridExplained" in content/site-words.json (one-page site, 2026-11-02).
+const siteWords = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'site-words.json'), 'utf8'));
+export const SHOW_EXPLAINED = siteWords.showOffGridExplained === true;
+export const EXPLAINED_PARKED = '"Off-grid, explained" is hidden on Home (showOffGridExplained is false); re-enable when it returns';
 
 export const APPS_PARKED = 'apps hidden by site-settings; re-enable when the tiles return';
 export const CONTACT_PARKED = 'Contact hidden by site-settings; re-enable when Contact returns';

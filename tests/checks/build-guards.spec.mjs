@@ -322,22 +322,22 @@ test.describe('checkHiddenContent', () => {
 
     test('two bad inputs in two files give two hits (a page, and page data)', () => {
         const r = checkHiddenContent(out({
-            'about/index.html': page({ body: '<p>Not final.</p>' }),
-            'index.txt': '1:["$","a",null,{"href":"/about/","children":"Contact"}]\n',
+            'notes/index.html': page({ body: '<p>Not final.</p>' }),
+            'index.txt': '1:["$","a",null,{"href":"/notes/","children":"Contact"}]\n',
         }), siteRoot());
         expect(r.ok).toBe(false);
         expect(r.hits).toHaveLength(2);
-        expect(r.hits.filter((h) => h.startsWith('draft label: "Not final" in about/index.html: '))).toHaveLength(1);
+        expect(r.hits.filter((h) => h.startsWith('draft label: "Not final" in notes/index.html: '))).toHaveLength(1);
         expect(r.hits.filter((h) => h.startsWith('hidden Contact: a "Contact" menu or link in index.txt: '))).toHaveLength(1);
     });
 
     test('a link to a hidden page is a hit, in a page and in page data', () => {
         const r = checkHiddenContent(out({
-            'about/index.html': page({ body: '<a href="/contact/">Hello</a>' }),
+            'notes/index.html': page({ body: '<a href="/contact/">Hello</a>' }),
             'index.txt': '1:["$","a",null,{"href":"/apps"}]\n',
         }), siteRoot());
         expect(r.hits).toHaveLength(2);
-        expect(r.hits.filter((h) => h.startsWith('hidden Contact: a link to /contact/ in about/index.html: '))).toHaveLength(1);
+        expect(r.hits.filter((h) => h.startsWith('hidden Contact: a link to /contact/ in notes/index.html: '))).toHaveLength(1);
         expect(r.hits.filter((h) => h.startsWith('hidden apps: a link to /apps/ in index.txt: '))).toHaveLength(1);
     });
 
@@ -421,7 +421,7 @@ test.describe('injectCsp and checkCsp', () => {
     const withMeta = (html) => html.replace('<meta charSet="utf-8"/>', (c) => `${c}${META(html)}`);
 
     test('injectCsp writes one policy right after the charset, and checkCsp passes it (the control)', () => {
-        const dir = outWith({ 'index.html': page(), 'about/index.html': page() });
+        const dir = outWith({ 'index.html': page(), 'notes/index.html': page() });
         expect(injectCsp(dir)).toEqual({ ok: true, pages: 2, problems: [] });
         const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
         expect(html).toContain(`<head><meta charSet="utf-8"/>${META(page())}<link`);

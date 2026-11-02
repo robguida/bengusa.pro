@@ -9,7 +9,7 @@
 // "never on light blue" check below green.
 import { test, expect, PAGES, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, expectOpen, popupsLive, press, tipOf } from '../support/offgrid.mjs';
-import { SHOW, noteParked } from '../support/settings.mjs';
+import { EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED, noteParked } from '../support/settings.mjs';
 import { COLOUR, WORDS } from '../support/words.mjs';
 
 const LOGO = '[data-logo]';
@@ -72,6 +72,7 @@ test.describe('colour rules (6.f)', () => {
     });
 
     test('Home\'s "Off-grid, explained" section: the badge green, the heading and legend words navy, no red', async ({ page }) => {
+        test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED);
         await page.goto('/');
         await settle(page);
         const section = page.locator(HOME_SECTION);
@@ -102,6 +103,7 @@ test.describe('colour rules (6.f)', () => {
     });
 
     test('an open popup is a navy box with white words, "Off-grid:" bold white, and no green', async ({ page }, testInfo) => {
+        test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED);
         await page.goto('/');
         await popupsLive(page);
         // The hero and section badge popups have no link; a card's link is white.

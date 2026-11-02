@@ -1,5 +1,5 @@
-import PageIntro from '../components/PageIntro';
-import words from '../../content/privacy-words.json';
+import PageIntro from '@/app/components/PageIntro';
+import words from '@/content/privacy-words.json';
 
 export const metadata = {
     title: words.title,
