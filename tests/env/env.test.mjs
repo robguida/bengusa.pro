@@ -3,9 +3,9 @@
 // baked into the files in out/: NEXT_PUBLIC_* values go into the browser
 // code, and any process.env value a page renders goes into its HTML.
 //
-// Run with: npm run test:env   (node's built-in test runner)
-// It does its own build with fake values, then DELETES that out/, so run it
-// BEFORE `npm run build` (npm test does this in the right order).
+// Run with: npm run test:env   (in tests/; node's built-in test runner)
+// It does its own build with fake values, then DELETES that src/out/, so run
+// it BEFORE `npm run build` (npm test does this in the right order).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -58,7 +58,7 @@ test('a build with fake settings bakes none of them into out/', () => {
     ]);
     const values = Object.fromEntries([...names].map((n) => [n, fake()]));
 
-    const build = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'build.mjs')], {
+    const build = spawnSync(process.execPath, [path.join(ROOT, '..', 'scripts', 'build.mjs')], {
         cwd: ROOT,
         env: { ...process.env, ...values, NEXT_TELEMETRY_DISABLED: '1' },
         encoding: 'utf8',

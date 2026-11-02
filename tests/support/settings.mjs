@@ -14,7 +14,7 @@
 // it touches counts as hidden: release1.spec.mjs fails on any problem.
 import { test } from '@playwright/test';
 import { readSiteSettings } from '../../scripts/lib/export-checks.mjs';
-import { SITE_SETTINGS_FILE } from '../../lib/site-settings.mjs';
+import { SITE_SETTINGS_FILE } from '../../src/lib/site-settings.mjs';
 
 const settings = readSiteSettings();
 

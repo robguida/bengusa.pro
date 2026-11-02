@@ -4,7 +4,7 @@
 // apps" instead.
 //
 // The real app list has every card badged, so this needs a TEST-ONLY build:
-// the site is copied into test-results/ (never touching app/, lib/ or content/),
+// the site is copied into src/.fixture-sites/ (never touching app/, lib/ or content/),
 // one card loses its badge in the COPY's app list, and the copy is built with
 // the same guarded build script, served on its own port and opened in a
 // browser. One fixture per case:
@@ -14,13 +14,14 @@
 // e2e/home.spec.mjs.
 import { spawn } from 'node:child_process';
 import path from 'node:path';
-import { ROOT } from '../../scripts/lib/export-checks.mjs';
+import { fileURLToPath } from 'node:url';
 import { test as siteTest, expect, settle } from '../support/site.mjs';
 import { TRIGGER } from '../support/offgrid.mjs';
-import { BUILD_TIMEOUT, buildCopy, copySite, readJson, removeCopy, writeJson } from '../support/fixture-site.mjs';
+import { BUILD_TIMEOUT, FIXTURE_SITES, buildCopy, copySite, readJson, removeCopy, siteOf, writeJson } from '../support/fixture-site.mjs';
 import { APPS, WORDS } from '../support/words.mjs';
 import { APPS_PARKED, SHOW } from '../support/settings.mjs';
 
+const SERVE_OUT = fileURLToPath(new URL('../../scripts/serve-out.mjs', import.meta.url));
 const FIRST_PORT = Number(process.env.E2E_PORT || 4310) + 10;
 const SERVE_TIMEOUT = 15_000;
 
@@ -43,7 +44,7 @@ const unbadged = (apps) => apps.filter((a) => SHOWN.has(a.status) && a.offGrid !
 async function buildFixture(name, dir) {
     const fixture = FIXTURES[name];
     copySite(dir);
-    const file = path.join(dir, 'content', 'apps.json');
+    const file = path.join(siteOf(dir), 'content', 'apps.json');
     const apps = readJson(file);
     // The fixture only means something if the real list is all badged and
     // the copy differs from it by exactly one unbadged card.
@@ -58,7 +59,7 @@ async function buildFixture(name, dir) {
 // Serves dir/out on its own port; resolves once it answers. Ends early on
 // state (the first 200), never on a fixed wait.
 async function serve(outDir, port) {
-    const child = spawn(process.execPath, [path.join(ROOT, 'scripts', 'serve-out.mjs'), '--port', String(port), '--dir', outDir], { stdio: 'ignore' });
+    const child = spawn(process.execPath, [SERVE_OUT, '--port', String(port), '--dir', outDir], { stdio: 'ignore' });
     const url = `http://127.0.0.1:${port}`;
     const until = Date.now() + SERVE_TIMEOUT;
     for (;;) {
@@ -80,14 +81,14 @@ const test = siteTest.extend({
     fixture: ['open', { option: true }],
     // One copy per worker, built only for the fixtures that worker runs.
     guardSites: [async ({}, provide, workerInfo) => {
-        const base = path.join(ROOT, 'test-results', `heading-guard-${workerInfo.parallelIndex}`);
+        const base = path.join(FIXTURE_SITES, `heading-guard-${workerInfo.parallelIndex}`);
         const started = new Map();
         const site = async (name) => {
             if (!started.has(name)) {
                 const dir = path.join(base, name);
                 await buildFixture(name, dir);
                 const port = FIRST_PORT + workerInfo.parallelIndex * Object.keys(FIXTURES).length + Object.keys(FIXTURES).indexOf(name);
-                started.set(name, await serve(path.join(dir, 'out'), port));
+                started.set(name, await serve(path.join(siteOf(dir), 'out'), port));
             }
             return started.get(name);
         };

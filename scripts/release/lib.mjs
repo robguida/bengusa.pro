@@ -7,10 +7,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// The project root: src/ (package.json, node_modules, out/ live here).
-export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-// The git repo top, one level above src/ (git paths, docs/, .github/ are relative to it).
-export const REPO_ROOT = path.resolve(ROOT, '..');
+// The git repo top (scripts/, tests/, docs/, .github/ and git paths are relative to it).
+export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+// The site: src/ (its package.json, node_modules and out/ live here).
+export const ROOT = path.join(REPO_ROOT, 'src');
 export const IS_WIN = process.platform === 'win32';
 export const MIN_NODE = '24.0.0';
 

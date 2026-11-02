@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# dependencies (two installs: the site in src/, the test suite in tests/)
 /src/node_modules
+/tests/node_modules
 /src/.pnp
 .pnp.*
 /src/.yarn/*
@@ -12,10 +13,12 @@
 
 # testing
 /src/coverage
-/src/test-results/
-/src/playwright-report/
-/src/blob-report/
-/src/playwright/.cache/
+/tests/test-results/
+/tests/playwright-report/
+/tests/blob-report/
+/tests/playwright/.cache/
+# the test suite's throwaway copies of the site
+/src/.fixture-sites/
 
 # next.js
 /src/.next/

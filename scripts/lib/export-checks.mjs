@@ -4,9 +4,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE_SETTINGS_FILE, SITE_SWITCH_KEYS, checkSiteSettings } from '../../lib/site-settings.mjs';
+import { SITE_SETTINGS_FILE, SITE_SWITCH_KEYS, checkSiteSettings } from '../../src/lib/site-settings.mjs';
 
-export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+// The site: src/, beside scripts/ at the repo top.
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 export const OUT_DIR = path.join(ROOT, 'out');
 // scripts/build.mjs saves the full `next build` output here.
 export const BUILD_LOG = path.join(ROOT, '.next', 'bengusa-build.log');
@@ -132,10 +133,11 @@ export function checkSettingsMatchFolders(root = ROOT) {
 // folder itself, so untracked and git-ignored files are caught too. An
 // allow-listed file that is missing is reported as well.
 // ---------------------------------------------------------------------------
+// The list's path from the repo top; root is src/, one level below it.
 export const PUBLIC_ALLOWLIST = 'tests/fixtures/public-allowlist.txt';
 
 export function checkPublicAllowlist(root = ROOT) {
-    const listFile = path.join(root, PUBLIC_ALLOWLIST);
+    const listFile = path.join(root, '..', PUBLIC_ALLOWLIST);
     if (!fs.existsSync(listFile)) return { ok: false, problems: [`${PUBLIC_ALLOWLIST} is missing`], strays: [], missing: [] };
     const allowed = fs.readFileSync(listFile, 'utf8')
         .split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));

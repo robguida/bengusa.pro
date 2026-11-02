@@ -57,14 +57,15 @@ class Refused extends Error {}
 // The server script that gets sent. Live = main only, and that covers the code
 // that runs on the live box: a live command sends origin/main's copy (as of the
 // last fetch). Preview and the self-test send this checkout's committed copy.
-const checkoutScript = () => fs.readFileSync(path.join(ROOT, ...REMOTE_SH_PATH.split('/')), 'utf8').replace(/\r/g, '');
+// REMOTE_SH_PATH is from the repo top, in this checkout and in git alike.
+const checkoutScript = () => fs.readFileSync(path.join(REPO_ROOT, ...REMOTE_SH_PATH.split('/')), 'utf8').replace(/\r/g, '');
 function serverScript(target) {
     if (target !== 'live') return { text: checkoutScript(), from: `this checkout's ${REMOTE_SH_PATH}` };
-    const r = capture('git', ['show', `origin/main:src/${REMOTE_SH_PATH}`], { cwd: ROOT });
+    const r = capture('git', ['show', `origin/main:${REMOTE_SH_PATH}`], { cwd: REPO_ROOT });
     if (r.code !== 0 || !r.stdout.trim()) {
-        throw new Refused(`live sends the server script from origin/main, and origin/main has no src/${REMOTE_SH_PATH} yet (${r.stderr.trim() || 'empty'})`);
+        throw new Refused(`live sends the server script from origin/main, and origin/main has no ${REMOTE_SH_PATH} yet (${r.stderr.trim() || 'empty'})`);
     }
-    return { text: r.stdout.replace(/\r/g, ''), from: `origin/main:src/${REMOTE_SH_PATH}` };
+    return { text: r.stdout.replace(/\r/g, ''), from: `origin/main:${REMOTE_SH_PATH}` };
 }
 
 // ---------------------------------------------------------------------------
