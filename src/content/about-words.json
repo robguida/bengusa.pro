@@ -8,37 +8,7 @@
     "id": "about-story",
     "heading": "Two developers. Two countries. One team.",
     "paragraphs": [
-      "We're Rob and Rabbi, two software developers from opposite sides of the world who met while working on a client project a few years ago.",
-      "What started as a working relationship turned into a friendship. We discovered that we enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems.",
-      "We still work that way today. Each of us takes the lead on different apps, but we regularly review each other's work, exchange ideas, and keep each other honest. We're friends first, but we're also two developers who care about getting things right."
-    ],
-    "sections": [
-      {
-        "heading": "So, what's with the name?",
-        "paragraphs": [
-          "bengUSA brings together Bangladesh and the United States, the two countries we're from. The \"Beng\" comes from Bengali.",
-          "Originally, we planned to provide programmers and designers to other companies. Then we decided we'd rather build apps ourselves.",
-          "Our plans changed. The name stuck. We liked it, so we kept it."
-        ]
-      },
-      {
-        "heading": "Why build apps ourselves?",
-        "paragraphs": [
-          "After years of building software for other people, we wanted the freedom to pursue our own ideas.",
-          "We both have plenty of them. Probably more than we'll ever have time to build.",
-          "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use. We choose what matters, take responsibility for the results, and build things we're proud to put our names on."
-        ]
-      },
-      {
-        "heading": "Why Off-grid?",
-        "paragraphs": [
-          "We believe your personal information should belong to you.",
-          "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data.",
-          "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud.",
-          "We're not interested in collecting your personal information just because we can."
-        ],
-        "emphasis": "Your data, your call."
-      }
+      "From opposite sides of the world, Rob and Rabbi met a few years ago while working on a client project. They have been partners in business ever since. They enjoyed building software together, challenging each other's ideas, and figuring out solutions to difficult problems. That working relationship turned into a friendship."
     ]
   },
   "people": {
@@ -52,6 +22,7 @@
         "bio": [
           "Rob has spent more than 30 years building software, designing systems, and leading development teams. He's worked on everything from individual applications to large enterprise platforms.",
           "He enjoys solving complicated problems, especially when the result makes someone's work or life a little easier.",
+          "Lately Rob has been putting his experience to work with AI. He runs his own team of AI agents, set up like a small software company, with each one in a defined role and everything working to a written rulebook. He's passionate about AI-assisted development because it lets people with good ideas build better, and it helps most when they already know how to code, since they can tell good work from a draft that still needs fixing. The final call on every plan and every release is still his.",
           "His technical background includes AWS, SQL, Node.js, GraphQL, React, Python, Rust, and PHP."
         ],
         "photo": "/images/about/rob-guida.webp",
@@ -118,6 +89,34 @@
       }
     ]
   },
+  "sections": [
+    {
+      "heading": "So, what's with the name?",
+      "paragraphs": [
+        "bengUSA brings together Bangladesh and the United States, the two countries we're from. The “Beng” comes from Bengali, and “beng usa”, or “ben gusa”, sounds better than “bang usa”. Since the USA is still the melting pot of the world, it is best to be clear, Rob Guida is from the USA and Fojle Rabbi Saikat is from Bangladesh."
+      ],
+      "id": "about-name"
+    },
+    {
+      "heading": "Why build apps ourselves?",
+      "paragraphs": [
+        "After years of building software for other people, we wanted the freedom to pursue our own ideas.",
+        "We both have plenty of them. Probably more than we'll ever have time to build.",
+        "But that's part of the fun. We get to take an idea, figure out how to make it work, and turn it into something people can actually use."
+      ],
+      "id": "about-why"
+    },
+    {
+      "heading": "What is “Off-grid”?",
+      "paragraphs": [
+        "Not every app needs a server somewhere collecting your information. Sometimes you just want a useful tool that works without handing over your data.",
+        "That's the idea behind our Off-grid apps. Your app data stays on your device instead of being stored in our cloud.",
+        "We're not interested in collecting your personal information just because we can."
+      ],
+      "emphasis": "Your data, your call.",
+      "id": "about-offgrid"
+    }
+  ],
   "making": {
     "id": "about-making",
     "heading": "What we're making",
@@ -132,5 +131,6 @@
     "linkText": "Contact page",
     "after": "."
   },
-  "headingLevel": 2
+  "headingLevel": 2,
+  "showOwnWords": false
 }

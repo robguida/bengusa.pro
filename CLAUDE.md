@@ -73,9 +73,10 @@ Inside `src/` (the site):
 
 - `package.json`, `package-lock.json`, `.nvmrc`, `.env.template`, `next.config.mjs`, `eslint.config.mjs`, `jsconfig.json`, `postcss.config.mjs` — the site's install and tool settings.
 - `app/layout.js` — root layout: fonts, header, footer.
-- `app/page.js` — home page. Other live pages: `app/about/`, `app/privacy/`, plus `app/not-found.js`.
-- `app/_parked/` — pages built but not live yet: `apps/[slug]/` and `contact/`.
-- `app/components/` — shared components: AppCard, AppName, KeepWhole, OffGridBadge, OffGridHeading, OffGridLegend, OffGridTip, PageIntro, SiteFooter, and `header/` (LogoMark, SiteHeader, Wordmark).
+- `app/page.js` — **the only live page** (one-page site since 2026-11-02): hero, "Apps coming soon!", then the About body (`components/AboutBody.js`) under an "About Us" h2. `app/not-found.js` is the 404 page: it sends every other address to Home with a meta refresh (0 s), with a "Go to the home page" link as fallback.
+- `app/_parked/` — pages built but not live yet: `apps/[slug]/`, `contact/`, `about/` and `privacy/`. Their switches are in `content/site-settings.json` (`showApps`, `showContact`, `showAbout`, `showPrivacy`, all false); to bring one back, set its switch to true AND move its folder out of `_parked/`.
+- Hidden on Home by a setting, words kept: `showOwnWords` in `content/about-words.json` (the founders' "In ... own words" blocks) and `showOffGridExplained` in `content/site-words.json` (the "Off-grid, explained" section).
+- `app/components/` — shared components: AboutBody, AppCard, AppName, KeepWhole, OffGridBadge, OffGridHeading, OffGridLegend, OffGridTip, PageIntro, SiteFooter, and `header/` (LogoMark, SiteHeader, Wordmark).
 - `lib/` — helpers: `apps.js`, `content.js`, `site.js`, `site-settings.mjs`.
 - `content/` — the app list and the site words. App names come from here, not from page code.
 - `public/` — images and the favicon. Only files on `tests/fixtures/public-allowlist.txt` may be here.

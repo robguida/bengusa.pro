@@ -100,8 +100,8 @@ test('the box walk: every page, one popup, a client-side move; no policy violati
     await press(hero, testInfo);
     await expectOpen(hero, tip, 'the hero word\'s popup');
     await page.keyboard.press('Escape');
-
-    // 3. A client-side move, Home -> About -> Home, with the header's own links.
+    // 3. A client-side move, Home -> About -> Home. About is parked (one-page site, 2026-11-02): runs only when the header has the About link.
+    if (await page.getByRole('navigation', { name: 'Main' }).count() > 0) {
     await page.evaluate(() => { window.__boxStayed = true; });
     await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'About', exact: true }).click();
     await expect(page).toHaveURL(`${origin}/about/`);
@@ -115,6 +115,7 @@ test('the box walk: every page, one popup, a client-side move; no policy violati
     expect.soft(await page.evaluate(() => window.__boxStayed), 'About -> Home stayed on the client (no reload)').toBe(true);
     await networkQuiet(page);
     await collect('Home -> About -> Home');
+    }
 
     // 4. Sort the failed requests: Next's cancelled prefetch HEADs, or real.
     const real = [];

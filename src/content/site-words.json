@@ -12,10 +12,12 @@
     "heroSubline": "Apps that mind their own business.",
     "description": "Makers of Off-grid apps. Off-grid: your data lives on your device, not in our cloud.",
     "appsTitle": "Meet our {offGrid} apps",
-    "appsTitleNotAllOffGrid": "Meet our apps"
+    "appsTitleNotAllOffGrid": "Meet our apps",
+    "appsComingSoon": "Apps coming soon!"
   },
   "moreInTheWorks": {
     "heading": "More in the works",
     "text": "More apps are in the queue."
-  }
+  },
+  "showOffGridExplained": false
 }

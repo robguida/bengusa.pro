@@ -13,8 +13,8 @@ for (const p of PAGES) {
         await page.goto(p, { waitUntil: 'domcontentloaded' });
         const footer = page.locator('footer');
         const privacy = footer.getByRole('link', { name: 'Privacy', exact: true });
-        await expect.soft(privacy, `${p}: Privacy link`).toBeVisible();
-        await expect.soft(privacy, `${p}: Privacy link target`).toHaveAttribute('href', '/privacy/');
+        // Privacy is parked (one-page site): no link to it, and no footer nav at all.
+        await expect.soft(privacy, `${p}: no Privacy link`).toHaveCount(0);
         await expect.soft(footer, `${p}: copyright line`).toContainText('© 2026 bengUSA.pro');
         // Release 1: the footer links only to pages that are shown (no app pages, no Contact).
         const hrefs = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
@@ -22,36 +22,25 @@ for (const p of PAGES) {
         // With the apps and Contact both hidden: About and Privacy, in that order, and nothing else.
         if (!SHOW.apps && !SHOW.contact) {
             const links = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => `${e.textContent.trim()} ${e.getAttribute('href')}`));
-            expect.soft(links, `${p}: footer links (Release 1)`).toEqual(['About /about/', 'Privacy /privacy/']);
+            expect.soft(links, `${p}: footer links (one-page site)`).toEqual([]);
         }
     });
 }
 
-// The menu: with the apps hidden there is no "Apps" menu, and About is the only page in it.
+// The menu: with the apps hidden there is no "Apps" menu, and with About parked (one-page site) there are no links at all: only the brand.
 // The header holds ONE "Main" nav at every width (the phone nav and its menu
 // button come back with the apps), and no button at all: on a phone About is a
 // plain link with a tap area of at least 44 x 44 px.
-for (const p of ['/', '/about/']) {
-    test(`menu on ${p} (Release 1): one Main nav, no menu button, only About, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
+for (const p of ['/']) {
+    test(`menu on ${p} (one-page site): no Main nav, no menu button, no links but the brand, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
         test.skip(SHOW.apps, 'the apps are shown: the menu tests below cover this page');
         await page.goto(p);
         await settle(page);
-        // In the page's markup, shown or not, so a hidden second nav still counts.
-        await expect.soft(page.locator('header nav[aria-label="Main"]'), 'Main navs in the header').toHaveCount(1);
-        await expect.soft(page.locator('header button'), 'buttons in the header (no Apps menu, no phone menu button)').toHaveCount(0);
-        const nav = page.getByRole('navigation', { name: 'Main' });
-        await expect.soft(nav, 'the Main nav is shown').toBeVisible();
-        const hrefs = await nav.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
-        expect.soft(hrefs, 'links in the main menu').toEqual(['/about/']);
-        const about = nav.getByRole('link', { name: 'About', exact: true });
-        await expect.soft(about, 'the About link').toBeVisible();
-        if (p === '/about/') await expect.soft(about, 'About marked as the current page').toHaveAttribute('aria-current', 'page');
-        else await expect.soft(about, `About not marked as the current page on ${p}`).not.toHaveAttribute('aria-current', 'page');
-        if (isPhone(testInfo)) {
-            const box = await about.boundingBox();
-            expect.soft(box?.width ?? 0, 'phone: About tap area width').toBeGreaterThanOrEqual(44);
-            expect.soft(box?.height ?? 0, 'phone: About tap area height').toBeGreaterThanOrEqual(44);
-        }
+        await expect.soft(page.locator('header nav'), 'navs in the header').toHaveCount(0);
+        await expect.soft(page.locator('header button'), 'buttons in the header').toHaveCount(0);
+        const hrefs = await page.locator('header a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+        expect.soft(hrefs, 'links in the header: only the brand, to Home').toEqual(['/']);
+        void isPhone;
         for (const gone of ['Contact', 'Apps', 'Menu']) {
             await expect.soft(page.locator('header').getByText(gone, { exact: true }), `"${gone}" in the header`).toHaveCount(0);
         }
@@ -132,7 +121,8 @@ test('no 404s (or any 4xx/5xx) while browsing', async ({ page }) => {
     // export bug. On Linux (CI, WSL) it must pass, and E2E_STRICT_404=1 makes
     // it strict on Windows too (for a deploy gate). If it passes on a buggy
     // build, Playwright reports that, so the marker can't go stale silently.
-    const tolerated = misnamed.length > 0 && process.platform === 'win32' && process.env.E2E_STRICT_404 !== '1';
+    // One-page site: there is no page-to-page navigation, so the bug cannot show here.
+    const tolerated = false && misnamed.length > 0 &&process.platform === 'win32' && process.env.E2E_STRICT_404 !== '1';
     test.fail(tolerated, describeBug(misnamed));
     expect(await browse(page)).toEqual([]);
 });

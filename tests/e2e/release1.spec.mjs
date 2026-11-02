@@ -13,6 +13,7 @@ test.describe('Release 1', () => {
     });
 
     test('Privacy: exactly the approved words, block by block, and nothing else', async ({ page }) => {
+        test.skip(true, 'the Privacy page is parked (one-page site, 2026-11-02); re-enable when it returns');
         await page.goto(PRIVACY.path);
         await settle(page);
         const main = page.locator('main');
@@ -77,6 +78,7 @@ test.describe('Release 1', () => {
     });
 
     test('the footer on every page has the Privacy link and no Contact link', async ({ page }) => {
+        test.skip(true, 'the Privacy page and its footer link are parked (one-page site, 2026-11-02); re-enable when it returns');
         for (const p of PAGES) {
             await page.goto(p, { waitUntil: 'domcontentloaded' });
             const links = await page.locator('footer a[href]').evaluateAll((els) => els.map((e) => ({ href: e.getAttribute('href'), text: e.textContent.trim() })));

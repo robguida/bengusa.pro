@@ -1,9 +1,11 @@
+import AboutBody from './components/AboutBody';
 import AppCard from './components/AppCard';
 import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
 import OffGridLegend from './components/OffGridLegend';
 import { getShownApps } from '@/lib/apps';
 import siteWords from '../content/site-words.json';
+import aboutWords from '../content/about-words.json';
 
 export default function Home() {
     // None while content/site-settings.json hides the apps. Then the whole apps
@@ -11,6 +13,10 @@ export default function Home() {
     // the hero is followed directly by "Off-grid, explained".
     const apps = getShownApps();
     const { home, moreInTheWorks, offGrid } = siteWords;
+    // One-page site (2026-11-02): "Off-grid, explained" is hidden while
+    // "showOffGridExplained" in content/site-words.json is false (its words stay).
+    const showExplained = siteWords.showOffGridExplained === true;
+    const { top } = aboutWords;
     // "Meet our Off-grid apps" is true only while every card in the grid wears
     // the badge, open and showcase alike. Otherwise "Meet our apps" (17.b.i).
     const everyCardOffGrid = apps.length > 0 && apps.every((app) => app.offGrid);
@@ -41,12 +47,21 @@ export default function Home() {
             {/* The same look as the "Off-grid, explained" section on the app pages. The
                 badge's popup has no link: this legend names no single app (17.c.iv). No
                 connects box here: each app's page has its own. */}
+            {showExplained && (
             <section className="max-w-[44em] pb-6" aria-labelledby="home-off-grid-title">
                 <h2 id="home-off-grid-title" className="m-0 mb-4 text-[clamp(1.6rem,4vw,2.2rem)] leading-[1.1]">
                     <KeepWhole text={offGrid.explainedHeading} />
                 </h2>
                 <OffGridLegend text={offGrid.legendOnHome} />
             </section>
+            )}
+
+            {/* Stands in for the apps section while the apps are hidden. */}
+            {apps.length === 0 && (
+                <section className="pb-10" aria-labelledby="home-coming-soon-title">
+                    <h2 id="home-coming-soon-title" className="m-0 text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">{home.appsComingSoon}</h2>
+                </section>
+            )}
 
             {apps.length > 0 && (
                 <section id="apps" className="py-10" aria-labelledby="apps-title">
@@ -72,6 +87,16 @@ export default function Home() {
                     </ul>
                 </section>
             )}
+
+            {/* The About body, shared with the parked About page. The hero is the
+                h1, "About Us" is an h2, everything under it starts at h3. */}
+            <section className="border-t border-line pt-10" aria-labelledby="about-title">
+                <div className="grid justify-items-start gap-[18px] pb-10">
+                    <h2 id="about-title" className="m-0 max-w-[18ch] text-[clamp(2rem,5.5vw,3rem)] leading-[1.04]">{top.title}</h2>
+                    <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{top.line}</p>
+                </div>
+                <AboutBody level={3} />
+            </section>
         </div>
     );
 }

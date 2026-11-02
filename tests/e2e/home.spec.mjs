@@ -7,7 +7,7 @@
 import { test, expect, heroSubline, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, offGridSection, popupsLive } from '../support/offgrid.mjs';
 import { APPS, COLOUR, WORDS } from '../support/words.mjs';
-import { APPS_PARKED, SHOW } from '../support/settings.mjs';
+import { APPS_PARKED, EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED } from '../support/settings.mjs';
 
 // The words a person sees. The heading test below also checks textContent
 // (what a crawler reads), now that each popup box sits after its heading.
@@ -26,6 +26,7 @@ test.describe('Home', () => {
     });
 
     test('hero: "Makers of Off-grid apps." with a green "Off-grid" on one line, then the navy subline, then the "Off-grid, explained" section (then the app grid, while the apps are shown)', async ({ page }, testInfo) => {
+        test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED);
         const h1 = page.locator('h1');
         await expect(h1).toHaveCount(1);
         expect.soft(await text(h1), 'hero words').toBe(WORDS.hero);
@@ -117,6 +118,7 @@ test.describe('Home', () => {
     });
 
     test('the "Off-grid, explained" section: a plain heading, the green badge, the Home legend word for word, and the only "Cloud-killers" on Home', async ({ page }) => {
+        test.skip(!SHOW_EXPLAINED, EXPLAINED_PARKED);
         const section = offGridSection(page);
         await expect(section, 'one "Off-grid, explained" section on Home').toHaveCount(1);
 
@@ -195,8 +197,8 @@ test.describe('Home', () => {
             expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
         }
         await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(0);
-        // Hero, then one section: nothing else in Home's main area.
-        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => e.tagName.toLowerCase())), 'Home headings').toEqual(['h1', 'h2']);
+        // Hero, then "Apps coming soon!" (an h2), then the About body ("About Us" is an h2); no other h1 or h2.
+        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!', 'h2 About Us']);
     });
 
     test('heading: "Meet our Off-grid apps" with "Off-grid" as a popup word; the "More in the works" tile never says Off-grid', async ({ page }) => {

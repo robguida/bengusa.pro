@@ -125,8 +125,9 @@ test.describe('About photos (committed files)', () => {
 
 test.describe('the full name only (spec 18.c.iii)', () => {
     test('every built About file (the page and its data files) holds "Rabbi" and "Fojle" only inside the full name', () => {
-        const dir = path.join(OUT_DIR, 'about');
-        const files = walk(dir).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
+        // The About body stands on Home now (the About page is parked): read Home's own files.
+        const dir = OUT_DIR;
+        const files = walk(dir).filter((full) => /^(index\.html|index\.txt|__next[^/]*)$/.test(rel(OUT_DIR, full))).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
         const names = files.map((f) => f.name);
         // The scan only means something if it reads the page AND its data files.
         expect.soft(names, 'out/about/ holds the page').toContain('index.html');
@@ -168,7 +169,7 @@ test.describe('phone-number shapes', () => {
     test('the About words and the built About page hold none', () => {
         const words = fs.readFileSync(path.join(ROOT, 'content', 'about-words.json'), 'utf8');
         expect.soft(findPhones(words), 'content/about-words.json').toEqual([]);
-        const html = fs.readFileSync(path.join(OUT_DIR, 'about', 'index.html'), 'utf8');
+        const html = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8');
         // Visible text and attributes only: no scripts or styles (they hold long digit runs).
         const visible = html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ');
         expect.soft(findPhones(visible), 'out/about/index.html (text)').toEqual([]);
