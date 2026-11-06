@@ -48,9 +48,31 @@ rc=$?
 set -e
 if [ "$rc" -ne 0 ] || [ ! -s "$WORK" ]; then echo "goaccess failed rc=$rc (no report written)"; exit 1; fi
 
-# Belt and braces: refuse to keep a report that holds anything shaped like an IP address.
-if grep -Eq '([0-9]{1,3}\.){3}[0-9]{1,3}|([0-9A-Fa-f]{1,4}:){3,}[0-9A-Fa-f]{0,4}' "$WORK"; then
-  echo "IP-shaped text found in report; report discarded"; exit 1
+# Belt and braces (BUWEB-127): refuse to keep a report that holds any real visitor address.
+# The old check refused anything shaped like a dotted quad, which tripped on browser versions
+# (120.0.0.0, 13.5.8.1311). Now the check uses the addresses actually in the input logs:
+# column 1 of every log line. Whole-word, exact-string match, so version strings are not caught.
+# Fails closed: if no addresses can be read from the logs, the report is discarded.
+# The address list lives only in a shell variable and a pipe; nothing is written to disk.
+set +e
+ips=$(zcat -f "${files[@]}" 2>/dev/null | awk '$1 ~ /[.:]/ {print $1}' | sort -u)
+irc=$?
+set -e
+if [ "$irc" -ne 0 ] || [ -z "$ips" ]; then
+  echo "could not read visitor addresses from the logs; report discarded"; exit 1
+fi
+set +e
+grep -Fqw -f <(printf '%s\n' "$ips") "$WORK"
+grc=$?
+set -e
+if [ "$grc" -eq 0 ]; then
+  echo "visitor address found in report; report discarded"; exit 1
+elif [ "$grc" -ne 1 ]; then
+  echo "address check failed rc=$grc; report discarded"; exit 1
+fi
+# Second net: any IPv6-shaped text (3+ hex groups with colons) still fails the report.
+if grep -Eq '([0-9A-Fa-f]{1,4}:){3,}[0-9A-Fa-f]{0,4}' "$WORK"; then
+  echo "IPv6-shaped text found in report; report discarded"; exit 1
 fi
 
 chown ec2-user:ec2-user "$WORK"
