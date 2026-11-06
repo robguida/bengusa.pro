@@ -33,12 +33,12 @@ test.describe('Release 1: the settings and the parked code', () => {
 
     // A new page or a new file route is a reviewed change: it fails here until
     // this list is updated with it.
-    test('the page is exactly / (one-page site); the route table adds only the 404 and the three files Next makes from src/app', () => {
+    test('the pages are exactly / and /privacy (one-page site); the route table adds only the 404 and the three files Next makes from src/app', () => {
         test.skip(SHOW.apps || SHOW.contact, HIDDEN);
-        expect.soft(expectedRoutes(), 'expectedRoutes(): the pages the build must make').toEqual(['/']);
+        expect.soft(expectedRoutes(), 'expectedRoutes(): the pages the build must make').toEqual(['/', '/privacy']);
         expect(fs.existsSync(BUILD_LOG), `no build log at ${BUILD_LOG}: run "npm run build" first`).toBe(true);
         const rows = checkRouteTable(fs.readFileSync(BUILD_LOG, 'utf8')).rows.map((r) => r.route).sort();
-        expect.soft(rows, 'route-table rows').toEqual(['/', '/_not-found', '/apple-icon.png', '/icon.svg', '/robots.txt']);
+        expect.soft(rows, 'route-table rows').toEqual(['/', '/_not-found', '/apple-icon.png', '/icon.svg', '/privacy', '/robots.txt']);
     });
 
     test('the hidden code is kept: the app pages and Contact sit in src/app/_parked/, not in routing', () => {
@@ -149,15 +149,16 @@ test.describe('Release 1: no draft words, no forms, nothing inline', () => {
     });
 });
 
-// One-page site (2026-11-02): the About and Privacy pages are parked, so none of them is built.
-test.describe('One-page site: About and Privacy are not built; the 404 page sends visitors Home', () => {
-    test('out/ has no about/ or privacy/ page, and no link to either', () => {
-        for (const name of ['about', 'privacy']) {
+// One-page site (2026-11-02): the About page is parked, so it is not built.
+// Privacy is live again (BUWEB-125); its tests are below.
+test.describe('One-page site: About is not built; the 404 page sends visitors Home', () => {
+    test('out/ has no about/ page, and no link to it', () => {
+        for (const name of ['about']) {
             expect.soft(fs.existsSync(path.join(OUT_DIR, name)), `out/${name}/`).toBe(false);
             expect.soft(fs.existsSync(path.join(OUT_DIR, `${name}.html`)), `out/${name}.html`).toBe(false);
         }
-        const hrefs = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8').match(/href="\/(about|privacy)\/?"/g) ?? [];
-        expect.soft(hrefs, 'links to /about/ or /privacy/ on Home').toEqual([]);
+        const hrefs = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8').match(/href="\/about\/?"/g) ?? [];
+        expect.soft(hrefs, 'links to /about/ on Home').toEqual([]);
     });
 
     test('out/404.html refreshes to / at once (a meta refresh), has a "Go to the home page" link and no inline script', () => {
@@ -167,8 +168,7 @@ test.describe('One-page site: About and Privacy are not built; the 404 page send
     });
 });
 
-test.describe('PARKED: Privacy is built and linked from every footer (back with the Privacy page)', () => {
-    test.beforeEach(() => { test.skip(true, 'the Privacy page is parked (one-page site, 2026-11-02); re-enable when it returns'); });
+test.describe('Privacy is built and linked from every footer (live again, BUWEB-125)', () => {
     test('out/privacy/index.html exists, has the heading "Privacy" and not the old placeholder', () => {
         const file = path.join(OUT_DIR, 'privacy', 'index.html');
         expect(fs.existsSync(file), 'out/privacy/index.html').toBe(true);
