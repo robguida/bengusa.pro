@@ -46,7 +46,6 @@ test.describe('pages and old addresses', () => {
     });
 
     test('Privacy returns 200 with its heading, no placeholder and no form', async ({ request }) => {
-        test.skip(true, 'the Privacy page is parked (one-page site, 2026-11-02); re-enable when it returns');
         const res = await request.get('/privacy/', { maxRedirects: 0 });
         expect(res.status()).toBe(200);
         const html = await res.text();
@@ -100,8 +99,8 @@ test.describe('pages and old addresses', () => {
 });
 
 test.describe('the static server (npm start)', () => {
-    test('old addresses (/about/, /privacy/, any other) get the 404 page, which refreshes to Home', async ({ request }) => {
-        for (const p of ['/about/', '/privacy/', '/about', '/anything-else/']) {
+    test('old addresses (/about/, any other) get the 404 page, which refreshes to Home', async ({ request }) => {
+        for (const p of ['/about/', '/about', '/privacy.html', '/anything-else/']) {
             const res = await request.get(p, { maxRedirects: 0 });
             expect.soft(res.status(), `${p}: status stays 404`).toBe(404);
             expect.soft(await res.text(), `${p}: refreshes to /`).toContain('http-equiv="refresh" content="0;url=/"');

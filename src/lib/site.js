@@ -23,13 +23,14 @@ if (problems.length > 0) {
 
 export const SHOW_APPS = showApps;
 export const SHOW_CONTACT = showContact;
-// One-page site (2026-11-02): the About and Privacy pages are parked in
-// src/app/_parked/ (About's words stand on Home). Their links stay in the lists
-// below behind these two constants. To bring a page back: set its constant to
-// true AND move its folder back out of src/app/_parked/ (the build's route
-// table fails if the two disagree).
+// One-page site (2026-11-02): the About page is parked in src/app/_parked/
+// (About's words stand on Home). The Privacy page came back on 2026-11-06
+// (BUWEB-125), so it is built and its footer link shows. Links stay in the
+// lists below behind these two constants. To bring a parked page back: set its
+// constant to true AND move its folder out of src/app/_parked/ (the build's
+// route table fails if the two disagree).
 export const SHOW_ABOUT = false;
-export const SHOW_PRIVACY = false;
+export const SHOW_PRIVACY = true;
 
 // The plain links in the header, on a computer and on a phone, in order.
 export function headerLinks() {

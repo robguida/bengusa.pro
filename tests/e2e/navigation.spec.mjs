@@ -13,16 +13,17 @@ for (const p of PAGES) {
         await page.goto(p, { waitUntil: 'domcontentloaded' });
         const footer = page.locator('footer');
         const privacy = footer.getByRole('link', { name: 'Privacy', exact: true });
-        // Privacy is parked (one-page site): no link to it, and no footer nav at all.
-        await expect.soft(privacy, `${p}: no Privacy link`).toHaveCount(0);
+        // Privacy is live again (BUWEB-125): every footer links to it.
+        await expect.soft(privacy, `${p}: the Privacy link`).toHaveCount(1);
+        await expect.soft(privacy, `${p}: the Privacy link goes to /privacy/`).toHaveAttribute('href', '/privacy/');
         await expect.soft(footer, `${p}: copyright line`).toContainText('© 2026 bengUSA.pro');
         // Release 1: the footer links only to pages that are shown (no app pages, no Contact).
         const hrefs = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
         expect.soft(hrefs.filter((h) => !PAGES.includes(h)), `${p}: footer links to pages that are not shown`).toEqual([]);
-        // With the apps and Contact both hidden: About and Privacy, in that order, and nothing else.
+        // With the apps and Contact both hidden (About is parked): Privacy and nothing else.
         if (!SHOW.apps && !SHOW.contact) {
             const links = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => `${e.textContent.trim()} ${e.getAttribute('href')}`));
-            expect.soft(links, `${p}: footer links (one-page site)`).toEqual([]);
+            expect.soft(links, `${p}: footer links (one-page site)`).toEqual(['Privacy /privacy/']);
         }
     });
 }
@@ -121,8 +122,8 @@ test('no 404s (or any 4xx/5xx) while browsing', async ({ page }) => {
     // export bug. On Linux (CI, WSL) it must pass, and E2E_STRICT_404=1 makes
     // it strict on Windows too (for a deploy gate). If it passes on a buggy
     // build, Playwright reports that, so the marker can't go stale silently.
-    // One-page site: there is no page-to-page navigation, so the bug cannot show here.
-    const tolerated = false && misnamed.length > 0 &&process.platform === 'win32' && process.env.E2E_STRICT_404 !== '1';
+    // Privacy is live again (BUWEB-125), so the Home-to-Privacy navigation can show the bug.
+    const tolerated = misnamed.length > 0 && process.platform === 'win32' && process.env.E2E_STRICT_404 !== '1';
     test.fail(tolerated, describeBug(misnamed));
     expect(await browse(page)).toEqual([]);
 });
