@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # bengusa.pro visitor counts (BUWEB-125). Runs on the box as root, from the systemd timer.
-# Reads the 14-day corp access log, writes ONE totals report with no IP addresses.
+# Reads the newest 14 rotated corp access logs plus today's, writes ONE totals report with no IP addresses.
 # Nothing else is kept: no database, no temp copy of the log, no container logs.
 set -euo pipefail
 umask 077
@@ -16,13 +16,12 @@ install -d -m 0700 -o ec2-user -g ec2-user "$OUTDIR"
 WORK="$OUTDIR/.working.$$"
 trap 'rm -f "$WORK"' EXIT
 
-# Oldest first. zcat -f reads plain and .gz files alike. Nothing is copied to disk.
+# Rotated logs are access.log-YYYYMMDD (or .gz). Sort by name = oldest first; keep the newest 14,
+# then today's live access.log. zcat -f reads plain and .gz files alike. Nothing is copied to disk.
 files=()
-for n in $(seq 14 -1 1); do
-  for f in "$LOGDIR/access.log.$n" "$LOGDIR/access.log.$n.gz"; do
-    if [ -f "$f" ]; then files+=("$f"); fi
-  done
-done
+while IFS= read -r f; do
+  if [ -n "$f" ]; then files+=("$f"); fi
+done < <(find "$LOGDIR" -maxdepth 1 -type f -name 'access.log-[0-9]*' | sort | tail -n 14)
 if [ -f "$LOGDIR/access.log" ]; then files+=("$LOGDIR/access.log"); fi
 if [ "${#files[@]}" -eq 0 ]; then echo "no log files yet"; exit 0; fi
 
@@ -34,6 +33,7 @@ if [ "${#files[@]}" -eq 0 ]; then echo "no log files yet"; exit 0; fi
 set +e
 zcat -f "${files[@]}" | docker run --rm -i \
   --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --tmpfs /tmp:size=16m --workdir /tmp \
   --memory 256m --log-driver none --user 65534:65534 \
   "$IMAGE" \
   --log-format='%h [%d:%t %^] "%m %U" %s %b "%u"' \
