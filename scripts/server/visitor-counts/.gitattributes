@@ -1,0 +1,2 @@
+# Server files must stay LF (the shell script runs on Linux).
+* text eol=lf
