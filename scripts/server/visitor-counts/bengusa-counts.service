@@ -1,0 +1,10 @@
+[Unit]
+Description=bengusa.pro visitor totals (reads the 14-day log, writes totals only)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/bengusa-run-counts
+PrivateTmp=yes
+NoNewPrivileges=yes

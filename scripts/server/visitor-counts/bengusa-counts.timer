@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily bengusa.pro visitor totals
+
+[Timer]
+# After logrotate's daily run, UTC.
+OnCalendar=*-*-* 06:15:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
