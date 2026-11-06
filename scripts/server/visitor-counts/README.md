@@ -51,7 +51,7 @@ Read this before relying on the numbers:
 5. Test once by hand:
    `sudo systemctl start bengusa-counts.service; sudo journalctl -u bengusa-counts.service -n 5 --no-pager`
    Then `ls -la ~/bengusa-corp-site/counts/` must show only `totals-latest.html`, `-rw-------`, owner ec2-user.
-   Prove no IPs: `grep -Ec '([0-9]{1,3}\.){3}[0-9]{1,3}' ~/bengusa-corp-site/counts/totals-latest.html` must print `0`.
+   Prove no IPs: run the service once and read the journal: `sudo systemctl start bengusa-counts.service; sudo journalctl -u bengusa-counts.service -n 20 --no-pager`. It must show `ok:` and must not show `visitor address found`.
    If the script says "visitor address found", treat it as real: do not loosen the check. (Browser and OS version numbers no longer trip it, BUWEB-127.)
 6. Prove nothing is left behind: `sudo docker ps -a` shows no goaccess container.
 7. Switch on: `sudo systemctl enable --now bengusa-counts.timer; systemctl list-timers bengusa-counts.timer`
