@@ -22,8 +22,9 @@ export const USDEBT = {
     leadIn: 'While you wait, try a tool we built.',
     title: 'Our U.S. Debt',
     text: 'See the U.S. national debt day by day, from public U.S. Treasury data that is updated each business day and goes back to 1993. Pick any dates to get a chart, stats and the numbers behind them, plus a trend line that looks ahead. You can also compare how the debt changed during each presidential term.',
-    linkText: 'Try Our U.S. Debt at usdebt.bengusa.pro \u2192',
-    url: 'https://usdebt.bengusa.pro',
+    linkText: 'Try Our U.S. Debt at bengusa.pro/ourusdebt \u2192',
+    newTabHint: ' (opens in a new tab)',
+    url: 'https://bengusa.pro/ourusdebt/',
 };
 
 export const WORDS = {

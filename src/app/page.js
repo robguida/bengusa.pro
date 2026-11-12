@@ -61,7 +61,7 @@ export default function Home() {
             {apps.length === 0 && (
                 <section className="pb-10" aria-labelledby="home-coming-soon-title">
                     <h2 id="home-coming-soon-title" className="m-0 text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">{home.appsComingSoon}</h2>
-                    {/* BUWEB-128: a tool to try while the apps are not out. Same tab, a plain link
+                    {/* BUWEB-128: a tool to try while the apps are not out. A plain link that opens in a new tab
                         (the words are in content/site-words.json, "usDebtPromo"). It sits under
                         the section heading and stays modest. Off with "showUsDebtPromo": false in
                         content/site-settings.json. */}
@@ -70,8 +70,9 @@ export default function Home() {
                             <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
                             <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
                             <p className="m-0">{usDebtPromo.text}</p>
-                            <a href={usDebtPromo.url} className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
+                            <a href={usDebtPromo.url} target="_blank" rel="noopener" className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
                                 {usDebtPromo.linkText}
+                                <span className="sr-only">{usDebtPromo.newTabHint}</span>
                             </a>
                         </div>
                     )}

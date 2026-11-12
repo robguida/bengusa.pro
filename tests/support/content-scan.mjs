@@ -20,7 +20,7 @@ const INERT_URL = [
 // another sub-domain, a path or plain http is still an outside address and
 // still caught. Typed here, not read from content/, so a content edit cannot
 // widen the guard.
-export const ALLOWED_OUTSIDE_URLS = ['https://usdebt.bengusa.pro'];
+export const ALLOWED_OUTSIDE_URLS = ['https://bengusa.pro/ourusdebt/'];
 export const isAllowedOutsideUrl = (url) => ALLOWED_OUTSIDE_URLS.includes(url);
 
 // An apostrophe as it can appear in out/: typed, curly, or HTML-escaped.

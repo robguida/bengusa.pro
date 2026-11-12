@@ -202,7 +202,7 @@ test.describe('Home', () => {
         expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!', 'h2 About Us']);
     });
 
-    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a plain same-tab link, in that order directly under "Apps coming soon!"', async ({ page }) => {
+    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a plain new-tab link, in that order directly under "Apps coming soon!"', async ({ page }) => {
         test.skip(SHOW.apps || !SHOW.usDebtPromo, 'the block shows only while the apps are hidden and "showUsDebtPromo" is true');
         const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
         await expect(section, 'one "Apps coming soon!" section').toHaveCount(1);
@@ -218,11 +218,11 @@ test.describe('Home', () => {
         expect.soft(await text(block.locator('> p').nth(1)), 'paragraph').toBe(USDEBT.text);
 
         const link = block.locator('> a');
-        expect.soft(await text(link), 'link text').toBe(USDEBT.linkText);
+        expect.soft(await text(link), 'link text (visible words, then the hidden new-tab hint for screen readers)').toBe(USDEBT.linkText + USDEBT.newTabHint);
         expect.soft(await link.getAttribute('href'), 'link address').toBe(USDEBT.url);
-        for (const attr of ['target', 'rel', 'onclick']) {
-            expect.soft(await link.getAttribute(attr), `the link has no ${attr}`).toBeNull();
-        }
+        expect.soft(await link.getAttribute('target'), 'opens in a new tab').toBe('_blank');
+        expect.soft(((await link.getAttribute('rel')) || '').split(/\s+/), 'rel keeps noopener').toContain('noopener');
+        expect.soft(await link.getAttribute('onclick'), 'the link has no onclick').toBeNull();
         // The title is an h3 under the "Apps coming soon!" h2, and the hero stays the only h1.
         await expect.soft(page.getByRole('heading', { level: 3, name: USDEBT.title, exact: true })).toBeVisible();
         await expect.soft(page.locator('h1')).toHaveCount(1);

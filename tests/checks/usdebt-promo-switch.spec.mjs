@@ -35,7 +35,7 @@ test.describe('the "Our U.S. Debt" switch, test-only build with showUsDebtPromo 
         const plain = home.replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
         // The "Apps coming soon!" heading stays; only the block is gone.
         expect.soft(plain, 'the section heading stays').toContain('Apps coming soon!');
-        for (const gone of [USDEBT.leadIn, USDEBT.title, 'national debt day by day', 'usdebt.bengusa.pro']) {
+        for (const gone of [USDEBT.leadIn, USDEBT.title, 'national debt day by day', 'bengusa.pro/ourusdebt']) {
             expect.soft(plain, `Home text holds "${gone}"`).not.toContain(gone);
         }
         expect.soft(home, 'the outside address anywhere in Home').not.toContain(USDEBT.url);

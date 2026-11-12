@@ -530,12 +530,12 @@ test.describe('scanOut: the one approved outside address', () => {
         return scanOut(dir).hits.outsideUrl;
     };
 
-    test('https://usdebt.bengusa.pro (the Our U.S. Debt link) is allowed', () => {
-        expect(scan('<a href="https://usdebt.bengusa.pro">Try it</a>')).toEqual([]);
+    test('https://bengusa.pro/ourusdebt/ (the Our U.S. Debt link) is allowed', () => {
+        expect(scan('<a href="https://bengusa.pro/ourusdebt/">Try it</a>')).toEqual([]);
     });
 
     test('anything else is still an outside address: a look-alike host, another sub-domain, a path, plain http, another site', () => {
-        for (const url of ['https://usdebt.bengusa.pro.example.com', 'https://www.bengusa.pro', 'https://usdebt.bengusa.pro/x', 'http://usdebt.bengusa.pro', 'https://example.com']) {
+        for (const url of ['https://bengusa.pro/ourusdebt', 'https://bengusa.pro/ourusdebt/x', 'https://bengusa.pro.example.com/ourusdebt/', 'https://www.bengusa.pro/ourusdebt/', 'https://usdebt.bengusa.pro', 'http://bengusa.pro/ourusdebt/', 'https://example.com']) {
             expect.soft(scan(`<a href="${url}">x</a>`).length, `should catch ${url}`).toBe(1);
         }
     });
