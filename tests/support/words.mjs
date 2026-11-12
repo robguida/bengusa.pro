@@ -17,6 +17,15 @@ export const APPS = [
     { id: 'vault', shortName: 'Vault', name: 'Vault (working name)' },
 ].map((app) => ({ ...app, page: `/apps/${slugs[app.id]}/`, box: `${app.id}-connects` }));
 
+// The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128, Rob 2026-11-12).
+export const USDEBT = {
+    leadIn: 'While you wait, try a tool we built.',
+    title: 'Our U.S. Debt',
+    text: 'See the U.S. national debt day by day, from public U.S. Treasury data that is updated each business day and goes back to 1993. Pick any dates to get a chart, stats and the numbers behind them, plus a trend line that looks ahead. You can also compare how the debt changed during each presidential term.',
+    linkText: 'Try Our U.S. Debt at usdebt.bengusa.pro \u2192',
+    url: 'https://usdebt.bengusa.pro',
+};
+
 export const WORDS = {
     hero: 'Makers of Off-grid apps.', // 17.a.i, with lowercase "apps" (17.a.iii)
     heroSubline: 'Apps that mind their own business.', // 17.a.ii (the default subline)

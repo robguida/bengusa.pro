@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { RABBI_ALONE_VARIANTS } from './words.mjs';
+import { isAllowedOutsideUrl } from './content-scan.mjs';
 import { OUT_DIR, ROOT, readJson, rel, retiredIds, textFiles, walk } from '../../scripts/lib/export-checks.mjs';
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\x5c]/g, (c) => String.fromCharCode(92) + c);
@@ -69,6 +70,7 @@ export function badHrefs(file, html, shown, outDir = OUT_DIR) {
         const href = m[1];
         if (href.startsWith('#')) continue;
         const clean = href.split('#')[0].split('?')[0];
+        if (isAllowedOutsideUrl(href)) continue; // the one approved outside link (BUWEB-128)
         if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
             hits.push(`${file}: href to another address "${href}"`);
             continue;

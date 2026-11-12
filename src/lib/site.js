@@ -15,7 +15,7 @@ import { checkSiteSettings } from './site-settings.mjs';
 // in src/lib/site-settings.mjs, shared with the build checks and the tests.
 
 // One build lists every bad switch, then fails once.
-const { showApps, showContact, problems } = checkSiteSettings(settings);
+const { showApps, showContact, showUsDebtPromo, problems } = checkSiteSettings(settings);
 if (problems.length > 0) {
     throw new Error(`The site settings check found ${problems.length} problem${problems.length === 1 ? '' : 's'}:\n`
         + problems.map((p) => `  - ${p}`).join('\n'));
@@ -23,6 +23,8 @@ if (problems.length > 0) {
 
 export const SHOW_APPS = showApps;
 export const SHOW_CONTACT = showContact;
+// The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128).
+export const SHOW_US_DEBT_PROMO = showUsDebtPromo;
 // One-page site (2026-11-02): the About page is parked in src/app/_parked/
 // (About's words stand on Home). The Privacy page came back on 2026-11-06
 // (BUWEB-125), so it is built and its footer link shows. Links stay in the
