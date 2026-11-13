@@ -19,7 +19,7 @@ export const APPS = [
 
 // The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128, Rob 2026-11-12).
 export const USDEBT = {
-    leadIn: 'While you wait, try a tool we built.',
+    leadIn: 'While you wait, try the tools we built.', // shared by both blocks, shown once (BUWEB-135)
     title: 'Our U.S. Debt',
     text: 'See the U.S. national debt day by day, from public U.S. Treasury data that is updated each business day and goes back to 1993. Pick any dates to get a chart, stats and the numbers behind them, plus a trend line that looks ahead. You can also compare how the debt changed during each presidential term.',
     linkText: 'Try Our U.S. Debt at bengusa.pro/ourusdebt \u2192',
@@ -30,6 +30,15 @@ export const USDEBT = {
         src: '/images/usdebt/ourusdebt-chart.webp',
         alt: 'A screenshot of the Our U.S. Debt tool: a line chart of the U.S. national debt over time, in trillions of dollars, with a red trend line that looks ahead.',
     },
+};
+
+// The "Language Basics" block under it (BUWEB-135, Rob 2026-11-13). No lead-in of its own, no picture.
+export const LANGBASICS = {
+    title: 'Language Basics',
+    text: 'Flashcards for your first words in Albanian, Spanish, Japanese and Bengali: numbers, letters, and everyday words and phrases. Read the card, say it out loud, then see the answer and how to say it. It runs in your browser, with no sign-up.',
+    linkText: 'Try Language Basics at bengusa.pro/languagebasics \u2192',
+    newTabHint: ' (opens in a new tab)',
+    url: 'https://bengusa.pro/languagebasics/',
 };
 
 export const WORDS = {

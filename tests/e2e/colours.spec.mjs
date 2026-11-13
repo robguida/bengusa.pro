@@ -17,7 +17,7 @@ const LOGO = '[data-logo]';
 // test below first checks that this is the section with that heading.
 const HOME_SECTION = 'main section:has(> h2#home-off-grid-title)';
 const RED_ALLOWED = []; // e.g. '[data-signup="submit"]' once BUWEB-107 builds the button
-const GREEN_ALLOWED = [TRIGGER, 'a[href="https://bengusa.pro/ourusdebt/"]']; // the badge, the hero word and every popup trigger's underline; the Our U.S. Debt button is the logo green (BUWEB-133)
+const GREEN_ALLOWED = [TRIGGER, 'a[href="https://bengusa.pro/ourusdebt/"]', 'a[href="https://bengusa.pro/languagebasics/"]']; // the badge, the hero word and every popup trigger's underline; the Our U.S. Debt and Language Basics buttons are the logo green (BUWEB-133, BUWEB-135)
 
 // Every colour each element (and its ::before / ::after) actually paints:
 // text (only where it has text of its own), background, borders and outline

@@ -15,7 +15,7 @@ import { checkSiteSettings } from './site-settings.mjs';
 // in src/lib/site-settings.mjs, shared with the build checks and the tests.
 
 // One build lists every bad switch, then fails once.
-const { showApps, showContact, showUsDebtPromo, problems } = checkSiteSettings(settings);
+const { showApps, showContact, showUsDebtPromo, showLanguageBasicsPromo, problems } = checkSiteSettings(settings);
 if (problems.length > 0) {
     throw new Error(`The site settings check found ${problems.length} problem${problems.length === 1 ? '' : 's'}:\n`
         + problems.map((p) => `  - ${p}`).join('\n'));
@@ -25,6 +25,8 @@ export const SHOW_APPS = showApps;
 export const SHOW_CONTACT = showContact;
 // The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128).
 export const SHOW_US_DEBT_PROMO = showUsDebtPromo;
+// The "Language Basics" block under it (BUWEB-135).
+export const SHOW_LANGUAGE_BASICS_PROMO = showLanguageBasicsPromo;
 // Live pages with a switch here: About (its own page again since 2026-11-13,
 // BUWEB-133; it stood on Home from 2026-11-02) and Privacy (back on 2026-11-06,
 // BUWEB-125). Their links stay in the lists below behind these two constants.

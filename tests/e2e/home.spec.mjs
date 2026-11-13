@@ -6,7 +6,7 @@
 // words come from support/words.mjs (copied from the spec), never from content/.
 import { test, expect, heroSubline, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, offGridSection, popupsLive } from '../support/offgrid.mjs';
-import { APPS, COLOUR, USDEBT, WORDS } from '../support/words.mjs';
+import { APPS, COLOUR, LANGBASICS, USDEBT, WORDS } from '../support/words.mjs';
 import { APPS_PARKED, EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED } from '../support/settings.mjs';
 
 // The words a person sees. The heading test below also checks textContent
@@ -196,28 +196,30 @@ test.describe('Home', () => {
         for (const gone of ['More in the works', 'More apps are in the queue', 'Meet our', ...APPS.flatMap((a) => [a.shortName, a.name])]) {
             expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
         }
-        // Home's main area has two links, both to Our U.S. Debt (the button and the picture, BUWEB-134), while its switch is on.
-        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(SHOW.usDebtPromo ? 2 : 0);
+        // Home's main area has two links to Our U.S. Debt (the button and the picture, BUWEB-134) while its switch is on, and one to Language Basics (BUWEB-135) while its switch is on.
+        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount((SHOW.usDebtPromo ? 2 : 0) + (SHOW.languageBasicsPromo ? 1 : 0));
         // Hero, then "Apps coming soon!" (an h2); no other h1 or h2 (About is its own page since BUWEB-133).
         expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!']);
     });
 
-    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a green new-tab button, in that order directly under "Apps coming soon!"', async ({ page }) => {
+    test('"Our U.S. Debt" block (BUWEB-128): the shared lead-in, then h3 title, paragraph, a green new-tab button and the picture, directly under "Apps coming soon!"', async ({ page }) => {
         test.skip(SHOW.apps || !SHOW.usDebtPromo, 'the block shows only while the apps are hidden and "showUsDebtPromo" is true');
         const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
         await expect(section, 'one "Apps coming soon!" section').toHaveCount(1);
         const h2 = section.locator('h2');
         expect.soft(await text(h2), 'section heading').toBe('Apps coming soon!');
 
-        // Directly under the h2: a wrapper holding the words (lead-in p, title h3, paragraph p, button link) and the picture link (BUWEB-134).
-        const wrap = h2.locator('xpath=following-sibling::div[1]');
-        await expect(wrap, 'the block comes right after the heading').toHaveCount(1);
+        // Directly under the h2: the lead-in p, shared by both blocks and shown once (BUWEB-135), then a wrapper holding the words (title h3, paragraph p, button link) and the picture link (BUWEB-134).
+        const leadIn = h2.locator('xpath=following-sibling::p[1]');
+        expect.soft(await text(leadIn), 'lead-in').toBe(USDEBT.leadIn);
+        await expect.soft(section.locator('> p'), 'the lead-in shows once').toHaveCount(1);
+        const wrap = leadIn.locator('xpath=following-sibling::div[1]');
+        await expect(wrap, 'the block comes right after the lead-in').toHaveCount(1);
         expect.soft(await wrap.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'wrapper order').toEqual(['div', 'a']);
         const block = wrap.locator('> div');
-        expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['p', 'h3', 'p', 'a']);
-        expect.soft(await text(block.locator('> p').nth(0)), 'lead-in').toBe(USDEBT.leadIn);
+        expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['h3', 'p', 'a']);
         expect.soft(await text(block.locator('> h3')), 'title').toBe(USDEBT.title);
-        expect.soft(await text(block.locator('> p').nth(1)), 'paragraph').toBe(USDEBT.text);
+        expect.soft(await text(block.locator('> p')), 'paragraph').toBe(USDEBT.text);
 
         const link = block.locator('> a');
         expect.soft(await text(link), 'link text (visible words, then the hidden new-tab hint for screen readers)').toBe(USDEBT.linkText + USDEBT.newTabHint);
@@ -253,6 +255,30 @@ test.describe('Home', () => {
         await link.scrollIntoViewIfNeeded();
         await expect.soft(link).toBeVisible();
         expect.soft(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'no sideways scroll').toBe(true);
+    });
+
+    test('"Language Basics" block (BUWEB-135): h3 title, paragraph, then a green new-tab button, right under the "Our U.S. Debt" block, with no lead-in or picture of its own', async ({ page }) => {
+        test.skip(SHOW.apps || !SHOW.languageBasicsPromo, 'the block shows only while the apps are hidden and "showLanguageBasicsPromo" is true');
+        const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
+        const block = section.locator('> div').last();
+        expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['h3', 'p', 'a']);
+        expect.soft(await text(block.locator('> h3')), 'title').toBe(LANGBASICS.title);
+        expect.soft(await text(block.locator('> p')), 'paragraph').toBe(LANGBASICS.text);
+        const link = block.locator('> a');
+        expect.soft(await text(link), 'link text (visible words, then the hidden new-tab hint for screen readers)').toBe(LANGBASICS.linkText + LANGBASICS.newTabHint);
+        expect.soft(await link.getAttribute('href'), 'link address').toBe(LANGBASICS.url);
+        expect.soft(await link.getAttribute('target'), 'opens in a new tab').toBe('_blank');
+        expect.soft(((await link.getAttribute('rel')) || '').split(/\s+/), 'rel keeps noopener').toContain('noopener');
+        expect.soft(await link.getAttribute('onclick'), 'the link has no onclick').toBeNull();
+        await expect.soft(block.locator('img'), 'no picture').toHaveCount(0);
+        // The shared lead-in sits above the first block only: it never repeats above this one.
+        await expect.soft(section.locator('> p'), 'the lead-in shows once').toHaveCount(1);
+        if (SHOW.usDebtPromo) {
+            expect.soft(await section.locator('> div').evaluateAll((els) => els.map((e) => e.querySelector('h3').textContent.trim())), 'order of the blocks').toEqual([USDEBT.title, LANGBASICS.title]);
+        }
+        await expect.soft(page.getByRole('heading', { level: 3, name: LANGBASICS.title, exact: true })).toBeVisible();
+        await link.scrollIntoViewIfNeeded();
+        await expect.soft(link).toBeVisible();
     });
 
     test('heading: "Meet our Off-grid apps" with "Off-grid" as a popup word; the "More in the works" tile never says Off-grid', async ({ page }) => {
