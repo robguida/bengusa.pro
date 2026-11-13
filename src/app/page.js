@@ -109,7 +109,6 @@ export default function Home() {
             <section className="border-t border-line pt-10" aria-labelledby="about-title">
                 <div className="grid justify-items-start gap-[18px] pb-10">
                     <h2 id="about-title" className="m-0 max-w-[18ch] text-[clamp(2rem,5.5vw,3rem)] leading-[1.04]">{top.title}</h2>
-                    <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{top.line}</p>
                 </div>
                 <AboutBody level={3} />
             </section>

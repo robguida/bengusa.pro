@@ -11,7 +11,7 @@ import { test, expect, isReducedMotion, settle } from '../support/site.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../scripts/lib/export-checks.mjs';
-import { ABOUT, ABOUT_BLOCKS, OWN_WORDS_BLOCKS, ABOUT_BANNED, ABOUT_KEPT_TOP_LINE, RABBI_ALONE_LINE, DRAFT_LABEL, APPS } from '../support/words.mjs';
+import { ABOUT, ABOUT_BLOCKS, OWN_WORDS_BLOCKS, ABOUT_BANNED, RABBI_ALONE_LINE, DRAFT_LABEL, APPS } from '../support/words.mjs';
 import { SHOW } from '../support/settings.mjs';
 
 // Whitespace and curly quotes made plain, so the markup and the typing style do not matter.
@@ -45,9 +45,9 @@ test.describe('About page', () => {
         test.skip(SHOW.apps || SHOW.contact, 'the apps or Contact are shown: their lines are covered by their own tests');
         await page.goto(ABOUT.path);
         await settle(page);
-        // The words of record, plus the one kept top line right after the h1 (see ABOUT_KEPT_TOP_LINE).
+        // The words of record only: no line under the About heading (BUWEB-133).
         const texts = ABOUT_BLOCKS.map(([, t]) => t);
-        const want = squash([texts[0], ABOUT_KEPT_TOP_LINE, ...texts.slice(1)].join(''));
+        const want = squash(texts.join(''));
         // What a reader sees, whitespace ignored (a bold label may share a line with its text).
         expect.soft(squash(await main(page).innerText()), 'main, what the page shows').toBe(want);
         // What a crawler or screen reader gets, hidden text included.

@@ -14,7 +14,7 @@ export const metadata = {
 export default function AboutPage() {
     return (
         <div className="mx-auto max-w-[1088px] px-4 pb-16 md:px-6">
-            <PageIntro title={words.top.title}>{words.top.line}</PageIntro>
+            <PageIntro title={words.top.title} />
             <AboutBody />
         </div>
     );
