@@ -1,6 +1,5 @@
-// The About body, now on HOME (one-page site, 2026-11-02; BUWEB-115 words). The
-// /about/ page itself is parked (src/app/_parked/about). The About body is the
-// section titled "About Us" on Home. Its "own words" blocks are hidden by
+// The About page, /about/ (its own page again since 2026-11-13, BUWEB-133; it stood
+// on Home from 2026-11-02; BUWEB-115 words). Its "own words" blocks are hidden by
 // "showOwnWords" in content/about-words.json: the tests for them run only when
 // it is true. Before: the About page (BUWEB-115: "Two developers. Two countries. One team.").
 // The words come from support/words.mjs (ABOUT_BLOCKS), never from content/.
@@ -11,14 +10,14 @@ import { test, expect, isReducedMotion, settle } from '../support/site.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../scripts/lib/export-checks.mjs';
-import { ABOUT, ABOUT_BLOCKS, OWN_WORDS_BLOCKS, ABOUT_BANNED, ABOUT_KEPT_TOP_LINE, RABBI_ALONE_LINE, DRAFT_LABEL, APPS } from '../support/words.mjs';
+import { ABOUT, ABOUT_BLOCKS, OWN_WORDS_BLOCKS, ABOUT_BANNED, RABBI_ALONE_LINE, DRAFT_LABEL, APPS } from '../support/words.mjs';
 import { SHOW } from '../support/settings.mjs';
 
 // Whitespace and curly quotes made plain, so the markup and the typing style do not matter.
 const clean = (s) => s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
 const squash = (s) => clean(s).replace(/\s+/g, '');
-// The About body on Home: its own section, headed "About Us" (an h2 on Home).
-const main = (page) => page.locator('section[aria-labelledby="about-title"]');
+// The whole page's main area: the h1 "About Us", then the sections.
+const main = (page) => page.locator('main');
 const OWN_WORDS_SHOWN = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'about-words.json'), 'utf8')).showOwnWords === true;
 const OWN_WORDS_HIDDEN = 'the "own words" blocks are hidden (showOwnWords is false); re-enable when they return';
 const CUT_LINE = 'We believe your personal information should belong to you.';
@@ -29,25 +28,23 @@ test.describe('About page', () => {
         test.skip(isReducedMotion(testInfo), 'words and layout do not change with motion; the normal pass covers them');
     });
 
-    test('headings: one h1 (the hero); the About body is h2 "About Us", h3 sections, h4 founders; word for word, in order', async ({ page }) => {
+    test('headings: one h1 "About Us", h2 sections, h3 founders; word for word, in order', async ({ page }) => {
         await page.goto(ABOUT.path);
         await settle(page);
         await expect.soft(page.locator('h1')).toHaveCount(1);
         const got = async (sel) => (await main(page).locator(sel).allTextContents()).map(clean);
-        // On Home every level is one lower than on the old About page.
-        expect.soft(await got('h2'), 'h2 (About Us)').toEqual(kinds('h1'));
-        expect.soft(await got('h3'), 'h3, in order').toEqual(kinds('h2'));
-        expect.soft(await got('h4'), 'h4, in order').toEqual(kinds('h3'));
-        await expect.soft(main(page).locator('h1'), 'no h1 inside the About body').toHaveCount(0);
+        expect.soft(await got('h1'), 'h1 (About Us)').toEqual(kinds('h1'));
+        expect.soft(await got('h2'), 'h2, in order').toEqual(kinds('h2'));
+        expect.soft(await got('h3'), 'h3, in order').toEqual(kinds('h3'));
     });
 
     test('the main text is exactly the approved words, in order, with nothing added', async ({ page }) => {
         test.skip(SHOW.apps || SHOW.contact, 'the apps or Contact are shown: their lines are covered by their own tests');
         await page.goto(ABOUT.path);
         await settle(page);
-        // The words of record, plus the one kept top line right after the h1 (see ABOUT_KEPT_TOP_LINE).
+        // The words of record only: no line under the About heading (BUWEB-133).
         const texts = ABOUT_BLOCKS.map(([, t]) => t);
-        const want = squash([texts[0], ABOUT_KEPT_TOP_LINE, ...texts.slice(1)].join(''));
+        const want = squash(texts.join(''));
         // What a reader sees, whitespace ignored (a bold label may share a line with its text).
         expect.soft(squash(await main(page).innerText()), 'main, what the page shows').toBe(want);
         // What a crawler or screen reader gets, hidden text included.
@@ -66,11 +63,15 @@ test.describe('About page', () => {
         }
     });
 
-    test('Home shows "Apps coming soon!" as an h2, no "Off-grid, explained" and no "own words" blocks; the cut line is gone', async ({ page }) => {
+    test('Home shows "Apps coming soon!" as an h2 and no About body; About has no "Off-grid, explained", no "own words" blocks and the cut line is gone', async ({ page }) => {
         test.skip(SHOW.apps, 'the apps are shown: the apps section stands in for "Apps coming soon!"');
-        await page.goto(ABOUT.path);
+        await page.goto('/');
         await settle(page);
         await expect.soft(page.getByRole('heading', { level: 2, name: 'Apps coming soon!', exact: true })).toHaveCount(1);
+        await expect.soft(page.getByRole('heading', { name: 'About Us' }), 'no About body on Home').toHaveCount(0);
+        await expect.soft(page.getByRole('heading', { name: 'Meet the Founders' }), 'no founders on Home').toHaveCount(0);
+        await page.goto(ABOUT.path);
+        await settle(page);
         await expect.soft(page.getByRole('heading', { name: 'Off-grid, explained' })).toHaveCount(0);
         const text = clean(await page.evaluate(() => document.body.textContent));
         expect.soft(text.includes('We call Off-grid apps Cloud-killers'), 'the Off-grid legend is hidden').toBe(false);
@@ -159,10 +160,10 @@ test.describe('About page', () => {
             expect.soft(res.headers()['content-type'], `${src} type`).toContain('image/webp');
         }
         // Document order: headshot, the name (h3), ..., the own-words label, personal photo.
-        const seq = await main(page).evaluate((el) => [...el.querySelectorAll('img, h4')].map((e) => (e.tagName === 'IMG' ? `img:${e.getAttribute('src')}` : `h4:${e.textContent.trim()}`)));
-        const expected = ABOUT.people.flatMap((p) => [`img:${p.headshot}`, `h4:${p.name}`, ...(OWN_WORDS_SHOWN ? [`img:${p.personal}`] : [])]);
+        const seq = await main(page).evaluate((el) => [...el.querySelectorAll('img, h3')].map((e) => (e.tagName === 'IMG' ? `img:${e.getAttribute('src')}` : `h3:${e.textContent.trim()}`)));
+        const expected = ABOUT.people.flatMap((p) => [`img:${p.headshot}`, `h3:${p.name}`, ...(OWN_WORDS_SHOWN ? [`img:${p.personal}`] : [])]);
         const trimmed = seq.map((s) => (s.startsWith('img:') ? s.replace(/^(img:)(.*?)(\/images\/about\/[^?]+).*$/, '$1$3') : s));
-        const founders = trimmed.filter((s) => s.startsWith('img:') || ABOUT.people.some((p) => s === `h4:${p.name}`));
+        const founders = trimmed.filter((s) => s.startsWith('img:') || ABOUT.people.some((p) => s === `h3:${p.name}`));
         expect.soft(founders, 'photo / name order: headshot, name, personal photo (per founder)').toEqual(expected);
     });
 
@@ -197,7 +198,7 @@ test.describe('About page', () => {
         const rob = await top("In Rob's own words");
         const rabbi = await top('In his own words');
         expect.soft(Math.abs(rob - rabbi), `own-words blocks start at ${rob} and ${rabbi}`).toBeLessThanOrEqual(1);
-        const lowestBio = await main(page).evaluate((el) => Math.max(...[...el.querySelectorAll('h4')].map((h) => h.parentElement.getBoundingClientRect().bottom + window.scrollY)));
+        const lowestBio = await main(page).evaluate((el) => Math.max(...[...el.querySelectorAll('h3')].map((h) => h.parentElement.getBoundingClientRect().bottom + window.scrollY)));
         expect.soft(rob + (await page.evaluate(() => window.scrollY)), 'personal blocks sit below both work bios').toBeGreaterThanOrEqual(lowestBio - 1);
     });
 

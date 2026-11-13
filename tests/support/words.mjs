@@ -155,8 +155,7 @@ export const ABOUT_BANNED = [
 const rob = { name: 'Rob Guida', headshot: '/images/about/rob-guida.webp', personal: '/images/about/rob-guida-personal.webp' };
 const co = { name: 'Fojle Rabbi Saikat', headshot: '/images/about/fojle-rabbi-saikat.webp', personal: '/images/about/fojle-rabbi-saikat-personal.webp' };
 export const ABOUT = {
-    path: '/', // the About body stands on Home (one-page site); /about/ is parked
-    parkedPath: '/about/',
+    path: '/about/', // its own live page again (BUWEB-133)
     title: 'About Us',
     makingHeading: "What we're making",
     contactLink: 'Contact page',
@@ -177,11 +176,6 @@ export function aboutMainText() {
     return ABOUT_BLOCKS.map(([, text]) => text);
 }
 
-// The one pre-existing line kept under the About h1, before "Two developers.
-// Two countries. One team." It is not in Rob's words of record; the BUWEB-115
-// coordinator decision (2026-10-22) keeps it as the current build has it until
-// Rob sees the page and decides. Only this exact line is allowed as extra text.
-export const ABOUT_KEPT_TOP_LINE = 'We build apps that mind their own business.';
 
 // The draft label that was on every page until BUWEB-114. It must not appear
 // anywhere in the build (checks/release1.spec.mjs).

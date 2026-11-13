@@ -198,11 +198,11 @@ test.describe('Home', () => {
         }
         // The one link in Home's main area is the "Our U.S. Debt" link (BUWEB-128), while its switch is on.
         await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(SHOW.usDebtPromo ? 1 : 0);
-        // Hero, then "Apps coming soon!" (an h2), then the About body ("About Us" is an h2); no other h1 or h2.
-        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!', 'h2 About Us']);
+        // Hero, then "Apps coming soon!" (an h2); no other h1 or h2 (About is its own page since BUWEB-133).
+        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!']);
     });
 
-    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a plain new-tab link, in that order directly under "Apps coming soon!"', async ({ page }) => {
+    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a green new-tab button, in that order directly under "Apps coming soon!"', async ({ page }) => {
         test.skip(SHOW.apps || !SHOW.usDebtPromo, 'the block shows only while the apps are hidden and "showUsDebtPromo" is true');
         const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
         await expect(section, 'one "Apps coming soon!" section').toHaveCount(1);

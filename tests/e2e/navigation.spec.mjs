@@ -20,28 +20,33 @@ for (const p of PAGES) {
         // Release 1: the footer links only to pages that are shown (no app pages, no Contact).
         const hrefs = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
         expect.soft(hrefs.filter((h) => !PAGES.includes(h)), `${p}: footer links to pages that are not shown`).toEqual([]);
-        // With the apps and Contact both hidden (About is parked): Privacy and nothing else.
+        // With the apps and Contact both hidden: About and Privacy, in that order, and nothing else.
         if (!SHOW.apps && !SHOW.contact) {
             const links = await footer.locator('a[href]').evaluateAll((els) => els.map((e) => `${e.textContent.trim()} ${e.getAttribute('href')}`));
-            expect.soft(links, `${p}: footer links (one-page site)`).toEqual(['Privacy /privacy/']);
+            expect.soft(links, `${p}: footer links`).toEqual(['About /about/', 'Privacy /privacy/']);
         }
     });
 }
 
-// The menu: with the apps hidden there is no "Apps" menu, and with About parked (one-page site) there are no links at all: only the brand.
+// The menu: with the apps hidden there is no "Apps" menu; About is live (BUWEB-133), so the header holds one plain "About" link next to the brand.
 // The header holds ONE "Main" nav at every width (the phone nav and its menu
 // button come back with the apps), and no button at all: on a phone About is a
 // plain link with a tap area of at least 44 x 44 px.
-for (const p of ['/']) {
-    test(`menu on ${p} (one-page site): no Main nav, no menu button, no links but the brand, and nothing that points at a hidden page`, async ({ page }, testInfo) => {
+for (const p of ['/', '/about/']) {
+    test(`menu on ${p}: one "Main" nav with the About link, no menu button, nothing that points at a hidden page`, async ({ page }, testInfo) => {
         test.skip(SHOW.apps, 'the apps are shown: the menu tests below cover this page');
         await page.goto(p);
         await settle(page);
-        await expect.soft(page.locator('header nav'), 'navs in the header').toHaveCount(0);
+        await expect.soft(page.locator('header nav'), 'navs in the header').toHaveCount(1);
         await expect.soft(page.locator('header button'), 'buttons in the header').toHaveCount(0);
         const hrefs = await page.locator('header a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
-        expect.soft(hrefs, 'links in the header: only the brand, to Home').toEqual(['/']);
-        void isPhone;
+        expect.soft(hrefs, 'links in the header: the brand, then About').toEqual(['/', '/about/']);
+        const about = page.locator('header nav').getByRole('link', { name: 'About', exact: true });
+        await expect.soft(about, 'the About link').toBeVisible();
+        if (isPhone(testInfo)) {
+            const box = await about.boundingBox();
+            expect.soft(box.width >= 44 && box.height >= 44, `About tap area is at least 44 x 44 (got ${box.width} x ${box.height})`).toBe(true);
+        }
         for (const gone of ['Contact', 'Apps', 'Menu']) {
             await expect.soft(page.locator('header').getByText(gone, { exact: true }), `"${gone}" in the header`).toHaveCount(0);
         }
