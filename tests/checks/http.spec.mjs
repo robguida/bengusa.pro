@@ -99,8 +99,8 @@ test.describe('pages and old addresses', () => {
 });
 
 test.describe('the static server (npm start)', () => {
-    test('old addresses (/about/, any other) get the 404 page, which refreshes to Home', async ({ request }) => {
-        for (const p of ['/about/', '/about', '/privacy.html', '/anything-else/']) {
+    test('old addresses (not /about/, which is live again) get the 404 page, which refreshes to Home', async ({ request }) => {
+        for (const p of ['/about.html', '/privacy.html', '/anything-else/']) {
             const res = await request.get(p, { maxRedirects: 0 });
             expect.soft(res.status(), `${p}: status stays 404`).toBe(404);
             expect.soft(await res.text(), `${p}: refreshes to /`).toContain('http-equiv="refresh" content="0;url=/"');

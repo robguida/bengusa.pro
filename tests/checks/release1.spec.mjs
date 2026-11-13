@@ -33,12 +33,12 @@ test.describe('Release 1: the settings and the parked code', () => {
 
     // A new page or a new file route is a reviewed change: it fails here until
     // this list is updated with it.
-    test('the pages are exactly / and /privacy (one-page site); the route table adds only the 404 and the three files Next makes from src/app', () => {
+    test('the pages are exactly /, /about and /privacy; the route table adds only the 404 and the three files Next makes from src/app', () => {
         test.skip(SHOW.apps || SHOW.contact, HIDDEN);
-        expect.soft(expectedRoutes(), 'expectedRoutes(): the pages the build must make').toEqual(['/', '/privacy']);
+        expect.soft(expectedRoutes(), 'expectedRoutes(): the pages the build must make').toEqual(['/', '/about', '/privacy']);
         expect(fs.existsSync(BUILD_LOG), `no build log at ${BUILD_LOG}: run "npm run build" first`).toBe(true);
         const rows = checkRouteTable(fs.readFileSync(BUILD_LOG, 'utf8')).rows.map((r) => r.route).sort();
-        expect.soft(rows, 'route-table rows').toEqual(['/', '/_not-found', '/apple-icon.png', '/icon.svg', '/privacy', '/robots.txt']);
+        expect.soft(rows, 'route-table rows').toEqual(['/', '/_not-found', '/about', '/apple-icon.png', '/icon.svg', '/privacy', '/robots.txt']);
     });
 
     test('the hidden code is kept: the app pages and Contact sit in src/app/_parked/, not in routing', () => {
@@ -98,7 +98,7 @@ test.describe('Release 1: hidden means not built', () => {
     });
 
     test('the one approved outside link (https://bengusa.pro/ourusdebt/, BUWEB-128) passes the link scan; every other address, and any look-alike, is still caught', () => {
-        const shown = ['/', '/privacy/'];
+        const shown = ['/', '/about/', '/privacy/'];
         expect.soft(badHrefs('t.html', '<a href="https://bengusa.pro/ourusdebt/">', shown), 'the approved link').toEqual([]);
         for (const s of ['<a href="https://bengusa.pro/ourusdebt">', '<a href="http://bengusa.pro/ourusdebt/">', '<a href="https://bengusa.pro.example.com/ourusdebt/">',
             '<a href="https://www.bengusa.pro/ourusdebt/">', '<a href="https://bengusa.pro/ourusdebt/x">', '<a href="https://usdebt.bengusa.pro">', '<a href="https://evil.example/https://bengusa.pro/ourusdebt/">']) {
@@ -158,18 +158,13 @@ test.describe('Release 1: no draft words, no forms, nothing inline', () => {
     });
 });
 
-// One-page site (2026-11-02): the About page is parked, so it is not built.
-// Privacy is live again (BUWEB-125); its tests are below.
-test.describe('One-page site: About is not built; the 404 page sends visitors Home', () => {
-    test('out/ has no about/ page, and no link to it', () => {
-        for (const name of ['about']) {
-            expect.soft(fs.existsSync(path.join(OUT_DIR, name)), `out/${name}/`).toBe(false);
-            expect.soft(fs.existsSync(path.join(OUT_DIR, `${name}.html`)), `out/${name}.html`).toBe(false);
-        }
-        const hrefs = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8').match(/href="\/about\/?"/g) ?? [];
-        expect.soft(hrefs, 'links to /about/ on Home').toEqual([]);
+// About is its own live page again (BUWEB-133); Privacy is live (BUWEB-125). Their tests are below.
+test.describe('About is built and linked; the 404 page sends other addresses Home', () => {
+    test('out/about/index.html exists, and Home links to /about/ in the header and the footer', () => {
+        expect.soft(fs.existsSync(path.join(OUT_DIR, 'about', 'index.html')), 'out/about/index.html').toBe(true);
+        const hrefs = fs.readFileSync(path.join(OUT_DIR, 'index.html'), 'utf8').match(/href="\/about\/"/g) ?? [];
+        expect.soft(hrefs.length, 'links to /about/ on Home (header and footer)').toBe(2);
     });
-
     test('out/404.html refreshes to / at once (a meta refresh), has a "Go to the home page" link and no inline script', () => {
         const html = fs.readFileSync(path.join(OUT_DIR, '404.html'), 'utf8');
         expect.soft(html, 'meta refresh').toMatch(/<meta http-equiv="refresh" content="0;url=\/"\s*\/?>/);

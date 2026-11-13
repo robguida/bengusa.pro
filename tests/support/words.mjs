@@ -155,8 +155,7 @@ export const ABOUT_BANNED = [
 const rob = { name: 'Rob Guida', headshot: '/images/about/rob-guida.webp', personal: '/images/about/rob-guida-personal.webp' };
 const co = { name: 'Fojle Rabbi Saikat', headshot: '/images/about/fojle-rabbi-saikat.webp', personal: '/images/about/fojle-rabbi-saikat-personal.webp' };
 export const ABOUT = {
-    path: '/', // the About body stands on Home (one-page site); /about/ is parked
-    parkedPath: '/about/',
+    path: '/about/', // its own live page again (BUWEB-133)
     title: 'About Us',
     makingHeading: "What we're making",
     contactLink: 'Contact page',

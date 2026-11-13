@@ -7,10 +7,8 @@ export const metadata = {
     description: words.top.description,
 };
 
-// PARKED (one-page site, 2026-11-02): the About body now stands on Home. This
-// page is the About page as it was, with the same shared body. To bring it back,
-// set "showAbout" to true in content/site-settings.json AND move this folder
-// back to src/app/about/.
+// Live at /about/ since 2026-11-13 (BUWEB-133): About Us on its own page, off Home.
+// The body is the shared component (src/app/components/AboutBody.js).
 export default function AboutPage() {
     return (
         <div className="mx-auto max-w-[1088px] px-4 pb-16 md:px-6">

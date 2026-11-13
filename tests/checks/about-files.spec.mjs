@@ -125,9 +125,9 @@ test.describe('About photos (committed files)', () => {
 
 test.describe('the full name only (spec 18.c.iii)', () => {
     test('every built About file (the page and its data files) holds "Rabbi" and "Fojle" only inside the full name', () => {
-        // The About body stands on Home now (the About page is parked): read Home's own files.
-        const dir = OUT_DIR;
-        const files = walk(dir).filter((full) => /^(index\.html|index\.txt|__next[^/]*)$/.test(rel(OUT_DIR, full))).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
+        // About is its own page again (BUWEB-133): read out/about/'s own files.
+        const dir = path.join(OUT_DIR, 'about');
+        const files = walk(dir).filter((full) => /^(index\.html|index\.txt|__next[^/]*)$/.test(rel(dir, full))).map((full) => ({ name: rel(dir, full), text: fs.readFileSync(full, 'utf8') }));
         const names = files.map((f) => f.name);
         // The scan only means something if it reads the page AND its data files.
         expect.soft(names, 'out/about/ holds the page').toContain('index.html');
