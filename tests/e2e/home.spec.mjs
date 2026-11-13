@@ -196,22 +196,24 @@ test.describe('Home', () => {
         for (const gone of ['More in the works', 'More apps are in the queue', 'Meet our', ...APPS.flatMap((a) => [a.shortName, a.name])]) {
             expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
         }
-        // The one link in Home's main area is the "Our U.S. Debt" link (BUWEB-128), while its switch is on.
-        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(SHOW.usDebtPromo ? 1 : 0);
-        // Hero, then "Apps coming soon!" (an h2), then the About body ("About Us" is an h2); no other h1 or h2.
-        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!', 'h2 About Us']);
+        // Home's main area has two links, both to Our U.S. Debt (the button and the picture, BUWEB-134), while its switch is on.
+        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(SHOW.usDebtPromo ? 2 : 0);
+        // Hero, then "Apps coming soon!" (an h2); no other h1 or h2 (About is its own page since BUWEB-133).
+        expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!']);
     });
 
-    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a plain new-tab link, in that order directly under "Apps coming soon!"', async ({ page }) => {
+    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a green new-tab button, in that order directly under "Apps coming soon!"', async ({ page }) => {
         test.skip(SHOW.apps || !SHOW.usDebtPromo, 'the block shows only while the apps are hidden and "showUsDebtPromo" is true');
         const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
         await expect(section, 'one "Apps coming soon!" section').toHaveCount(1);
         const h2 = section.locator('h2');
         expect.soft(await text(h2), 'section heading').toBe('Apps coming soon!');
 
-        // Directly under the h2, in order: the lead-in p, the title h3, the paragraph p, the link.
-        const block = h2.locator('xpath=following-sibling::div[1]');
-        await expect(block, 'the block comes right after the heading').toHaveCount(1);
+        // Directly under the h2: a wrapper holding the words (lead-in p, title h3, paragraph p, button link) and the picture link (BUWEB-134).
+        const wrap = h2.locator('xpath=following-sibling::div[1]');
+        await expect(wrap, 'the block comes right after the heading').toHaveCount(1);
+        expect.soft(await wrap.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'wrapper order').toEqual(['div', 'a']);
+        const block = wrap.locator('> div');
         expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['p', 'h3', 'p', 'a']);
         expect.soft(await text(block.locator('> p').nth(0)), 'lead-in').toBe(USDEBT.leadIn);
         expect.soft(await text(block.locator('> h3')), 'title').toBe(USDEBT.title);
@@ -223,6 +225,19 @@ test.describe('Home', () => {
         expect.soft(await link.getAttribute('target'), 'opens in a new tab').toBe('_blank');
         expect.soft(((await link.getAttribute('rel')) || '').split(/\s+/), 'rel keeps noopener').toContain('noopener');
         expect.soft(await link.getAttribute('onclick'), 'the link has no onclick').toBeNull();
+        // The picture (BUWEB-134): a webp from public/, real alt text, links to the same address in a new tab.
+        const pic = wrap.locator('> a');
+        const img = pic.locator('img');
+        expect.soft(await pic.getAttribute('href'), 'picture link address').toBe(USDEBT.url);
+        expect.soft(await pic.getAttribute('target'), 'picture link opens in a new tab').toBe('_blank');
+        expect.soft(((await pic.getAttribute('rel')) || '').split(/s+/), 'picture link rel keeps noopener').toContain('noopener');
+        expect.soft(await img.getAttribute('src'), 'picture file').toBe(USDEBT.image.src);
+        expect.soft((await img.getAttribute('alt')) || '', 'picture alt text').toBe(USDEBT.image.alt);
+        expect.soft(USDEBT.image.alt.length, 'the alt text says what the picture shows').toBeGreaterThan(40);
+        expect.soft(await img.getAttribute('style'), 'no inline style on the picture').toBeNull();
+        await img.scrollIntoViewIfNeeded();
+        await expect.soft(img, 'the picture is on screen').toBeVisible();
+        expect.soft(await img.evaluate((el) => el.complete && el.naturalWidth > 0), 'the picture loads').toBe(true);
         // The title is an h3 under the "Apps coming soon!" h2, and the hero stays the only h1.
         await expect.soft(page.getByRole('heading', { level: 3, name: USDEBT.title, exact: true })).toBeVisible();
         await expect.soft(page.locator('h1')).toHaveCount(1);

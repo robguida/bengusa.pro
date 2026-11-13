@@ -1,4 +1,3 @@
-import AboutBody from './components/AboutBody';
 import AppCard from './components/AppCard';
 import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
@@ -6,7 +5,6 @@ import OffGridLegend from './components/OffGridLegend';
 import { getShownApps } from '@/lib/apps';
 import { SHOW_US_DEBT_PROMO } from '@/lib/site';
 import siteWords from '../content/site-words.json';
-import aboutWords from '../content/about-words.json';
 
 export default function Home() {
     // None while content/site-settings.json hides the apps. Then the whole apps
@@ -17,7 +15,6 @@ export default function Home() {
     // One-page site (2026-11-02): "Off-grid, explained" is hidden while
     // "showOffGridExplained" in content/site-words.json is false (its words stay).
     const showExplained = siteWords.showOffGridExplained === true;
-    const { top } = aboutWords;
     // "Meet our Off-grid apps" is true only while every card in the grid wears
     // the badge, open and showcase alike. Otherwise "Meet our apps" (17.b.i).
     const everyCardOffGrid = apps.length > 0 && apps.every((app) => app.offGrid);
@@ -61,18 +58,34 @@ export default function Home() {
             {apps.length === 0 && (
                 <section className="pb-10" aria-labelledby="home-coming-soon-title">
                     <h2 id="home-coming-soon-title" className="m-0 text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">{home.appsComingSoon}</h2>
-                    {/* BUWEB-128: a tool to try while the apps are not out. A plain link that opens in a new tab
+                    {/* BUWEB-128: a tool to try while the apps are not out. A green button (the logo green) that opens in a new tab
                         (the words are in content/site-words.json, "usDebtPromo"). It sits under
-                        the section heading and stays modest. Off with "showUsDebtPromo": false in
+                        the section heading (BUWEB-133). Off with "showUsDebtPromo": false in
                         content/site-settings.json. */}
                     {SHOW_US_DEBT_PROMO && (
-                        <div className="mt-5 grid max-w-[40em] justify-items-start gap-3">
-                            <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
-                            <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
-                            <p className="m-0">{usDebtPromo.text}</p>
-                            <a href={usDebtPromo.url} target="_blank" rel="noopener" className="font-medium text-brand-navy underline underline-offset-4 hover:no-underline">
-                                {usDebtPromo.linkText}
-                                <span className="sr-only">{usDebtPromo.newTabHint}</span>
+                        <div className="mt-5 grid max-w-[64rem] items-center gap-6 md:grid-cols-2 md:gap-10">
+                            <div className="grid max-w-[40em] justify-items-start gap-3">
+                                <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
+                                <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
+                                <p className="m-0">{usDebtPromo.text}</p>
+                                <a href={usDebtPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                    {usDebtPromo.linkText}
+                                    <span className="sr-only">{usDebtPromo.newTabHint}</span>
+                                </a>
+                            </div>
+                            {/* BUWEB-134: a picture of the tool, linked to it. A plain <img>, not next/image
+                                (next/image adds an inline style, which the security policy forbids). */}
+                            <a href={usDebtPromo.url} target="_blank" rel="noopener" className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={usDebtPromo.image.src}
+                                    alt={usDebtPromo.image.alt}
+                                    width={usDebtPromo.image.width}
+                                    height={usDebtPromo.image.height}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-auto w-full rounded-xl border border-line shadow-sm"
+                                />
                             </a>
                         </div>
                     )}
@@ -103,16 +116,6 @@ export default function Home() {
                     </ul>
                 </section>
             )}
-
-            {/* The About body, shared with the parked About page. The hero is the
-                h1, "About Us" is an h2, everything under it starts at h3. */}
-            <section className="border-t border-line pt-10" aria-labelledby="about-title">
-                <div className="grid justify-items-start gap-[18px] pb-10">
-                    <h2 id="about-title" className="m-0 max-w-[18ch] text-[clamp(2rem,5.5vw,3rem)] leading-[1.04]">{top.title}</h2>
-                    <p className="m-0 max-w-[34em] text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{top.line}</p>
-                </div>
-                <AboutBody level={3} />
-            </section>
         </div>
     );
 }

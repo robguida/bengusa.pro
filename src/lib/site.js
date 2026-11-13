@@ -25,13 +25,12 @@ export const SHOW_APPS = showApps;
 export const SHOW_CONTACT = showContact;
 // The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128).
 export const SHOW_US_DEBT_PROMO = showUsDebtPromo;
-// One-page site (2026-11-02): the About page is parked in src/app/_parked/
-// (About's words stand on Home). The Privacy page came back on 2026-11-06
-// (BUWEB-125), so it is built and its footer link shows. Links stay in the
-// lists below behind these two constants. To bring a parked page back: set its
-// constant to true AND move its folder out of src/app/_parked/ (the build's
-// route table fails if the two disagree).
-export const SHOW_ABOUT = false;
+// Live pages with a switch here: About (its own page again since 2026-11-13,
+// BUWEB-133; it stood on Home from 2026-11-02) and Privacy (back on 2026-11-06,
+// BUWEB-125). Their links stay in the lists below behind these two constants.
+// To park one: set its constant to false AND move its folder into
+// src/app/_parked/ (the build's route table fails if the two disagree).
+export const SHOW_ABOUT = true;
 export const SHOW_PRIVACY = true;
 
 // The plain links in the header, on a computer and on a phone, in order.

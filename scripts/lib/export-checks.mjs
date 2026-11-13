@@ -65,10 +65,10 @@ export const SWITCHES = [
     { key: 'showContact', what: 'Contact is', folder: 'contact', route: '/contact' },
 ];
 
-// Parked for the one-page site (2026-11-02; Privacy came back 2026-11-06), with no switch file: their code sits
+// Parked pages with no switch file (none now: About and Privacy are live since 2026-11-13 and 2026-11-06): their code sits
 // in src/app/_parked/ and the lists in src/lib/site.js leave their links out.
 // Their address, page data and links must not be in out/.
-const PARKED_PAGES = [{ folder: 'about', route: '/about' }];
+const PARKED_PAGES = [];
 
 // The one reader of content/site-settings.json in Node. Returns
 // { showApps, showContact, showUsDebtPromo, problems }. Each switch must be true or false: a
@@ -98,7 +98,7 @@ export function expectedRoutes(root = ROOT) {
     const appRoutes = showApps
         ? apps.filter((app) => app.status === 'open' || app.status === 'showcase').map((app) => `/apps/${app.slug}`)
         : [];
-    return ['/', '/privacy', ...(showContact ? ['/contact'] : []), ...appRoutes];
+    return ['/', '/about', '/privacy', ...(showContact ? ['/contact'] : []), ...appRoutes];
 }
 
 // The addresses that must NOT be built: each hidden switch's route, and
