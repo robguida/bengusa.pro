@@ -51,3 +51,6 @@ next-env.d.ts
 # local helpers and editor settings
 /.idea
 dev.cmd
+
+# visit reports and extracted data (local only, never shipped)
+/analytics/
