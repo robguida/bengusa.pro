@@ -20,7 +20,8 @@ if (a1 !== '--empty') {
   if (report) report = path.resolve(report);
 }
 
-const REAL = { '/': 'Home', '/privacy/': 'Privacy', '/privacy': 'Privacy', '/index.html': 'Home' };
+// A page view = a GET of one of the site's two real pages. The server may log a page as / or as its index.html.
+const REAL = { '/': 'Home', '/index.html': 'Home', '/privacy/': 'Privacy', '/privacy': 'Privacy', '/privacy/index.html': 'Privacy' };
 const stripVersion = (s) => String(s).replace(/[0-9.]+$/, '').trim() || String(s);
 
 function parse(file) {
@@ -43,31 +44,48 @@ function parse(file) {
 
   const days = items('visitors').map((it) => {
     const s = String(it.data);
-    return { day: `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`, visits: num(it.visitors), views: num(it.hits) };
+    return { day: `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`, visits: num(it.visitors), requests: num(it.hits) };
   }).sort((x, y) => x.day.localeCompare(y.day));
 
-  // Top pages: real pages by name; everything else lumped, paths never listed.
+  // Page views: GET requests of the two real pages only. POSTs (bot login/graphql probes), HEADs, images, old
+  // pages and every other address are NOT page views; they are lumped as "other requests", paths never listed.
+  // The report has no per-day page-view number (its per-day panel counts every request), so days carry visits only.
   const pg = {};
-  let junkViews = 0, junkVisits = 0, hasPages = false;
+  let otherReq = 0, postReq = 0, hasPages = false, skipped = 0;
   for (const it of items('requests')) {
-    hasPages = true;
-    const p = String(it.data).split('?')[0];
-    if (REAL[p]) {
-      const n = REAL[p];
-      pg[n] = pg[n] || { page: n, visits: 0, views: 0 };
-      pg[n].visits += num(it.visitors); pg[n].views += num(it.hits);
-    } else { junkViews += num(it.hits); junkVisits += num(it.visitors); }
+    try {
+      hasPages = true;
+      const p = String(it.data).split('?')[0];
+      const method = String(it.method || 'GET').toUpperCase();
+      if (method === 'GET' && REAL[p]) {
+        const n = REAL[p];
+        pg[n] = pg[n] || { page: n, views: 0 };
+        pg[n].views += num(it.hits);
+      } else {
+        otherReq += num(it.hits);
+        if (method === 'POST') postReq += num(it.hits);
+      }
+    } catch { skipped++; }
   }
   const pages = Object.values(pg).sort((x, y) => y.views - x.views);
-  if (hasPages && junkViews) pages.push({ page: 'bot probes / junk', visits: junkVisits, views: junkViews, junk: true });
+  const pageViews = pages.reduce((t, x) => t + x.views, 0);
+  if (hasPages && otherReq) pages.push({ page: 'other requests (images, old pages, bot POSTs)', views: otherReq, junk: true });
 
-  // 404s: the site's own 404 page is the only real one; any other not-found path is a probe.
-  let real404 = 0, probe404 = 0, has404 = false;
+  // 404s: every not-found hit is logged under the server's own error page (/404.html), not the address that was
+  // asked for, so the report cannot say which addresses missed or tell real visitors from probes. Report the
+  // total and how much of it is logged under the error page; do not guess a real/probe split.
+  let nf = 0, nfErrorPage = 0, has404 = false;
   for (const it of items('not_found')) {
-    has404 = true;
-    const p = String(it.data).split('?')[0];
-    if (p === '/404/' || p === '/404.html' || p === '/404') real404 += num(it.hits); else probe404 += num(it.hits);
+    try {
+      has404 = true;
+      const p = String(it.data).split('?')[0];
+      nf += num(it.hits);
+      if (p === '/404.html' || p === '/404/' || p === '/404') nfErrorPage += num(it.hits);
+    } catch { skipped++; }
   }
+  const sc = (pre) => items('status_codes').filter((it) => String(it.data).startsWith(pre));
+  const subHits = (code) => { let t = 0; for (const g of sc(code[0])) for (const j of g.items || []) if (String(j.data).startsWith(code)) t += num(j.hits); return t; };
+  const rejected405 = subHits('405');
 
   const topN = (p, f = (x) => x) => {
     const m = {};
@@ -79,12 +97,17 @@ function parse(file) {
     source: path.basename(file),
     window: { start: g.start_date ? String(g.start_date) : null, end: g.end_date ? String(g.end_date) : null },
     summary: {
-      visits: days.reduce((s, x) => s + x.visits, 0) || num(g.unique_visitors),
-      views: num(g.total_requests) || num(g.valid_requests),
-      notFound: has404 ? real404 + probe404 : (status ? num(status.hits) : null),
+      visits: days.reduce((t, x) => t + x.visits, 0) || num(g.unique_visitors),
+      pageViews: hasPages ? pageViews : null,
+      requests: num(g.total_requests) || num(g.valid_requests),
+      notFound: has404 ? nf : (status ? num(status.hits) : null),
+      rejectedPosts: rejected405 || null,
     },
-    days, pages, referrers: topN('referring_sites'), browsers: topN('browsers', stripVersion), os: topN('os'),
-    notFound: has404 ? { real: real404, probes: probe404 } : null,
+    days, pages, referrers: [], browsers: topN('browsers', stripVersion), os: topN('os'),
+    notFound: has404 ? { total: nf, loggedAsErrorPage: nfErrorPage, otherAddresses: nf - nfErrorPage } : null,
+    rejectedPosts: { total: rejected405, postRequests: postReq },
+    notCollected: ['referrers', 'per-day page views', 'which addresses 404'],
+    skippedItems: skipped,
   };
 }
 
@@ -117,14 +140,14 @@ if(!DATA){app.innerHTML='<div class="card empty"><h2>No data yet \\u2014 pull a 
 sub.textContent='Report '+DATA.source+' \\u00b7 built '+DATA.generated+' \\u00b7 totals only, no addresses';
 function bars(rows,key){if(!rows||!rows.length)return'<div class="lbl">None in this report.</div>';var m=Math.max.apply(null,rows.map(function(r){return r[key]}))||1;
 return rows.map(function(r){return'<div class="b"><span class="n">'+esc(r.page||r.name)+'</span><i class="'+(r.junk?'j':'')+'" style="width:'+Math.max(2,r[key]/m*45)+'%"></i><em>'+r[key]+'</em></div>'}).join('')}
-var s=DATA.summary,h='<div class="row">'+[['Visitor-days',s.visits],['Page views',s.views],['404s',s.notFound==null?'n/a':s.notFound]].map(function(t){return'<div class="card"><div class="big">'+t[1]+'</div><div class="lbl">'+t[0]+'</div></div>'}).join('')+'</div>';
+var s=DATA.summary,h='<div class="row">'+[['Visitor-days',s.visits],['Page views',s.pageViews==null?'n/a':s.pageViews],['404s (any address)',s.notFound==null?'n/a':s.notFound],['Rejected POST probes',s.rejectedPosts==null?'n/a':s.rejectedPosts]].map(function(t){return'<div class="card"><div class="big">'+t[1]+'</div><div class="lbl">'+t[0]+'</div></div>'}).join('')+'</div>';
 h+='<p class="note" style="margin:-4px 0 12px">Visitor-days \\u2014 the CDN address makes unique counts read low.</p>';
 var d=DATA.days;if(d.length){var m=Math.max.apply(null,d.map(function(x){return x.visits}))||1,w=100/d.length,sv='';
 d.forEach(function(x,i){var hh=x.visits/m*70;sv+='<rect x="'+(i*w+w*.12)+'" y="'+(80-hh)+'" width="'+w*.76+'" height="'+hh+'" rx="1" fill="var(--bar)"><title>'+x.day+': '+x.visits+'</title></rect>'});
 h+='<div class="card" style="margin-bottom:12px"><h2>Visits by day</h2><svg viewBox="0 0 100 82" preserveAspectRatio="none" style="height:140px">'+sv+'</svg><div class="lbl">'+d[0].day+' to '+d[d.length-1].day+' \\u00b7 peak '+m+'</div></div>'}
-h+='<div class="grid"><div class="card"><h2>Top pages (page views)</h2>'+bars(DATA.pages,'views')+'<div class="note">Every other address is grouped as bot probes / junk.</div></div>';
-h+='<div class="card"><h2>Referring sites</h2>'+bars(DATA.referrers,'visits')+'</div><div class="card"><h2>Browsers</h2>'+bars(DATA.browsers,'visits')+'</div><div class="card"><h2>Operating systems</h2>'+bars(DATA.os,'visits')+'</div>';
-var n=DATA.notFound;h+='<div class="card"><h2>404s: real vs bot probes</h2>'+(n?bars([{name:'Real 404 page',v:n.real},{name:'Bot probes',v:n.probes,junk:1}],'v'):'<div class="lbl">Not in this report.</div>')+'</div></div>';
+h+='<div class="grid"><div class="card"><h2>Top pages (page views)</h2>'+bars(DATA.pages,'views')+'<div class="note">Page view = a GET of Home or Privacy. Everything else is grouped, never listed.</div></div>';
+h+='<div class="card"><h2>Referring sites</h2><div class="lbl">Not collected.</div></div><div class="card"><h2>Browsers</h2>'+bars(DATA.browsers,'visits')+'</div><div class="card"><h2>Operating systems</h2>'+bars(DATA.os,'visits')+'</div>';
+var n=DATA.notFound;h+='<div class="card"><h2>404s</h2>'+(n?'<div class="big">'+n.total+'</div><div class="lbl">logged under the site error page; the report cannot show which addresses were asked for, so real visitors and bots cannot be told apart</div>':'<div class="lbl">Not in this report.</div>')+'</div></div>';
 app.innerHTML=h})();</script></body></html>`;
 
 const json = data ? JSON.stringify(data).replace(/</g, '\\u003c') : 'null';
