@@ -63,13 +63,29 @@ export default function Home() {
                         the section heading (BUWEB-133). Off with "showUsDebtPromo": false in
                         content/site-settings.json. */}
                     {SHOW_US_DEBT_PROMO && (
-                        <div className="mt-5 grid max-w-[40em] justify-items-start gap-3">
-                            <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
-                            <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
-                            <p className="m-0">{usDebtPromo.text}</p>
-                            <a href={usDebtPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
-                                {usDebtPromo.linkText}
-                                <span className="sr-only">{usDebtPromo.newTabHint}</span>
+                        <div className="mt-5 grid max-w-[64rem] items-center gap-6 md:grid-cols-2 md:gap-10">
+                            <div className="grid max-w-[40em] justify-items-start gap-3">
+                                <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
+                                <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
+                                <p className="m-0">{usDebtPromo.text}</p>
+                                <a href={usDebtPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                    {usDebtPromo.linkText}
+                                    <span className="sr-only">{usDebtPromo.newTabHint}</span>
+                                </a>
+                            </div>
+                            {/* BUWEB-134: a picture of the tool, linked to it. A plain <img>, not next/image
+                                (next/image adds an inline style, which the security policy forbids). */}
+                            <a href={usDebtPromo.url} target="_blank" rel="noopener" className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={usDebtPromo.image.src}
+                                    alt={usDebtPromo.image.alt}
+                                    width={usDebtPromo.image.width}
+                                    height={usDebtPromo.image.height}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="h-auto w-full rounded-xl border border-line shadow-sm"
+                                />
                             </a>
                         </div>
                     )}

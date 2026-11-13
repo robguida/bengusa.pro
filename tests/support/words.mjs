@@ -25,6 +25,11 @@ export const USDEBT = {
     linkText: 'Try Our U.S. Debt at bengusa.pro/ourusdebt \u2192',
     newTabHint: ' (opens in a new tab)',
     url: 'https://bengusa.pro/ourusdebt/',
+    // BUWEB-134: the picture beside the block.
+    image: {
+        src: '/images/usdebt/ourusdebt-chart.webp',
+        alt: 'A screenshot of the Our U.S. Debt tool: a line chart of the U.S. national debt over time, in trillions of dollars, with a red trend line that looks ahead.',
+    },
 };
 
 export const WORDS = {
