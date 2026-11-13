@@ -26,11 +26,16 @@ import {
     MIN_SCAN_LETTERS, ROOT, checkGuardedFields, checkHiddenContent, checkPublicAllowlist, checkRouteTable, checkSettingsMatchFolders,
     readSiteSettings, walk,
 } from '../../scripts/lib/export-checks.mjs';
+import { scanOut } from '../support/content-scan.mjs';
 import { checkCsp, injectCsp, policyFor, scriptHash } from '../../scripts/lib/csp.mjs';
 import { checkSiteSettings } from '../../src/lib/site-settings.mjs';
 
 const SETTINGS = 'content/site-settings.json';
 const HIDDEN = { showApps: false, showContact: false };
+// The "Our U.S. Debt" block switch (BUWEB-128) sits beside the two page switches. It is on in every made-up
+// site here unless a test says otherwise, so the tests of the page switches stay about the page switches.
+const PROMO = { showUsDebtPromo: true };
+const ALL_HIDDEN = { ...HIDDEN, showUsDebtPromo: false };
 
 // --- Throwaway folders ------------------------------------------------------
 let made = [];
@@ -52,7 +57,7 @@ function put(root, rel, text) {
 const json = (value) => `${JSON.stringify(value, null, 4)}\n`;
 
 // A site root with the switch, the parked folders and a made-up app.
-function siteRoot({ settings = HIDDEN, noSettings = false, apps = [{ id: 'quillmoth', name: 'Quillmoth', shortName: 'Quillmoth', slug: 'quillmoth-notes', status: 'open' }] } = {}) {
+function siteRoot({ settings = { ...HIDDEN, ...PROMO }, noSettings = false, apps = [{ id: 'quillmoth', name: 'Quillmoth', shortName: 'Quillmoth', slug: 'quillmoth-notes', status: 'open' }] } = {}) {
     const root = tempDir('root');
     if (!noSettings) put(root, SETTINGS, typeof settings === 'string' ? settings : json(settings));
     put(root, 'content/apps.json', json(apps));
@@ -115,7 +120,7 @@ test.describe('the site switch reader (one rule for site.js, the build checks an
     });
 
     test('a missing switch is a problem, and that page counts as hidden', () => {
-        const s = readSiteSettings(siteRoot({ settings: { showApps: true } }));
+        const s = readSiteSettings(siteRoot({ settings: { showApps: true, ...PROMO } }));
         expect(s.problems).toEqual([`${SETTINGS}: "showContact" is missing (it must be true or false)`]);
         expect.soft(s.showContact, 'missing = hidden').toBe(false);
         expect.soft(s.showApps, 'true still shows').toBe(true);
@@ -123,19 +128,34 @@ test.describe('the site switch reader (one rule for site.js, the build checks an
 
     test('a value that is not true or false is a problem, and counts as hidden ("false", 1, null)', () => {
         for (const bad of ['false', 'true', 1, null, {}]) {
-            const s = readSiteSettings(siteRoot({ settings: { showApps: bad, showContact: false } }));
+            const s = readSiteSettings(siteRoot({ settings: { showApps: bad, showContact: false, ...PROMO } }));
             expect.soft(s.problems, `showApps: ${JSON.stringify(bad)}`).toEqual([`${SETTINGS}: "showApps" must be true or false`]);
             expect.soft(s.showApps, `showApps: ${JSON.stringify(bad)} counts as hidden`).toBe(false);
         }
     });
 
     test('two bad switches give two problems', () => {
-        const s = readSiteSettings(siteRoot({ settings: { showApps: 'yes' } }));
+        const s = readSiteSettings(siteRoot({ settings: { showApps: 'yes', ...PROMO } }));
         expect(s.problems).toEqual([
             `${SETTINGS}: "showApps" must be true or false`,
             `${SETTINGS}: "showContact" is missing (it must be true or false)`,
         ]);
         expect({ showApps: s.showApps, showContact: s.showContact }).toEqual(HIDDEN);
+    });
+
+    test('the "Our U.S. Debt" switch: true or false only; missing or any other value is a problem and counts as off (fail closed)', () => {
+        const on = readSiteSettings(siteRoot());
+        expect.soft(on.problems, 'a good file').toEqual([]);
+        expect.soft(on.showUsDebtPromo, 'true shows the block').toBe(true);
+        const missing = readSiteSettings(siteRoot({ settings: { ...HIDDEN } }));
+        expect.soft(missing.problems, 'missing').toEqual([`${SETTINGS}: "showUsDebtPromo" is missing (it must be true or false)`]);
+        expect.soft(missing.showUsDebtPromo, 'missing = off').toBe(false);
+        for (const bad of ['true', 'false', 1, 0, null, {}, []]) {
+            const s = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showUsDebtPromo: bad } }));
+            expect.soft(s.problems, `showUsDebtPromo: ${JSON.stringify(bad)}`).toEqual([`${SETTINGS}: "showUsDebtPromo" must be true or false`]);
+            expect.soft(s.showUsDebtPromo, `showUsDebtPromo: ${JSON.stringify(bad)} counts as off`).toBe(false);
+        }
+        expect.soft(readSiteSettings(siteRoot({ settings: ALL_HIDDEN })).showUsDebtPromo, 'false').toBe(false);
     });
 
     test('a missing file, a file that is not JSON, or one that is not an object: a problem, and everything hidden', () => {
@@ -154,9 +174,10 @@ test.describe('the site switch reader (one rule for site.js, the build checks an
     });
 
     test('checkSiteSettings (the pure rule) agrees: only true shows a page', () => {
-        expect(checkSiteSettings({ showApps: true, showContact: true })).toEqual({ showApps: true, showContact: true, problems: [] });
-        expect(checkSiteSettings(HIDDEN)).toEqual({ ...HIDDEN, problems: [] });
-        expect(checkSiteSettings({ showApps: 'true', showContact: true }).showApps).toBe(false);
+        expect(checkSiteSettings({ showApps: true, showContact: true, showUsDebtPromo: true })).toEqual({ showApps: true, showContact: true, showUsDebtPromo: true, problems: [] });
+        expect(checkSiteSettings(ALL_HIDDEN)).toEqual({ ...ALL_HIDDEN, problems: [] });
+        expect(checkSiteSettings({ ...PROMO, showApps: 'true', showContact: true }).showApps).toBe(false);
+        expect(checkSiteSettings({ ...HIDDEN, showUsDebtPromo: 'true' }).showUsDebtPromo).toBe(false);
     });
 });
 
@@ -187,7 +208,7 @@ test.describe('checkSettingsMatchFolders', () => {
     });
 
     test('a shown page whose folder is still parked fails', () => {
-        const r = checkSettingsMatchFolders(siteRoot({ settings: { showApps: true, showContact: false } }));
+        const r = checkSettingsMatchFolders(siteRoot({ settings: { showApps: true, showContact: false, ...PROMO } }));
         expect(r.problems).toEqual([
             expect.stringContaining('the apps are shown, but src/app/apps/ is missing'),
             expect.stringContaining('the apps are shown, but src/app/_parked/apps/ still exists'),
@@ -195,7 +216,7 @@ test.describe('checkSettingsMatchFolders', () => {
     });
 
     test('a broken switch is listed as well, and its page is treated as hidden', () => {
-        const r = checkSettingsMatchFolders(siteRoot({ settings: { showApps: false } }));
+        const r = checkSettingsMatchFolders(siteRoot({ settings: { showApps: false, ...PROMO } }));
         expect(r.ok).toBe(false);
         expect(r.problems).toEqual([`${SETTINGS}: "showContact" is missing (it must be true or false)`]);
     });
@@ -370,12 +391,12 @@ test.describe('checkHiddenContent', () => {
             expect.stringContaining('content/apps.json app 1: id "qm" has under'),
             expect.stringContaining('content/apps.json app 1: shortName "Q-M" has under'),
         ]);
-        const shown = checkHiddenContent(out({ 'index.html': page() }), siteRoot({ apps, settings: { showApps: true, showContact: false } }));
+        const shown = checkHiddenContent(out({ 'index.html': page() }), siteRoot({ apps, settings: { showApps: true, showContact: false, ...PROMO } }));
         expect(shown.hits).toEqual([]);
     });
 
     test('a broken switch alone fails the check, listed first, before any file hit', () => {
-        const r = checkHiddenContent(out({ 'index.html': page({ body: '<p>Draft words</p>' }) }), siteRoot({ settings: { showApps: false } }));
+        const r = checkHiddenContent(out({ 'index.html': page({ body: '<p>Draft words</p>' }) }), siteRoot({ settings: { showApps: false, ...PROMO } }));
         expect(r.ok).toBe(false);
         expect(r.hits).toEqual([
             `${SETTINGS}: "showContact" is missing (it must be true or false)`,
@@ -498,5 +519,24 @@ test.describe('injectCsp and checkCsp', () => {
             'has-one/index.html: already has a Content-Security-Policy meta tag; no policy written',
         ]));
         expect(fs.readFileSync(second, 'utf8'), 'the readable page after it got its policy').toContain('http-equiv="Content-Security-Policy"');
+    });
+});
+
+// --- The outside-address scan (BUWEB-128) --------------------------------------
+test.describe('scanOut: the one approved outside address', () => {
+    const scan = (text) => {
+        const dir = tempDir('scan');
+        put(dir, 'index.html', `<!DOCTYPE html><html><body>${text}</body></html>`);
+        return scanOut(dir).hits.outsideUrl;
+    };
+
+    test('https://bengusa.pro/ourusdebt/ (the Our U.S. Debt link) is allowed', () => {
+        expect(scan('<a href="https://bengusa.pro/ourusdebt/">Try it</a>')).toEqual([]);
+    });
+
+    test('anything else is still an outside address: a look-alike host, another sub-domain, a path, plain http, another site', () => {
+        for (const url of ['https://bengusa.pro/ourusdebt', 'https://bengusa.pro/ourusdebt/x', 'https://bengusa.pro.example.com/ourusdebt/', 'https://www.bengusa.pro/ourusdebt/', 'https://usdebt.bengusa.pro', 'http://bengusa.pro/ourusdebt/', 'https://example.com']) {
+            expect.soft(scan(`<a href="${url}">x</a>`).length, `should catch ${url}`).toBe(1);
+        }
     });
 });

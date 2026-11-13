@@ -6,7 +6,7 @@
 // words come from support/words.mjs (copied from the spec), never from content/.
 import { test, expect, heroSubline, isPhone, isReducedMotion, settle } from '../support/site.mjs';
 import { TIP, TRIGGER, offGridSection, popupsLive } from '../support/offgrid.mjs';
-import { APPS, COLOUR, WORDS } from '../support/words.mjs';
+import { APPS, COLOUR, USDEBT, WORDS } from '../support/words.mjs';
 import { APPS_PARKED, EXPLAINED_PARKED, SHOW, SHOW_EXPLAINED } from '../support/settings.mjs';
 
 // The words a person sees. The heading test below also checks textContent
@@ -196,9 +196,48 @@ test.describe('Home', () => {
         for (const gone of ['More in the works', 'More apps are in the queue', 'Meet our', ...APPS.flatMap((a) => [a.shortName, a.name])]) {
             expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
         }
-        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(0);
+        // The one link in Home's main area is the "Our U.S. Debt" link (BUWEB-128), while its switch is on.
+        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount(SHOW.usDebtPromo ? 1 : 0);
         // Hero, then "Apps coming soon!" (an h2), then the About body ("About Us" is an h2); no other h1 or h2.
         expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!', 'h2 About Us']);
+    });
+
+    test('"Our U.S. Debt" block (BUWEB-128): lead-in, h3 title, paragraph, then a plain new-tab link, in that order directly under "Apps coming soon!"', async ({ page }) => {
+        test.skip(SHOW.apps || !SHOW.usDebtPromo, 'the block shows only while the apps are hidden and "showUsDebtPromo" is true');
+        const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
+        await expect(section, 'one "Apps coming soon!" section').toHaveCount(1);
+        const h2 = section.locator('h2');
+        expect.soft(await text(h2), 'section heading').toBe('Apps coming soon!');
+
+        // Directly under the h2, in order: the lead-in p, the title h3, the paragraph p, the link.
+        const block = h2.locator('xpath=following-sibling::div[1]');
+        await expect(block, 'the block comes right after the heading').toHaveCount(1);
+        expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['p', 'h3', 'p', 'a']);
+        expect.soft(await text(block.locator('> p').nth(0)), 'lead-in').toBe(USDEBT.leadIn);
+        expect.soft(await text(block.locator('> h3')), 'title').toBe(USDEBT.title);
+        expect.soft(await text(block.locator('> p').nth(1)), 'paragraph').toBe(USDEBT.text);
+
+        const link = block.locator('> a');
+        expect.soft(await text(link), 'link text (visible words, then the hidden new-tab hint for screen readers)').toBe(USDEBT.linkText + USDEBT.newTabHint);
+        expect.soft(await link.getAttribute('href'), 'link address').toBe(USDEBT.url);
+        expect.soft(await link.getAttribute('target'), 'opens in a new tab').toBe('_blank');
+        expect.soft(((await link.getAttribute('rel')) || '').split(/\s+/), 'rel keeps noopener').toContain('noopener');
+        expect.soft(await link.getAttribute('onclick'), 'the link has no onclick').toBeNull();
+        // The title is an h3 under the "Apps coming soon!" h2, and the hero stays the only h1.
+        await expect.soft(page.getByRole('heading', { level: 3, name: USDEBT.title, exact: true })).toBeVisible();
+        await expect.soft(page.locator('h1')).toHaveCount(1);
+        // Modest: the block's title is smaller than its section heading, which is smaller than the hero.
+        const sizes = await page.evaluate(() => {
+            const px = (el) => parseFloat(getComputedStyle(el).fontSize);
+            const sec = document.querySelector('section[aria-labelledby="home-coming-soon-title"]');
+            return { hero: px(document.querySelector('h1')), heading: px(sec.querySelector('h2')), title: px(sec.querySelector('h3')) };
+        });
+        expect.soft(sizes.title, 'title smaller than its section heading').toBeLessThan(sizes.heading);
+        expect.soft(sizes.heading, 'section heading smaller than the hero').toBeLessThan(sizes.hero);
+        // The link is on screen to tap, and the page does not scroll sideways.
+        await link.scrollIntoViewIfNeeded();
+        await expect.soft(link).toBeVisible();
+        expect.soft(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'no sideways scroll').toBe(true);
     });
 
     test('heading: "Meet our Off-grid apps" with "Off-grid" as a popup word; the "More in the works" tile never says Off-grid', async ({ page }) => {

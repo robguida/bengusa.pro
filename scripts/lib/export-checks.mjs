@@ -71,7 +71,7 @@ export const SWITCHES = [
 const PARKED_PAGES = [{ folder: 'about', route: '/about' }];
 
 // The one reader of content/site-settings.json in Node. Returns
-// { showApps, showContact, problems }. Each switch must be true or false: a
+// { showApps, showContact, showUsDebtPromo, problems }. Each switch must be true or false: a
 // missing switch, any other value, a missing file or a file that isn't JSON is
 // a problem (the build fails), and only true shows a page, so anything broken
 // counts as hidden (fail closed). Every problem is listed.

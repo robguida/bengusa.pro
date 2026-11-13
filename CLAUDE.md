@@ -73,9 +73,9 @@ Inside `src/` (the site):
 
 - `package.json`, `package-lock.json`, `.nvmrc`, `.env.template`, `next.config.mjs`, `eslint.config.mjs`, `jsconfig.json`, `postcss.config.mjs` — the site's install and tool settings.
 - `app/layout.js` — root layout: fonts, header, footer.
-- `app/page.js` — **Home, one of two live pages** (Home and Privacy; one-page site since 2026-11-02, Privacy back on 2026-11-06): hero, "Apps coming soon!", then the About body (`components/AboutBody.js`) under an "About Us" h2. `app/not-found.js` is the 404 page: it sends every other address to Home with a meta refresh (0 s), with a "Go to the home page" link as fallback.
+- `app/page.js` — **Home, one of two live pages** (Home and Privacy; one-page site since 2026-11-02, Privacy back on 2026-11-06): hero, "Apps coming soon!" with the Our U.S. Debt block under it (lead-in, h3, one paragraph, link to https://bengusa.pro/ourusdebt/ that opens in a new tab (`target="_blank"`, `rel="noopener"`); words in `content/site-words.json` under `usDebtPromo`; BUWEB-128), then the About body (`components/AboutBody.js`) under an "About Us" h2. `app/not-found.js` is the 404 page: it sends every other address to Home with a meta refresh (0 s), with a "Go to the home page" link as fallback.
 - `app/privacy/` — the Privacy page, **live** since 2026-11-06 (BUWEB-125), linked in the footer.
-- `app/_parked/` — pages built but not live yet: `apps/[slug]/`, `contact/` and `about/`. Switches: `showApps` and `showContact` are in `content/site-settings.json`; `SHOW_ABOUT` and `SHOW_PRIVACY` are constants in `src/lib/site.js` (`SHOW_ABOUT` false, `SHOW_PRIVACY` true). To bring a parked page back, turn its switch on AND move its folder out of `_parked/`.
+- `app/_parked/` — pages built but not live yet: `apps/[slug]/`, `contact/` and `about/`. Switches: `showApps`, `showContact` and `showUsDebtPromo` (the Our U.S. Debt block; true; ships only after bengusa.pro/ourusdebt/ is live and Rob says go) are in `content/site-settings.json`; `SHOW_ABOUT` and `SHOW_PRIVACY` are constants in `src/lib/site.js` (`SHOW_ABOUT` false, `SHOW_PRIVACY` true). To bring a parked page back, turn its switch on AND move its folder out of `_parked/`.
 - Hidden on Home by a setting, words kept: `showOwnWords` in `content/about-words.json` (the founders' "In ... own words" blocks) and `showOffGridExplained` in `content/site-words.json` (the "Off-grid, explained" section).
 - `app/components/` — shared components: AboutBody, AppCard, AppName, KeepWhole, OffGridBadge, OffGridHeading, OffGridLegend, OffGridTip, PageIntro, SiteFooter, and `header/` (LogoMark, SiteHeader, Wordmark).
 - `lib/` — helpers: `apps.js`, `content.js`, `site.js`, `site-settings.mjs`.
@@ -97,7 +97,7 @@ Beside `src/`:
 - The old maintenance-mode switch (`NEXT_PUBLIC_MAINTENANCE_MODE`) is gone.
 
 ---
-Last updated 2026-11-06 (BUWEB-125: Privacy page live again; switch locations corrected; visitor counts, see spec 19.l).
+Last updated 2026-11-13 (BUWEB-128: Our U.S. Debt block on Home, switch `showUsDebtPromo`, link to bengusa.pro/ourusdebt/ in a new tab, see spec 19.n).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

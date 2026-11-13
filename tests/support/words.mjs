@@ -17,6 +17,16 @@ export const APPS = [
     { id: 'vault', shortName: 'Vault', name: 'Vault (working name)' },
 ].map((app) => ({ ...app, page: `/apps/${slugs[app.id]}/`, box: `${app.id}-connects` }));
 
+// The "Our U.S. Debt" block under "Apps coming soon!" on Home (BUWEB-128, Rob 2026-11-12).
+export const USDEBT = {
+    leadIn: 'While you wait, try a tool we built.',
+    title: 'Our U.S. Debt',
+    text: 'See the U.S. national debt day by day, from public U.S. Treasury data that is updated each business day and goes back to 1993. Pick any dates to get a chart, stats and the numbers behind them, plus a trend line that looks ahead. You can also compare how the debt changed during each presidential term.',
+    linkText: 'Try Our U.S. Debt at bengusa.pro/ourusdebt \u2192',
+    newTabHint: ' (opens in a new tab)',
+    url: 'https://bengusa.pro/ourusdebt/',
+};
+
 export const WORDS = {
     hero: 'Makers of Off-grid apps.', // 17.a.i, with lowercase "apps" (17.a.iii)
     heroSubline: 'Apps that mind their own business.', // 17.a.ii (the default subline)
@@ -178,7 +188,7 @@ export const ABOUT_KEPT_TOP_LINE = 'We build apps that mind their own business.'
 export const DRAFT_LABEL = 'Draft words. Not final.';
 
 // The Privacy page, word for word (the legal reviewer, 2026-10-18,
-// icabod-r1-rulings.md section 2: 146 words, final, plain ASCII). The labels
+// icabod-r1-rulings.md section 2: 217 words, final, plain ASCII; reworded 2026-11-13 for Our U.S. Debt, bengusa_privacy_ourusdebt_2026-11-13.md). The labels
 // (H1, intro, H2, P) are not site words. The last line is
 // "Last updated: <the day the Privacy words last changed>", in the form
 // PRIVACY.updated (the legal reviewer's date ruling, 2026-10-19). It does not
@@ -195,7 +205,14 @@ export const PRIVACY = {
         },
         {
             heading: 'What the site doesn\'t do',
-            paragraphs: ['The site has no forms, no cookies, no ads, and no analytics or tracking scripts. It doesn\'t follow you to other sites. Every file, fonts included, comes from our server, which runs on Amazon Web Services in the US.'],
+            paragraphs: ['The site has no sign-up or contact forms, no cookies, no ads, and no analytics or tracking scripts. It doesn\'t follow you to other sites. Every file, fonts included, comes from our server in the US, through Amazon Web Services.'],
+        },
+        {
+            heading: 'Our U.S. Debt',
+            paragraphs: [
+                'Our U.S. Debt, at bengusa.pro/ourusdebt, is part of this site. Its forms only let you choose what the charts show, such as dates or presidential terms. They don\'t ask anything about you.',
+                'If you switch its trend line on or off, your browser saves that choice. It isn\'t a cookie, and the saved copy stays in your browser. Clearing this site\'s data in your browser removes it.',
+            ],
         },
         {
             heading: 'Changes',
@@ -204,7 +221,7 @@ export const PRIVACY = {
     ],
     // The last line, exact as the spec has it (decision 19.f). If the build is
     // made on another day, the spec and this line change together.
-    updated: 'Last updated: October 19, 2026.',
+    updated: 'Last updated: November 13, 2026.',
     // The page descriptions the legal reviewer pre-cleared (his "page descriptions" list).
     descriptions: {
         '/': 'Makers of Off-grid apps. Off-grid: your data lives on your device, not in our cloud.',
