@@ -1,5 +1,6 @@
 {
   "showApps": false,
   "showContact": false,
-  "showUsDebtPromo": true
+  "showUsDebtPromo": true,
+  "showLanguageBasicsPromo": true
 }

@@ -34,8 +34,9 @@ const SETTINGS = 'content/site-settings.json';
 const HIDDEN = { showApps: false, showContact: false };
 // The "Our U.S. Debt" block switch (BUWEB-128) sits beside the two page switches. It is on in every made-up
 // site here unless a test says otherwise, so the tests of the page switches stay about the page switches.
-const PROMO = { showUsDebtPromo: true };
-const ALL_HIDDEN = { ...HIDDEN, showUsDebtPromo: false };
+// The "Language Basics" block switch (BUWEB-135) rides with it.
+const PROMO = { showUsDebtPromo: true, showLanguageBasicsPromo: true };
+const ALL_HIDDEN = { ...HIDDEN, showUsDebtPromo: false, showLanguageBasicsPromo: false };
 
 // --- Throwaway folders ------------------------------------------------------
 let made = [];
@@ -147,15 +148,30 @@ test.describe('the site switch reader (one rule for site.js, the build checks an
         const on = readSiteSettings(siteRoot());
         expect.soft(on.problems, 'a good file').toEqual([]);
         expect.soft(on.showUsDebtPromo, 'true shows the block').toBe(true);
-        const missing = readSiteSettings(siteRoot({ settings: { ...HIDDEN } }));
+        const missing = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showLanguageBasicsPromo: true } }));
         expect.soft(missing.problems, 'missing').toEqual([`${SETTINGS}: "showUsDebtPromo" is missing (it must be true or false)`]);
         expect.soft(missing.showUsDebtPromo, 'missing = off').toBe(false);
         for (const bad of ['true', 'false', 1, 0, null, {}, []]) {
-            const s = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showUsDebtPromo: bad } }));
+            const s = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showUsDebtPromo: bad, showLanguageBasicsPromo: true } }));
             expect.soft(s.problems, `showUsDebtPromo: ${JSON.stringify(bad)}`).toEqual([`${SETTINGS}: "showUsDebtPromo" must be true or false`]);
             expect.soft(s.showUsDebtPromo, `showUsDebtPromo: ${JSON.stringify(bad)} counts as off`).toBe(false);
         }
         expect.soft(readSiteSettings(siteRoot({ settings: ALL_HIDDEN })).showUsDebtPromo, 'false').toBe(false);
+    });
+
+    test('the "Language Basics" switch: true or false only; missing or any other value is a problem and counts as off (fail closed)', () => {
+        const on = readSiteSettings(siteRoot());
+        expect.soft(on.problems, 'a good file').toEqual([]);
+        expect.soft(on.showLanguageBasicsPromo, 'true shows the block').toBe(true);
+        const missing = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showUsDebtPromo: true } }));
+        expect.soft(missing.problems, 'missing').toEqual([`${SETTINGS}: "showLanguageBasicsPromo" is missing (it must be true or false)`]);
+        expect.soft(missing.showLanguageBasicsPromo, 'missing = off').toBe(false);
+        for (const bad of ['true', 'false', 1, 0, null, {}, []]) {
+            const s = readSiteSettings(siteRoot({ settings: { ...HIDDEN, showUsDebtPromo: true, showLanguageBasicsPromo: bad } }));
+            expect.soft(s.problems, `showLanguageBasicsPromo: ${JSON.stringify(bad)}`).toEqual([`${SETTINGS}: "showLanguageBasicsPromo" must be true or false`]);
+            expect.soft(s.showLanguageBasicsPromo, `showLanguageBasicsPromo: ${JSON.stringify(bad)} counts as off`).toBe(false);
+        }
+        expect.soft(readSiteSettings(siteRoot({ settings: ALL_HIDDEN })).showLanguageBasicsPromo, 'false').toBe(false);
     });
 
     test('a missing file, a file that is not JSON, or one that is not an object: a problem, and everything hidden', () => {
@@ -174,10 +190,11 @@ test.describe('the site switch reader (one rule for site.js, the build checks an
     });
 
     test('checkSiteSettings (the pure rule) agrees: only true shows a page', () => {
-        expect(checkSiteSettings({ showApps: true, showContact: true, showUsDebtPromo: true })).toEqual({ showApps: true, showContact: true, showUsDebtPromo: true, problems: [] });
+        expect(checkSiteSettings({ showApps: true, showContact: true, showUsDebtPromo: true, showLanguageBasicsPromo: true })).toEqual({ showApps: true, showContact: true, showUsDebtPromo: true, showLanguageBasicsPromo: true, problems: [] });
         expect(checkSiteSettings(ALL_HIDDEN)).toEqual({ ...ALL_HIDDEN, problems: [] });
         expect(checkSiteSettings({ ...PROMO, showApps: 'true', showContact: true }).showApps).toBe(false);
         expect(checkSiteSettings({ ...HIDDEN, showUsDebtPromo: 'true' }).showUsDebtPromo).toBe(false);
+        expect(checkSiteSettings({ ...HIDDEN, showLanguageBasicsPromo: 'true' }).showLanguageBasicsPromo).toBe(false);
     });
 });
 
@@ -529,6 +546,10 @@ test.describe('scanOut: the one approved outside address', () => {
         put(dir, 'index.html', `<!DOCTYPE html><html><body>${text}</body></html>`);
         return scanOut(dir).hits.outsideUrl;
     };
+
+    test('https://bengusa.pro/languagebasics/ (the Language Basics link, BUWEB-135) is allowed', () => {
+        expect(scan('<a href="https://bengusa.pro/languagebasics/">Try it</a>')).toEqual([]);
+    });
 
     test('https://bengusa.pro/ourusdebt/ (the Our U.S. Debt link) is allowed', () => {
         expect(scan('<a href="https://bengusa.pro/ourusdebt/">Try it</a>')).toEqual([]);

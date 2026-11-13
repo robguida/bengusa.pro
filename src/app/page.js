@@ -3,7 +3,7 @@ import KeepWhole from './components/KeepWhole';
 import OffGridHeading from './components/OffGridHeading';
 import OffGridLegend from './components/OffGridLegend';
 import { getShownApps } from '@/lib/apps';
-import { SHOW_US_DEBT_PROMO } from '@/lib/site';
+import { SHOW_LANGUAGE_BASICS_PROMO, SHOW_US_DEBT_PROMO } from '@/lib/site';
 import siteWords from '../content/site-words.json';
 
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
     // section (its heading, the cards and "More in the works") is left out, and
     // the hero is followed directly by "Off-grid, explained".
     const apps = getShownApps();
-    const { home, moreInTheWorks, offGrid, usDebtPromo } = siteWords;
+    const { home, moreInTheWorks, offGrid, usDebtPromo, languageBasicsPromo } = siteWords;
     // One-page site (2026-11-02): "Off-grid, explained" is hidden while
     // "showOffGridExplained" in content/site-words.json is false (its words stay).
     const showExplained = siteWords.showOffGridExplained === true;
@@ -58,14 +58,16 @@ export default function Home() {
             {apps.length === 0 && (
                 <section className="pb-10" aria-labelledby="home-coming-soon-title">
                     <h2 id="home-coming-soon-title" className="m-0 text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">{home.appsComingSoon}</h2>
-                    {/* BUWEB-128: a tool to try while the apps are not out. A green button (the logo green) that opens in a new tab
-                        (the words are in content/site-words.json, "usDebtPromo"). It sits under
-                        the section heading (BUWEB-133). Off with "showUsDebtPromo": false in
-                        content/site-settings.json. */}
+                    {/* BUWEB-128 / BUWEB-135: tools to try while the apps are not out. This lead-in is shared: it shows once under the
+                        section heading (BUWEB-133) if either showUsDebtPromo or showLanguageBasicsPromo is on
+                        (content/site-settings.json), and is hidden if both are off. Words: content/site-words.json,
+                        "usDebtPromo".leadIn. Each block has its own green button (the logo green) that opens in a new tab. */}
+                    {(SHOW_US_DEBT_PROMO || SHOW_LANGUAGE_BASICS_PROMO) && (
+                        <p className="mb-0 mt-5 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
+                    )}
                     {SHOW_US_DEBT_PROMO && (
                         <div className="mt-5 grid max-w-[64rem] items-center gap-6 md:grid-cols-2 md:gap-10">
                             <div className="grid max-w-[40em] justify-items-start gap-3">
-                                <p className="m-0 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
                                 <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{usDebtPromo.title}</h3>
                                 <p className="m-0">{usDebtPromo.text}</p>
                                 <a href={usDebtPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
@@ -86,6 +88,19 @@ export default function Home() {
                                     decoding="async"
                                     className="h-auto w-full rounded-xl border border-line shadow-sm"
                                 />
+                            </a>
+                        </div>
+                    )}
+                    {/* BUWEB-135: the Language Basics block, under Our U.S. Debt. Same words-and-button shape, no picture, no lead-in of its own
+                        (the shared lead-in above shows once if either block is on). Words: content/site-words.json, "languageBasicsPromo".
+                        Off with "showLanguageBasicsPromo": false in content/site-settings.json. */}
+                    {SHOW_LANGUAGE_BASICS_PROMO && (
+                        <div className="mt-10 grid max-w-[40em] justify-items-start gap-3">
+                            <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{languageBasicsPromo.title}</h3>
+                            <p className="m-0">{languageBasicsPromo.text}</p>
+                            <a href={languageBasicsPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                {languageBasicsPromo.linkText}
+                                <span className="sr-only">{languageBasicsPromo.newTabHint}</span>
                             </a>
                         </div>
                     )}

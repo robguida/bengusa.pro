@@ -12,11 +12,12 @@
 // site (fail closed).
 
 export const SITE_SETTINGS_FILE = 'content/site-settings.json';
-export const SITE_SWITCH_KEYS = ['showApps', 'showContact', 'showUsDebtPromo'];
+export const SITE_SWITCH_KEYS = ['showApps', 'showContact', 'showUsDebtPromo', 'showLanguageBasicsPromo'];
 
-// showUsDebtPromo (BUWEB-128) turns the "Our U.S. Debt" block on Home on or off.
+// showUsDebtPromo (BUWEB-128) turns the "Our U.S. Debt" block on Home on or off; showLanguageBasicsPromo
+// (BUWEB-135) does the same for the "Language Basics" block under it.
 //
-// raw: the parsed file. Returns { showApps, showContact, showUsDebtPromo, problems }, with every
+// raw: the parsed file. Returns { showApps, showContact, showUsDebtPromo, showLanguageBasicsPromo, problems }, with every
 // problem listed.
 export function checkSiteSettings(raw) {
     const problems = [];

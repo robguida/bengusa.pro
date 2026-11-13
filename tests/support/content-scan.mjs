@@ -15,12 +15,12 @@ const INERT_URL = [
     /^https?:\/\/(a|x|n|тест)([/@#?]|$)/u, // core-js URL feature tests + Next's server-side URL base, only passed to new URL()
 ];
 
-// The one outside address the site may link to (BUWEB-128: the "Our U.S. Debt"
-// block on Home). Exact match only: a longer host ("...bengusa.pro.example"),
+// The two outside addresses the site may link to (BUWEB-128: the "Our U.S. Debt"
+// block on Home; BUWEB-135: the "Language Basics" block under it). Exact match only: a longer host ("...bengusa.pro.example"),
 // another sub-domain, a path or plain http is still an outside address and
 // still caught. Typed here, not read from content/, so a content edit cannot
 // widen the guard.
-export const ALLOWED_OUTSIDE_URLS = ['https://bengusa.pro/ourusdebt/'];
+export const ALLOWED_OUTSIDE_URLS = ['https://bengusa.pro/ourusdebt/', 'https://bengusa.pro/languagebasics/'];
 export const isAllowedOutsideUrl = (url) => ALLOWED_OUTSIDE_URLS.includes(url);
 
 // An apostrophe as it can appear in out/: typed, curly, or HTML-escaped.
@@ -61,7 +61,7 @@ export function scanOut(outDir) {
         for (const m of text.matchAll(/https?:\/\/[^\s"'`<>)\\,;]+/g)) {
             const url = m[0];
             if (/^http:\/\/www\.w3\.org\//.test(url)) continue;
-            if (isAllowedOutsideUrl(url)) continue; // the one approved outside link (BUWEB-128)
+            if (isAllowedOutsideUrl(url)) continue; // an approved outside link (BUWEB-128, BUWEB-135)
             if (ext === '.js' && INERT_URL.some((re) => re.test(url))) continue;
             addHit(hits.outsideUrl, file, text, m.index, url.length);
         }

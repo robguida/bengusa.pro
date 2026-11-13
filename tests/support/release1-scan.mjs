@@ -70,7 +70,7 @@ export function badHrefs(file, html, shown, outDir = OUT_DIR) {
         const href = m[1];
         if (href.startsWith('#')) continue;
         const clean = href.split('#')[0].split('?')[0];
-        if (isAllowedOutsideUrl(href)) continue; // the one approved outside link (BUWEB-128)
+        if (isAllowedOutsideUrl(href)) continue; // an approved outside link (BUWEB-128, BUWEB-135)
         if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) {
             hits.push(`${file}: href to another address "${href}"`);
             continue;

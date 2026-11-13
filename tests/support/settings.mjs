@@ -22,7 +22,7 @@ const settings = readSiteSettings();
 
 export const SETTINGS_FILE = SITE_SETTINGS_FILE;
 export const SETTINGS_PROBLEMS = settings.problems;
-export const SHOW = { apps: settings.showApps, contact: settings.showContact, usDebtPromo: settings.showUsDebtPromo };
+export const SHOW = { apps: settings.showApps, contact: settings.showContact, usDebtPromo: settings.showUsDebtPromo, languageBasicsPromo: settings.showLanguageBasicsPromo };
 
 // Home's "Off-grid, explained" section is hidden by "showOffGridExplained" in content/site-words.json (one-page site, 2026-11-02).
 const siteWords = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'site-words.json'), 'utf8'));
