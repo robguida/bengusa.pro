@@ -97,6 +97,15 @@ test.describe('Release 1: hidden means not built', () => {
         expect.soft(termHits('t', '<a href="/contact/">', CONTACT_TERMS).length, 'the /contact path scan').toBeGreaterThan(0);
     });
 
+    test('the one approved outside link (https://bengusa.pro/ourusdebt/, BUWEB-128) passes the link scan; every other address, and any look-alike, is still caught', () => {
+        const shown = ['/', '/privacy/'];
+        expect.soft(badHrefs('t.html', '<a href="https://bengusa.pro/ourusdebt/">', shown), 'the approved link').toEqual([]);
+        for (const s of ['<a href="https://bengusa.pro/ourusdebt">', '<a href="http://bengusa.pro/ourusdebt/">', '<a href="https://bengusa.pro.example.com/ourusdebt/">',
+            '<a href="https://www.bengusa.pro/ourusdebt/">', '<a href="https://bengusa.pro/ourusdebt/x">', '<a href="https://usdebt.bengusa.pro">', '<a href="https://evil.example/https://bengusa.pro/ourusdebt/">']) {
+            expect.soft(badHrefs('t.html', s, shown).length, `should still catch: ${s}`).toBeGreaterThan(0);
+        }
+    });
+
     test('nothing is built for a hidden page: no apps/ or contact/ folder, no page-data or chunk file for them, no route-table row', () => {
         test.skip(SHOW.apps && SHOW.contact, HIDDEN);
         expect.soft(hiddenFileHits(files, SHOW.apps ? [] : SLUGS), 'files in out/ for hidden pages').toEqual([]);
