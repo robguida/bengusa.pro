@@ -20,7 +20,7 @@
     "text": "More apps are in the queue."
   },
   "usDebtPromo": {
-    "leadIn": "While you wait, try a tool we built.",
+    "leadIn": "While you wait, try the tools we built.",
     "title": "Our U.S. Debt",
     "text": "See the U.S. national debt day by day, from public U.S. Treasury data that is updated each business day and goes back to 1993. Pick any dates to get a chart, stats and the numbers behind them, plus a trend line that looks ahead. You can also compare how the debt changed during each presidential term.",
     "linkText": "Try Our U.S. Debt at bengusa.pro/ourusdebt →",
@@ -32,6 +32,13 @@
       "width": 960,
       "height": 487
     }
+  },
+  "languageBasicsPromo": {
+    "title": "Language Basics",
+    "text": "Flashcards for your first words in Albanian, Spanish, Japanese and Bengali: numbers, letters, and everyday words and phrases. Read the card, say it out loud, then see the answer and how to say it. It runs in your browser, with no sign-up.",
+    "linkText": "Try Language Basics at bengusa.pro/languagebasics →",
+    "newTabHint": " (opens in a new tab)",
+    "url": "https://bengusa.pro/languagebasics/"
   },
   "showOffGridExplained": false
 }
