@@ -58,10 +58,10 @@ export default function Home() {
             {apps.length === 0 && (
                 <section className="pb-10" aria-labelledby="home-coming-soon-title">
                     <h2 id="home-coming-soon-title" className="m-0 text-[clamp(1.8rem,4.6vw,2.5rem)] leading-[1.1]">{home.appsComingSoon}</h2>
-                    {/* BUWEB-128: a tool to try while the apps are not out. A green button (the logo green) that opens in a new tab
-                        (the words are in content/site-words.json, "usDebtPromo"). It sits under
-                        the section heading (BUWEB-133). Off with "showUsDebtPromo": false in
-                        content/site-settings.json. */}
+                    {/* BUWEB-128 / BUWEB-135: tools to try while the apps are not out. This lead-in is shared: it shows once under the
+                        section heading (BUWEB-133) if either showUsDebtPromo or showLanguageBasicsPromo is on
+                        (content/site-settings.json), and is hidden if both are off. Words: content/site-words.json,
+                        "usDebtPromo".leadIn. Each block has its own green button (the logo green) that opens in a new tab. */}
                     {(SHOW_US_DEBT_PROMO || SHOW_LANGUAGE_BASICS_PROMO) && (
                         <p className="mb-0 mt-5 text-[clamp(1.05rem,2.4vw,1.25rem)] text-ink-soft">{usDebtPromo.leadIn}</p>
                     )}
