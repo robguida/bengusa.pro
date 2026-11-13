@@ -14,7 +14,15 @@
       "id": "privacy-not",
       "heading": "What the site doesn't do",
       "paragraphs": [
-        "The site has no forms, no cookies, no ads, and no analytics or tracking scripts. It doesn't follow you to other sites. Every file, fonts included, comes from our server, which runs on Amazon Web Services in the US."
+        "The site has no sign-up or contact forms, no cookies, no ads, and no analytics or tracking scripts. It doesn't follow you to other sites. Every file, fonts included, comes from our server in the US, through Amazon Web Services."
+      ]
+    },
+    {
+      "id": "privacy-ourusdebt",
+      "heading": "Our U.S. Debt",
+      "paragraphs": [
+        "Our U.S. Debt, at bengusa.pro/ourusdebt, is part of this site. Its forms only let you choose what the charts show, such as dates or presidential terms. They don't ask anything about you.",
+        "If you switch its trend line on or off, your browser saves that choice. It isn't a cookie, and the saved copy stays in your browser. Clearing this site's data in your browser removes it."
       ]
     },
     {
@@ -22,7 +30,7 @@
       "heading": "Changes",
       "paragraphs": [
         "If the site starts collecting anything else, or keeps it longer, this page will say so first.",
-        "Last updated: October 19, 2026."
+        "Last updated: November 13, 2026."
       ]
     }
   ]

@@ -139,7 +139,7 @@ test.describe('Release 1: no draft words, no forms, nothing inline', () => {
         expect.soft(termHits('t', 'The final word is ours.', DRAFT_TERMS), 'plain line').toEqual([]);
     });
 
-    test('no page holds a form, a field or a button that sends anything (the Privacy page says the site has no forms)', () => {
+    test('no page holds a form, a field or a button that sends anything (the Privacy page says the site has no sign-up or contact forms; Our U.S. Debt\x27s chart pickers are not in out/)', () => {
         const pages = texts.filter((t) => t.file.endsWith('.html'));
         expect.soft(pages.flatMap((p) => termHits(p.file, p.text, [{ label: 'a form control', re: /<(?:form|input|textarea|select)\b/gi }])), 'form controls in out/').toEqual([]);
     });

@@ -43,8 +43,8 @@ test.describe('Release 1', () => {
             want.map((l) => l.replace("doesn't", 'does not')),
         ];
         for (const [i, bad] of edits.entries()) expect.soft(bad, `made-up edit ${i + 1}`).not.toEqual(want);
-        expect.soft('Last updated: October 20, 2026.', 'a wrong date').not.toBe(PRIVACY.updated);
-        expect.soft(PRIVACY.updated, 'the date line is exact').toBe('Last updated: October 19, 2026.');
+        expect.soft('Last updated: November 14, 2026.', 'a wrong date').not.toBe(PRIVACY.updated);
+        expect.soft(PRIVACY.updated, 'the date line is exact').toBe('Last updated: November 13, 2026.');
     });
 
     test('no draft label on any shown page, and no page holds the words "Draft words" or "Not final"', async ({ page }) => {
