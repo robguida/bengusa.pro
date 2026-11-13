@@ -144,6 +144,7 @@
     - **f.** **Colour rules, for every page** [Brand] (new 2026-10-06):
         - **i.** **Navy (#002A42) is for text.**
         - **ii.** **Green (#006454) means Off-grid and nothing else:** the badge, the word "Off-grid" in the hero (17.a.i), and the dotted underline on the word "Off-grid" where it opens the popup (17.c.vi).
+            ⚠ PARTLY SUPERSEDED 2026-11-13 by docs/requirements.md §19.o (Wendy): "nothing else". The Our U.S. Debt button on Home uses the logo green too (Rob 2026-11-13: *"Change that small link ... to be a green button, that matches the logo."*).
         - **iii.** **Red (#CF2F32) is for the signup button only.** No red text: red means "act", and red text reads like an error message.
         - **iv.** **Red never sits on light blue.** It fails the contrast minimum there. [Frontend]
         - **v.** **The logo and the "bengUSA.pro" wordmark keep their own colours** (6.a). The rules above cover everything else.
@@ -957,6 +958,7 @@
                 - **iii.** **Line cut:** "We believe your personal information should belong to you." is gone from "What is “Off-grid”?".
                 - **iv.** **Rob's work bio** gained a third paragraph about his AI work and his passion for AI development, written from his robguida.com site (Rob: *"review https://robguida.com/ and put together a few sentences about my AI team and my passion for AI development"*). Words in `about-words.json`. Because the bio now touches his AI setup, how much it says about the team follows the team-names ruling for this repo and goes to the legal reviewer under 18.f.viii if the words change later.
                 - **v.** **About and Privacy pages are hidden** (parked in `src/app/_parked`, not built). Switches: `SHOW_ABOUT` and `SHOW_PRIVACY` are `false` in `src/lib/site.js`. The header and footer have no nav links.
+                    ⚠ PARTLY SUPERSEDED 2026-11-13 by docs/requirements.md §19.o (Wendy): About is live at /about/ (`SHOW_ABOUT` true) with header and footer links.
                     - *Changed 2026-11-06 (BUWEB-125): **Privacy is live again** (19.k). About is still hidden. The footer now has the Privacy link; the header still has no nav links. Supersedes this line for Privacy only.*
                 - **vi.** **Every other address goes to Home** (Rob: *"Have all pages that are accessible by URL redirect back to the home page... if someone has a bookmark"*). The 404 page (`out/404.html`) sends the visitor straight to "/" with a meta refresh. A "Go to the home page" link is the fallback, and the status stays 404. The live server must serve `404.html` for missing paths.
                 - **vii.** **The Privacy page is hidden for now and must come back before any sign-up or contact form goes live.** Those forms collect personal details and the Privacy page's promises (15.i) must be public first. This changes Release 1's page list (top note and decision 19) from Home, About and Privacy to Home only, until Rob turns the pages back on.
@@ -1019,6 +1021,7 @@
     - **k.** **The Privacy page is live again** (Rob, 2026-11-06, BUWEB-125: *"I need a privacy policy for bengusa.pro, and we will collect information for web metrics - visitors and so forth - and when we have our software live, we will be capturing PII and other data needed for subscriptions."* Then, on turning the page back on: *"AIR #2: Yes"*). *Changed 2026-11-06 (BUWEB-125).*
         - **i.** The page is at `/privacy/` (in `src/app/privacy/`, no longer parked) and the footer links to it. Its words are the short page in 19.f (changed 2026-11-13, BUWEB-128, for Our U.S. Debt).
         - **ii.** About stays hidden in `src/app/_parked/`. The live pages are Home and Privacy; the apps, Contact and About stay parked.
+            ⚠ PARTLY SUPERSEDED 2026-11-13 by docs/requirements.md §19.o (Wendy): About is live at /about/. Live pages: Home, About, Privacy. Only the apps and Contact stay parked.
         - *Supersedes: 18.f.ii.f.v and 18.f.ii.f.vii for Privacy only (they hid it). The top note of this file is updated to match.*
     - **l.** **Visits are counted from the server's own log** (Rob, 2026-11-06, BUWEB-125: *"AIR #1: 1"*, meaning: count visitors by reading the server's own 14-day visitor log with a free tool, with no rewrite of the Privacy page and no new legal check). *Changed 2026-11-06 (BUWEB-125).*
         - **i.** **How:** a free tool, GoAccess, reads the log once a day on the server and writes a report.
