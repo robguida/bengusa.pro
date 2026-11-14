@@ -43,7 +43,14 @@ test.describe('the "Our U.S. Debt" switch, test-only build with showUsDebtPromo 
         expect.soft(plain, 'the lead-in stays above the one block left').toContain(USDEBT.leadIn);
         expect.soft(plain, 'Language Basics stays').toContain(LANGBASICS.title);
         const main = home.slice(home.indexOf('<main'), home.indexOf('</main>'));
-        expect.soft(main.match(/<a\b/g) || [], "links in Home's main area: only the Language Basics button").toHaveLength(1);
+        // BUWEB-136: Language Basics has its button AND its picture link; both go to its address, in a new tab. No other link.
+        const links = main.match(/<a\b[^>]*>/g) || [];
+        expect.soft(links, "links in Home's main area: the Language Basics button and its picture link, nothing else").toHaveLength(2);
+        for (const tag of links) {
+            expect.soft(tag, 'link address').toContain(`href="${LANGBASICS.url}"`);
+            expect.soft(tag, 'opens in a new tab').toContain('target="_blank"');
+            expect.soft(tag, 'rel keeps noopener').toMatch(/rel="[^"]*\bnoopener\b/);
+        }
     });
 });
 
