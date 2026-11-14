@@ -32,13 +32,18 @@ export const USDEBT = {
     },
 };
 
-// The "Language Basics" block under it (BUWEB-135, Rob 2026-11-13). No lead-in of its own, no picture.
+// The "Language Basics" block under it (BUWEB-135, Rob 2026-11-13). No lead-in of its own; a picture beside it (BUWEB-136).
 export const LANGBASICS = {
     title: 'Language Basics',
     text: 'Flashcards for your first words in Albanian, Spanish, Japanese and Bengali: numbers, letters, and everyday words and phrases. Read the card, say it out loud, then see the answer and how to say it. It runs in your browser, with no sign-up.',
     linkText: 'Try Language Basics at bengusa.pro/languagebasics \u2192',
     newTabHint: ' (opens in a new tab)',
     url: 'https://bengusa.pro/languagebasics/',
+    // BUWEB-136: the picture beside the block (Rob picked the "19" card).
+    image: {
+        src: '/images/languagebasics/languagebasics-19-card.webp',
+        alt: 'A screenshot of a Language Basics flashcard: the number 19 in big type, with its Albanian answer, nëntë mbëdhjetë, in blue and how to say it, "Nuhn t buh they yet", under it.',
+    },
 };
 
 export const WORDS = {

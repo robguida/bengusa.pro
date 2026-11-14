@@ -91,16 +91,32 @@ export default function Home() {
                             </a>
                         </div>
                     )}
-                    {/* BUWEB-135: the Language Basics block, under Our U.S. Debt. Same words-and-button shape, no picture, no lead-in of its own
+                    {/* BUWEB-135: the Language Basics block, under Our U.S. Debt. Same two-column shape as Our U.S. Debt (words and button, picture beside them, BUWEB-136), no lead-in of its own
                         (the shared lead-in above shows once if either block is on). Words: content/site-words.json, "languageBasicsPromo".
                         Off with "showLanguageBasicsPromo": false in content/site-settings.json. */}
                     {SHOW_LANGUAGE_BASICS_PROMO && (
-                        <div className="mt-10 grid max-w-[40em] justify-items-start gap-3">
-                            <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{languageBasicsPromo.title}</h3>
-                            <p className="m-0">{languageBasicsPromo.text}</p>
-                            <a href={languageBasicsPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
-                                {languageBasicsPromo.linkText}
-                                <span className="sr-only">{languageBasicsPromo.newTabHint}</span>
+                        <div className="mt-10 grid max-w-[64rem] items-center gap-6 md:grid-cols-2 md:gap-10">
+                            <div className="grid max-w-[40em] justify-items-start gap-3">
+                                <h3 className="m-0 text-[clamp(1.4rem,3.4vw,1.75rem)] leading-[1.1]">{languageBasicsPromo.title}</h3>
+                                <p className="m-0">{languageBasicsPromo.text}</p>
+                                <a href={languageBasicsPromo.url} target="_blank" rel="noopener" className="inline-block rounded-lg bg-brand-green px-5 py-3 font-medium text-white no-underline transition-colors hover:bg-brand-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                    {languageBasicsPromo.linkText}
+                                    <span className="sr-only">{languageBasicsPromo.newTabHint}</span>
+                                </a>
+                            </div>
+                            {/* BUWEB-136: a picture of a flashcard, linked to the tool. A plain <img>, not next/image
+                                (next/image adds an inline style, which the security policy forbids). */}
+                            <a href={languageBasicsPromo.url} target="_blank" rel="noopener" className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={languageBasicsPromo.image.src}
+                                    alt={languageBasicsPromo.image.alt}
+                                    width={languageBasicsPromo.image.width}
+                                    height={languageBasicsPromo.image.height}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="mx-auto h-auto w-full max-w-[22rem] rounded-xl border border-line shadow-sm"
+                                />
                             </a>
                         </div>
                     )}
