@@ -196,8 +196,8 @@ test.describe('Home', () => {
         for (const gone of ['More in the works', 'More apps are in the queue', 'Meet our', ...APPS.flatMap((a) => [a.shortName, a.name])]) {
             expect.soft(text, `Home text holds "${gone}"`).not.toContain(gone);
         }
-        // Home's main area has two links to Our U.S. Debt (the button and the picture, BUWEB-134) while its switch is on, and one to Language Basics (BUWEB-135) while its switch is on.
-        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount((SHOW.usDebtPromo ? 2 : 0) + (SHOW.languageBasicsPromo ? 1 : 0));
+        // Home's main area has two links to Our U.S. Debt (the button and the picture, BUWEB-134) while its switch is on, and two to Language Basics (the button, BUWEB-135, and the picture, BUWEB-136) while its switch is on.
+        await expect.soft(page.locator('main a'), "links in Home's main area").toHaveCount((SHOW.usDebtPromo ? 2 : 0) + (SHOW.languageBasicsPromo ? 2 : 0));
         // Hero, then "Apps coming soon!" (an h2); no other h1 or h2 (About is its own page since BUWEB-133).
         expect.soft(await page.locator('main h1, main h2').evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()} ${e.textContent.trim()}`)), 'Home headings').toEqual(['h1 Makers of Off-grid apps.', 'h2 Apps coming soon!']);
     });
@@ -257,10 +257,13 @@ test.describe('Home', () => {
         expect.soft(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), 'no sideways scroll').toBe(true);
     });
 
-    test('"Language Basics" block (BUWEB-135): h3 title, paragraph, then a green new-tab button, right under the "Our U.S. Debt" block, with no lead-in or picture of its own', async ({ page }) => {
+    test('"Language Basics" block (BUWEB-135): h3 title, paragraph, then a green new-tab button, right under the "Our U.S. Debt" block, with a picture beside it and no lead-in of its own', async ({ page }) => {
         test.skip(SHOW.apps || !SHOW.languageBasicsPromo, 'the block shows only while the apps are hidden and "showLanguageBasicsPromo" is true');
         const section = page.locator('section[aria-labelledby="home-coming-soon-title"]');
-        const block = section.locator('> div').last();
+        const wrap = section.locator('> div').last();
+        // The wrapper holds the words (title h3, paragraph p, button link) and the picture link (BUWEB-136).
+        expect.soft(await wrap.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'wrapper order').toEqual(['div', 'a']);
+        const block = wrap.locator('> div');
         expect.soft(await block.evaluate((el) => [...el.children].map((c) => c.tagName.toLowerCase())), 'block order').toEqual(['h3', 'p', 'a']);
         expect.soft(await text(block.locator('> h3')), 'title').toBe(LANGBASICS.title);
         expect.soft(await text(block.locator('> p')), 'paragraph').toBe(LANGBASICS.text);
@@ -270,7 +273,19 @@ test.describe('Home', () => {
         expect.soft(await link.getAttribute('target'), 'opens in a new tab').toBe('_blank');
         expect.soft(((await link.getAttribute('rel')) || '').split(/\s+/), 'rel keeps noopener').toContain('noopener');
         expect.soft(await link.getAttribute('onclick'), 'the link has no onclick').toBeNull();
-        await expect.soft(block.locator('img'), 'no picture').toHaveCount(0);
+        // The picture (BUWEB-136): a webp from public/, real alt text, links to the same address in a new tab.
+        const pic = wrap.locator('> a');
+        const img = pic.locator('img');
+        expect.soft(await pic.getAttribute('href'), 'picture link address').toBe(LANGBASICS.url);
+        expect.soft(await pic.getAttribute('target'), 'picture link opens in a new tab').toBe('_blank');
+        expect.soft(((await pic.getAttribute('rel')) || '').split(/\s+/), 'picture link rel keeps noopener').toContain('noopener');
+        expect.soft(await img.getAttribute('src'), 'picture file').toBe(LANGBASICS.image.src);
+        expect.soft((await img.getAttribute('alt')) || '', 'picture alt text').toBe(LANGBASICS.image.alt);
+        expect.soft(LANGBASICS.image.alt.length, 'the alt text says what the picture shows').toBeGreaterThan(40);
+        expect.soft(await img.getAttribute('style'), 'no inline style on the picture').toBeNull();
+        await img.scrollIntoViewIfNeeded();
+        await expect.soft(img, 'the picture is on screen').toBeVisible();
+        expect.soft(await img.evaluate((el) => el.complete && el.naturalWidth > 0), 'the picture loads').toBe(true);
         // The shared lead-in sits above the first block only: it never repeats above this one.
         await expect.soft(section.locator('> p'), 'the lead-in shows once').toHaveCount(1);
         if (SHOW.usDebtPromo) {

@@ -11,3 +11,4 @@ images/about/fojle-rabbi-saikat.webp
 images/about/fojle-rabbi-saikat-personal.webp
 images/about/rob-guida-personal.webp
 images/usdebt/ourusdebt-chart.webp
+images/languagebasics/languagebasics-19-card.webp
